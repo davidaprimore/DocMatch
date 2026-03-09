@@ -108,7 +108,8 @@ function IconeEspecialidade({ icone }: { icone: string }) {
 function ModalLGPD({ aberto, onAceitar, onRecusar }: { aberto: boolean; onAceitar: () => void; onRecusar: () => void }) {
   return (
     <Dialog open={aberto}>
-      <DialogContent className="sm:max-w-lg" onPointerDownOutside={(e) => e.preventDefault()}>
+      {/* @ts-expect-error onInteractOutside is supported by Radix but not exported by shadcn UI DialogContent props */}
+      <DialogContent className="sm:max-w-lg" onInteractOutside={(e: any) => e.preventDefault()}>
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Cookie className="h-6 w-6 text-primary" />
@@ -1143,7 +1144,7 @@ function TelaBuscaMedicos({ onNavegar, menuAberto, setMenuAberto }: {
               <div className="grid md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>Especialidade</Label>
-                  <Select value={especialidadeFiltro} onValueChange={setEspecialidadeFiltro}>
+                  <Select value={especialidadeFiltro} onValueChange={(val) => setEspecialidadeFiltro(val || '')}>
                     <SelectTrigger>
                       <SelectValue placeholder="Todas" />
                     </SelectTrigger>
@@ -1166,7 +1167,7 @@ function TelaBuscaMedicos({ onNavegar, menuAberto, setMenuAberto }: {
                 </div>
                 <div className="space-y-2">
                   <Label>Distância: {distancia[0]}km</Label>
-                  <Slider value={distancia} onValueChange={setDistancia} max={50} min={1} step={1} />
+                  <Slider value={distancia} onValueChange={(val: any) => setDistancia(val)} max={50} min={1} step={1} />
                 </div>
                 <div className="space-y-2">
                   <Label>Plano de saúde</Label>
@@ -1722,7 +1723,7 @@ function TelaComparadorPrecos({ onNavegar, menuAberto, setMenuAberto, receita }:
                 </div>
                 <div className="space-y-2">
                   <Label>Raio de distância: {raio[0]}km</Label>
-                  <Slider value={raio} onValueChange={setRaio} max={20} min={1} step={1} />
+                  <Slider value={raio} onValueChange={(val: any) => setRaio(val)} max={20} min={1} step={1} />
                 </div>
                 <div className="space-y-2">
                   <Label>Ordenar por</Label>
@@ -1902,7 +1903,7 @@ function TelaPlanosPaciente({ onNavegar, menuAberto, setMenuAberto }: {
 }
 
 // Componente Principal
-export default function Home() {
+export default function DocMatch() {
   const [telaAtual, setTelaAtual] = useState<Tela>('landing')
   const [cookiesAceitos, setCookiesAceitos] = useState(false)
   const [menuAberto, setMenuAberto] = useState(false)
