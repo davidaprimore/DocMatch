@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send, Paperclip, Smile, Mic } from 'lucide-react'
+import { Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send, Paperclip, Smile, Mic, Bell, X, Square } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
 import { toast } from 'sonner'
 
-// Padrão de fundo em SVG com símbolos médicos (estetoscópio, pílula, coração, cruz verde simplificados)
-const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232D5284' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.15'%3E%3Cpath d='M20 20v-4h-4v4h-4v4h4v4h4v-4h4v-4h-4z'/%3E%3Cpath d='M80 80v-4h-4v4h-4v4h4v4h4v-4h4v-4h-4z'/%3E%3Crect x='60' y='20' width='16' height='8' rx='4' transform='rotate(45 68 24)'/%3E%3Crect x='20' y='80' width='16' height='8' rx='4' transform='rotate(-45 28 84)'/%3E%3Cpath d='M100 30a6 6 0 0 0-12 0c0 7 12 16 12 16s12-9 12-16a6 6 0 0 0-12 0z'/%3E%3Cpath d='M40 90a6 6 0 0 0-12 0c0 7 12 16 12 16s12-9 12-16a6 6 0 0 0-12 0z'/%3E%3Cpath d='M30 40 A10 10 0 0 1 50 40 L50 60 A5 5 0 0 1 40 60 L40 50'/%3E%3Cpath d='M90 100 A10 10 0 0 1 110 100 L110 120 A5 5 0 0 1 100 120 L100 110'/%3E%3C/g%3E%3C/svg%3E")`
+// Novo Padrão de fundo SVG sugerido: tom de gelo (#F1F5F9) com ícones médicos wireframe sutis e distribuídos
+const bgPattern = `url("data:image/svg+xml,%3Csvg width='300' height='300' viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232D5284' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.12'%3E%3Cpath d='M30,40 a10,10 0 0,1 20,0 c0,10 -10,18 -10,18 c0,0 -10,-8 -10,-18 z'/%3E%3Cpath d='M90,30 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 z'/%3E%3Crect x='150' y='50' width='12' height='30' rx='6' transform='rotate(45 156 65)'/%3E%3Cline x1='146' y1='65' x2='166' y2='65' transform='rotate(45 156 65)'/%3E%3Cpath d='M230,40 v15 a15,15 0 0,0 30,0 v-15'/%3E%3Ccircle cx='245' cy='75' r='8'/%3E%3Cpath d='M40,110 v20 a6,6 0 1,0 12,0 v-20 a6,6 0 1,0 -12,0'/%3E%3Cpolyline points='80,120 90,120 95,105 105,135 110,120 120,120'/%3E%3Crect x='140' y='120' width='30' height='15' rx='3' transform='rotate(-30 155 127)'/%3E%3Ccircle cx='155' cy='127' r='2' transform='rotate(-30 155 127)'/%3E%3Cpath d='M220,140 l15,-15 M230,150 l15,-15 M215,135 l8,-8 M240,125 l8,-8'/%3E%3Crect x='215' y='125' width='22' height='8' transform='rotate(-45 226 129)'/%3E%3Cpath d='M200,200 a10,10 0 0,1 20,0 c0,10 -10,18 -10,18 c0,0 -10,-8 -10,-18 z'/%3E%3Cpath d='M260,190 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 z'/%3E%3Crect x='30' y='210' width='12' height='30' rx='6' transform='rotate(45 36 225)'/%3E%3Cline x1='26' y1='225' x2='46' y2='225' transform='rotate(45 36 225)'/%3E%3Cpath d='M80,200 v15 a15,15 0 0,0 30,0 v-15'/%3E%3Ccircle cx='95' cy='235' r='8'/%3E%3Cpath d='M270,270 v20 a6,6 0 1,0 12,0 v-20 a6,6 0 1,0 -12,0'/%3E%3Cpolyline points='130,280 140,280 145,265 155,295 160,280 170,280'/%3E%3C/g%3E%3C/svg%3E")`
 
 const conversasMock = [
     {
@@ -44,6 +44,13 @@ export default function MensagensPage() {
     const router = useRouter()
     const [viewChat, setViewChat] = useState<string | null>(null)
     const [inputValue, setInputValue] = useState('')
+    const [showEmojis, setShowEmojis] = useState(false)
+    const [showMenu, setShowMenu] = useState(false)
+    const [isRecording, setIsRecording] = useState(false)
+    const [recordingTime, setRecordingTime] = useState(0)
+
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const EMOJIS = ['😀', '😂', '❤️', '👍', '🙏', '🩺', '💊', '🩹']
 
     // Gerenciamento de mensagens para o chat interativo
     const [msgsPorChat, setMsgsPorChat] = useState<Record<string, { id: string, text: string, sender: 'user' | 'other', time: string }[]>>({
@@ -69,6 +76,15 @@ export default function MensagensPage() {
     useEffect(() => {
         scrollToBottom()
     }, [viewChat, msgsPorChat])
+
+    // Lógica para gravação de áudio em tempo real
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isRecording) {
+            timer = setInterval(() => setRecordingTime(prev => prev + 1), 1000)
+        }
+        return () => clearInterval(timer)
+    }, [isRecording])
 
     // Função para tocar som de 'Plop' via Web Audio API
     const playSound = (type: 'send' | 'receive') => {
@@ -106,11 +122,12 @@ export default function MensagensPage() {
         }
     }
 
-    const handleSend = () => {
-        if (!inputValue.trim() || !viewChat) return;
+    const handleSend = (textOverride?: string) => {
+        const text = textOverride || inputValue.trim();
+        if (!text || !viewChat) return;
 
         const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        const newMsg = { id: Date.now().toString(), text: inputValue, sender: 'user' as const, time }
+        const newMsg = { id: Date.now().toString(), text, sender: 'user' as const, time }
 
         setMsgsPorChat(prev => ({
             ...prev,
@@ -119,11 +136,11 @@ export default function MensagensPage() {
         setInputValue('')
         playSound('send')
 
-        // Mock recebimento de resposta após 1.5s
+        // Mock recebimento de resposta após 1.5s (apenas 1 vez por send para não poluir)
         setTimeout(() => {
             const autoReply = {
                 id: (Date.now() + 1).toString(),
-                text: 'Mensagem automática: Estou em atendimento no momento. Responderei em breve.',
+                text: 'Mensagem automática: Recebi sua mensagem. Retornarei assim que possível.',
                 sender: 'other' as const,
                 time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
             }
@@ -140,6 +157,23 @@ export default function MensagensPage() {
         if (e.key === 'Enter') handleSend()
     }
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            handleSend('📎 Arquivo anexado: ' + e.target.files[0].name)
+        }
+    }
+
+    const handleMicClick = () => {
+        if (isRecording) {
+            setIsRecording(false)
+            handleSend(`🎵 Mensagem de Áudio (0:0${recordingTime > 9 ? recordingTime : '0' + recordingTime})`)
+            setRecordingTime(0)
+        } else {
+            setIsRecording(true)
+            setRecordingTime(0)
+        }
+    }
+
     const chatAtivo = conversasMock.find(c => c.id === viewChat)
 
     if (viewChat && chatAtivo) {
@@ -148,7 +182,7 @@ export default function MensagensPage() {
         return (
             <div className="flex flex-col h-screen" style={{ backgroundColor: '#E2E8F0', backgroundImage: bgPattern, backgroundAttachment: 'fixed' }}>
                 {/* Header Chat - Nome DocZap modificado */}
-                <header className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-4 py-3 flex items-center justify-between text-white shadow-[0_4px_20px_rgba(26,54,93,0.3)] z-10 shrink-0">
+                <header className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-4 py-3 flex items-center justify-between text-white shadow-[0_4px_20px_rgba(26,54,93,0.3)] z-20 shrink-0 relative">
                     <div className="flex items-center gap-3">
                         <button onClick={() => setViewChat(null)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors active:scale-90">
                             <ArrowLeft className="w-6 h-6" />
@@ -164,10 +198,17 @@ export default function MensagensPage() {
                             <span className="text-[11px] text-[#D4AF37] font-medium">{chatAtivo.online ? 'online' : 'visto por último hoje'}</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4 text-white/90">
+                    <div className="flex items-center gap-4 text-white/90 relative">
                         <Video className="w-5 h-5 hover:text-white transition-colors cursor-pointer active:scale-90" onClick={() => toast.info('Iniciando videochamada segura...')} />
                         <Phone className="w-5 h-5 hover:text-white transition-colors cursor-pointer active:scale-90" onClick={() => toast.info('Chamada de voz conectando...')} />
-                        <MoreVertical className="w-5 h-5 cursor-pointer active:scale-90" onClick={() => toast.info('Opções da conversa')} />
+                        <MoreVertical className="w-5 h-5 cursor-pointer active:scale-90" onClick={() => setShowMenu(!showMenu)} />
+                        {showMenu && (
+                            <div className="absolute top-10 right-0 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 text-slate-800 font-medium">
+                                <button className="w-full text-left px-4 py-2 text-[14px] hover:bg-slate-50 transition-colors" onClick={() => setShowMenu(false)}>Ver Perfil Profissional</button>
+                                <button className="w-full text-left px-4 py-2 text-[14px] hover:bg-slate-50 transition-colors" onClick={() => setShowMenu(false)}>Pesquisar</button>
+                                <button className="w-full text-left px-4 py-2 text-[14px] hover:bg-slate-50 transition-colors text-red-500" onClick={() => { setShowMenu(false); toast.success('Conversa silenciada'); }}>Silenciar notificações</button>
+                            </div>
+                        )}
                     </div>
                 </header>
 
@@ -195,26 +236,50 @@ export default function MensagensPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-3 bg-[#F1F5F9] border-t border-slate-200/60 pb-8 flex items-end gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-10 shrink-0 relative">
-                    <button onClick={() => toast.info('Abrindo painel de emojis...')} className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5 active:scale-90"><Smile className="w-6 h-6" /></button>
-                    <button onClick={() => toast.info('Anexar arquivo clínico ou imagem...')} className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5 active:scale-90"><Paperclip className="w-6 h-6" /></button>
-                    <div className="flex-1 relative">
-                        <textarea
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Mensagem"
-                            rows={1}
-                            className="w-full bg-white rounded-[24px] py-3 px-5 text-[15px] outline-none border border-slate-200 shadow-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none overflow-hidden min-h-[46px] flex items-center"
-                        />
-                    </div>
-                    {inputValue.trim() ? (
-                        <button onClick={handleSend} className="bg-[#2D5284] text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-transform flex items-center justify-center">
+                <div className="p-3 bg-[#F1F5F9] border-t border-slate-200/60 pb-8 flex items-end gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-20 shrink-0 relative">
+                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+
+                    {showEmojis && (
+                        <div className="absolute bottom-[calc(100%+8px)] left-2 bg-white border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-2xl p-2 flex gap-2">
+                            {EMOJIS.map(emoji => (
+                                <button key={emoji} onClick={() => { setInputValue(prev => prev + emoji); setShowEmojis(false); }} className="text-xl hover:scale-110 transition-transform">{emoji}</button>
+                            ))}
+                        </div>
+                    )}
+
+                    {!isRecording && (
+                        <>
+                            <button onClick={() => setShowEmojis(!showEmojis)} className={`p-2 rounded-full transition-colors mb-0.5 active:scale-90 ${showEmojis ? 'text-blue-500 bg-blue-50' : 'text-slate-500 hover:bg-slate-200'}`}><Smile className="w-6 h-6" /></button>
+                            <button onClick={() => fileInputRef.current?.click()} className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5 active:scale-90"><Paperclip className="w-6 h-6" /></button>
+                            <div className="flex-1 relative">
+                                <textarea
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Mensagem"
+                                    rows={1}
+                                    className="w-full bg-white rounded-[24px] py-3 px-5 text-[15px] outline-none border border-slate-200 shadow-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none overflow-hidden min-h-[46px] flex items-center"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {isRecording && (
+                        <div className="flex-1 bg-white rounded-[24px] border border-red-200 shadow-sm min-h-[46px] flex items-center px-5 mb-0.5 gap-3 animate-pulse">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                            <span className="text-red-500 font-bold text-[14px]">
+                                Gravando 0:0{recordingTime > 9 ? recordingTime : `0${recordingTime}`}
+                            </span>
+                        </div>
+                    )}
+
+                    {inputValue.trim() && !isRecording ? (
+                        <button onClick={() => handleSend()} className="bg-[#2D5284] text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-transform flex items-center justify-center">
                             <Send className="w-5 h-5 ml-1" />
                         </button>
                     ) : (
-                        <button onClick={() => toast.success('Gravando mensagem de áudio...')} className="bg-[#2D5284] text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-transform flex items-center justify-center">
-                            <Mic className="w-5 h-5 fill-current" />
+                        <button onClick={handleMicClick} className={`${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#2D5284] hover:bg-[#1A365D]'} text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-all flex items-center justify-center`}>
+                            {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5 fill-current" />}
                         </button>
                     )}
                 </div>
@@ -224,23 +289,38 @@ export default function MensagensPage() {
 
     return (
         <div className="min-h-screen bg-[#F1F5F9] pb-24 font-sans">
-            {/* Header Lista com o nome solicitado: DocZap */}
-            <header className="bg-gradient-to-br from-[#1A365D] to-[#2D5284] px-5 pt-8 pb-8 rounded-b-[40px] shadow-[0_15px_40px_rgba(26,54,93,0.3)] relative z-20 ring-1 ring-white/10">
-                <div className="flex justify-between items-center mb-8 relative z-10">
-                    <h1 className="text-white font-black text-2xl tracking-tight drop-shadow-md">
-                        Doc<span className="text-[#D4AF37]">Zap</span> <span className="text-sm border border-[#D4AF37]/50 rounded-full px-2 text-[#D4AF37] font-bold bg-[#D4AF37]/10 tracking-widest uppercase ml-1 align-middle">Premium</span>
-                    </h1>
-                    <div className="flex gap-4">
-                        <button className="text-white bg-white/10 p-2.5 rounded-full hover:bg-white/20 transition-colors shadow-sm active:scale-95"><Camera className="w-5 h-5" /></button>
-                        <button className="text-white bg-white/10 p-2.5 rounded-full hover:bg-white/20 transition-colors shadow-sm active:scale-95"><MoreVertical className="w-5 h-5" /></button>
+            {/* Header Lista estilo Dashboard (Clean, Foco na Busca) */}
+            <header className="bg-[#2D5284] px-5 pt-5 pb-8 rounded-b-[24px] shadow-sm relative z-20 mb-8 font-sans">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex flex-col">
+                        <span className="text-white text-[19px] font-bold leading-tight">Joce Moreno</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-end">
+                            <div className="flex items-center bg-[#1A365D]/30 px-2 py-0.5 rounded-full border border-white/10 mb-[2px]">
+                                <span className="text-[14px] font-bold text-[#D4AF37]">Doc</span>
+                                <span className="text-[14px] font-bold text-white ml-[1px]">Zap</span>
+                            </div>
+                            <span className="text-[9px] text-[#D4AF37] font-black uppercase tracking-widest mr-1">Premium</span>
+                        </div>
+                        <Avatar className="w-12 h-12 border border-white/10 shadow-sm">
+                            <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
+                            <AvatarFallback className="bg-[#1A365D] text-white">JM</AvatarFallback>
+                        </Avatar>
                     </div>
                 </div>
-                <div className="relative z-10">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" strokeWidth={2.5} />
+
+                {/* BUSCA OVERLAPPING */}
+                <div className="absolute left-5 right-5 -bottom-6 z-30">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" strokeWidth={2} />
                     <input
-                        placeholder="Buscar consulta, médico ou mensagem..."
-                        className="w-full bg-white rounded-[24px] py-4 pl-12 pr-4 text-[14px] font-bold text-slate-600 shadow-[0_4px_20px_rgba(0,0,0,0.08)] outline-none focus:ring-2 focus:ring-[#D4AF37]/50 placeholder:text-slate-400 border border-white"
+                        type="text"
+                        placeholder="Pesquise por mensagem ou pessoa..."
+                        className="w-full bg-white border-0 rounded-[16px] py-[15px] flex items-center pl-12 pr-12 shadow-[0_8px_20px_rgba(0,0,0,0.12)] focus:ring-0 text-[14px] font-medium text-slate-600 outline-none placeholder:text-slate-400"
                     />
+                    <button className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37] opacity-80 hover:opacity-100 transition-opacity">
+                        <Mic className="w-5 h-5" strokeWidth={2.5} />
+                    </button>
                 </div>
             </header>
 
@@ -257,13 +337,13 @@ export default function MensagensPage() {
                                 boxShadow: '0 4px 15px -4px rgba(26,54,93,0.08), 0 2px 6px -2px rgba(26,54,93,0.04), inset 0 2px 4px rgba(255,255,255,1)'
                             }}
                         >
-                            <div className="relative shrink-0">
-                                <Avatar className="w-13 h-13 border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover:scale-105 transition-transform duration-300">
+                            <div className="relative shrink-0 mr-1 pl-1">
+                                <Avatar className="w-16 h-16 border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300">
                                     <AvatarImage src={conversa.foto} className="object-cover" />
-                                    <AvatarFallback className="bg-slate-100 text-[#1A365D] font-bold text-lg">{conversa.nome[0]}</AvatarFallback>
+                                    <AvatarFallback className="bg-slate-100 text-[#1A365D] font-bold text-xl">{conversa.nome[0]}</AvatarFallback>
                                 </Avatar>
                                 {conversa.online && (
-                                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[2px] border-white shadow-sm"></span>
+                                    <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-[2.5px] border-white shadow-sm z-10"></span>
                                 )}
                             </div>
                             <div className="flex-1 text-left min-w-0 pr-1">
