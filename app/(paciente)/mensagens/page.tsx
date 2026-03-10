@@ -2,19 +2,31 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send, Paperclip, Smile, Mic, Bell, X, Square } from 'lucide-react'
+import { Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send, Paperclip, Mic, X, Square, Reply, Heart, ThumbsUp, Laugh, Frown } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
 import { toast } from 'sonner'
 
-// Novo Padrão de fundo SVG sugerido: tom de gelo (#F1F5F9) com ícones médicos wireframe sutis e distribuídos
+// Novo Padrão de fundo inicial para marcação (O usuário passará o prompt ao Gemini depois)
 const bgPattern = `url("data:image/svg+xml,%3Csvg width='300' height='300' viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232D5284' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.12'%3E%3Cpath d='M30,40 a10,10 0 0,1 20,0 c0,10 -10,18 -10,18 c0,0 -10,-8 -10,-18 z'/%3E%3Cpath d='M90,30 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 z'/%3E%3Crect x='150' y='50' width='12' height='30' rx='6' transform='rotate(45 156 65)'/%3E%3Cline x1='146' y1='65' x2='166' y2='65' transform='rotate(45 156 65)'/%3E%3Cpath d='M230,40 v15 a15,15 0 0,0 30,0 v-15'/%3E%3Ccircle cx='245' cy='75' r='8'/%3E%3Cpath d='M40,110 v20 a6,6 0 1,0 12,0 v-20 a6,6 0 1,0 -12,0'/%3E%3Cpolyline points='80,120 90,120 95,105 105,135 110,120 120,120'/%3E%3Crect x='140' y='120' width='30' height='15' rx='3' transform='rotate(-30 155 127)'/%3E%3Ccircle cx='155' cy='127' r='2' transform='rotate(-30 155 127)'/%3E%3Cpath d='M220,140 l15,-15 M230,150 l15,-15 M215,135 l8,-8 M240,125 l8,-8'/%3E%3Crect x='215' y='125' width='22' height='8' transform='rotate(-45 226 129)'/%3E%3Cpath d='M200,200 a10,10 0 0,1 20,0 c0,10 -10,18 -10,18 c0,0 -10,-8 -10,-18 z'/%3E%3Cpath d='M260,190 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 z'/%3E%3Crect x='30' y='210' width='12' height='30' rx='6' transform='rotate(45 36 225)'/%3E%3Cline x1='26' y1='225' x2='46' y2='225' transform='rotate(45 36 225)'/%3E%3Cpath d='M80,200 v15 a15,15 0 0,0 30,0 v-15'/%3E%3Ccircle cx='95' cy='235' r='8'/%3E%3Cpath d='M270,270 v20 a6,6 0 1,0 12,0 v-20 a6,6 0 1,0 -12,0'/%3E%3Cpolyline points='130,280 140,280 145,265 155,295 160,280 170,280'/%3E%3C/g%3E%3C/svg%3E")`
+
+type MsgType = {
+    id: string;
+    text: string;
+    sender: 'user' | 'other';
+    time: string;
+    date: string;
+    audioUrl?: string; // Para áudio real
+    replyTo?: MsgType | null;
+    reaction?: string;
+}
+
+const getTodayStr = () => new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
 
 const conversasMock = [
     {
         id: '1',
         nome: 'Dr. Lucas Pereira',
-        ultimaMensagem: 'Tudo bem, nos vemos amanhã às 10h.',
         horario: '14:30',
         naoLidas: 2,
         foto: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=150&auto=format&fit=crop',
@@ -23,7 +35,6 @@ const conversasMock = [
     {
         id: '2',
         nome: 'Dra. Ana Silva',
-        ultimaMensagem: 'A receita já está disponível no seu perfil.',
         horario: '12:15',
         naoLidas: 0,
         foto: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=150&auto=format&fit=crop',
@@ -32,7 +43,6 @@ const conversasMock = [
     {
         id: '3',
         nome: 'Suporte DocMatch',
-        ultimaMensagem: 'Como posso ajudar com seu agendamento?',
         horario: 'Ontem',
         naoLidas: 0,
         foto: 'https://i.pravatar.cc/150?u=support',
@@ -44,31 +54,39 @@ export default function MensagensPage() {
     const router = useRouter()
     const [viewChat, setViewChat] = useState<string | null>(null)
     const [inputValue, setInputValue] = useState('')
-    const [showEmojis, setShowEmojis] = useState(false)
-    const [showMenu, setShowMenu] = useState(false)
+
+    // Áudio Real
     const [isRecording, setIsRecording] = useState(false)
     const [recordingTime, setRecordingTime] = useState(0)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+    const audioChunksRef = useRef<Blob[]>([])
+
+    // Ações de Mensagem
+    const [replyingToMsg, setReplyingToMsg] = useState<MsgType | null>(null)
+    const [activeMessageId, setActiveMessageId] = useState<string | null>(null) // Para abrir o menu de reações
+
+    // Double click / Long press timer
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const EMOJIS = ['😀', '😂', '❤️', '👍', '🙏', '🩺', '💊', '🩹']
 
-    // Gerenciamento de mensagens para o chat interativo
-    const [msgsPorChat, setMsgsPorChat] = useState<Record<string, { id: string, text: string, sender: 'user' | 'other', time: string }[]>>({
+    // Gerenciamento Inteligente de Mensagens
+    const [msgsPorChat, setMsgsPorChat] = useState<Record<string, MsgType[]>>({
         '1': [
-            { id: 'm1', text: 'Tudo bem, nos vemos amanhã às 10h.', sender: 'other', time: '14:30' },
-            { id: 'm2', text: 'Perfeito, obrigado doutor!', sender: 'user', time: '14:35' },
+            { id: 'm0', text: 'Bom dia, não esqueça do seu exame de sangue.', sender: 'other', time: '08:00', date: '6 de Março de 2026' },
+            { id: 'm1', text: 'Tudo bem, nos vemos amanhã às 10h.', sender: 'other', time: '14:30', date: getTodayStr() },
+            { id: 'm2', text: 'Perfeito, obrigado doutor!', sender: 'user', time: '14:35', date: getTodayStr() },
         ],
         '2': [
-            { id: 'm3', text: 'A receita já está disponível no seu perfil.', sender: 'other', time: '12:15' },
+            { id: 'm3', text: 'A receita já está disponível no seu perfil.', sender: 'other', time: '12:15', date: getTodayStr() },
         ],
         '3': [
-            { id: 'm4', text: 'Como posso ajudar com seu agendamento?', sender: 'other', time: 'Ontem' },
+            { id: 'm4', text: 'Como posso ajudar com seu agendamento?', sender: 'other', time: '10:00', date: 'Ontem' },
         ]
     })
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
-    // Scroll to bottom helper
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
@@ -77,7 +95,7 @@ export default function MensagensPage() {
         scrollToBottom()
     }, [viewChat, msgsPorChat])
 
-    // Lógica para gravação de áudio em tempo real
+    // Timer do Áudio
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (isRecording) {
@@ -86,8 +104,7 @@ export default function MensagensPage() {
         return () => clearInterval(timer)
     }, [isRecording])
 
-    // Função para tocar som de 'Plop' via Web Audio API
-    const playSound = (type: 'send' | 'receive') => {
+    const playSound = (type: 'send' | 'receive' | 'reaction') => {
         try {
             const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
             const ctx = new AudioContext();
@@ -106,8 +123,7 @@ export default function MensagensPage() {
                 gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                 osc.start(now);
                 osc.stop(now + 0.1);
-            } else {
-                // Som duplo rápido para recebimento
+            } else if (type === 'receive') {
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(600, now);
                 osc.frequency.setValueAtTime(800, now + 0.05);
@@ -116,45 +132,114 @@ export default function MensagensPage() {
                 gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                 osc.start(now);
                 osc.stop(now + 0.15);
+            } else if (type === 'reaction') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
             }
         } catch (e) {
             console.error("Audio blocked by browser policy without active interaction.", e)
         }
     }
 
-    const handleSend = (textOverride?: string) => {
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            const mediaRecorder = new MediaRecorder(stream)
+            mediaRecorderRef.current = mediaRecorder
+            audioChunksRef.current = []
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data)
+                }
+            }
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+                const audioUrl = URL.createObjectURL(audioBlob)
+                handleSend('🎶 Áudio', audioUrl)
+            }
+
+            mediaRecorder.start()
+            setIsRecording(true)
+            setRecordingTime(0)
+        } catch (err) {
+            console.error("Erro ao acessar microfone", err)
+            toast.error("Não foi possível acessar o microfone.")
+        }
+    }
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop()
+            setIsRecording(false)
+            // As tracks devem ser paradas para liberar o uso do microfone
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+        }
+    }
+
+    const handleMicClick = () => {
+        if (isRecording) {
+            stopRecording()
+        } else {
+            startRecording()
+        }
+    }
+
+    const handleSend = (textOverride?: string, audioUrl?: string) => {
         const text = textOverride || inputValue.trim();
         if (!text || !viewChat) return;
 
         const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        const newMsg = { id: Date.now().toString(), text, sender: 'user' as const, time }
+
+        const newMsg: MsgType = {
+            id: Date.now().toString(),
+            text,
+            sender: 'user',
+            time,
+            date: getTodayStr(),
+            replyTo: replyingToMsg,
+            audioUrl
+        }
 
         setMsgsPorChat(prev => ({
             ...prev,
             [viewChat]: [...(prev[viewChat] || []), newMsg]
         }))
+
         setInputValue('')
+        setReplyingToMsg(null)
         playSound('send')
 
-        // Mock recebimento de resposta após 1.5s (apenas 1 vez por send para não poluir)
-        setTimeout(() => {
-            const autoReply = {
-                id: (Date.now() + 1).toString(),
-                text: 'Mensagem automática: Recebi sua mensagem. Retornarei assim que possível.',
-                sender: 'other' as const,
-                time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-            }
-            setMsgsPorChat(prev => ({
-                ...prev,
-                [viewChat]: [...(prev[viewChat] || []), autoReply]
-            }))
-            playSound('receive')
-            toast.info('Nova mensagem recebida!')
-        }, 1500)
+        if (!audioUrl) {
+            // Mock recebimento apenas se for texto
+            setTimeout(() => {
+                const autoReply: MsgType = {
+                    id: (Date.now() + 1).toString(),
+                    text: 'Mensagem recebida!',
+                    sender: 'other',
+                    time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    date: getTodayStr()
+                }
+                setMsgsPorChat(prev => ({
+                    ...prev,
+                    [viewChat]: [...(prev[viewChat] || []), autoReply]
+                }))
+                playSound('receive')
+            }, 1500)
+        }
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') handleSend()
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSend()
+        }
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,15 +248,45 @@ export default function MensagensPage() {
         }
     }
 
-    const handleMicClick = () => {
-        if (isRecording) {
-            setIsRecording(false)
-            handleSend(`🎵 Mensagem de Áudio (0:0${recordingTime > 9 ? recordingTime : '0' + recordingTime})`)
-            setRecordingTime(0)
-        } else {
-            setIsRecording(true)
-            setRecordingTime(0)
-        }
+    // Ações de Mensagem (Reação e Long Press)
+    const handleDoubleClick = (msgId: string) => {
+        if (!viewChat) return;
+        setMsgsPorChat(prev => {
+            const chatMsgs = prev[viewChat].map(msg =>
+                msg.id === msgId ? { ...msg, reaction: '❤️' } : msg
+            )
+            return { ...prev, [viewChat]: chatMsgs }
+        })
+        playSound('reaction')
+        toast.success("Amou essa mensagem!")
+    }
+
+    const handlePointerDown = (msgId: string) => {
+        longPressTimer.current = setTimeout(() => {
+            setActiveMessageId(msgId)
+            if (window.navigator.vibrate) window.navigator.vibrate(50) // Haptic feedback leve
+        }, 500) // 500ms para long press
+    }
+
+    const handlePointerUp = () => {
+        if (longPressTimer.current) clearTimeout(longPressTimer.current)
+    }
+
+    const handleAddReaction = (msgId: string, emoji: string) => {
+        if (!viewChat) return;
+        setMsgsPorChat(prev => {
+            const chatMsgs = prev[viewChat].map(msg =>
+                msg.id === msgId ? { ...msg, reaction: emoji === msg.reaction ? undefined : emoji } : msg // Toggle reaction
+            )
+            return { ...prev, [viewChat]: chatMsgs }
+        })
+        setActiveMessageId(null)
+        playSound('reaction')
+    }
+
+    const initReply = (msg: MsgType) => {
+        setReplyingToMsg(msg)
+        setActiveMessageId(null)
     }
 
     const chatAtivo = conversasMock.find(c => c.id === viewChat)
@@ -180,106 +295,166 @@ export default function MensagensPage() {
         const msgs = msgsPorChat[viewChat] || []
 
         return (
-            <div className="flex flex-col h-screen" style={{ backgroundColor: '#E2E8F0', backgroundImage: bgPattern, backgroundAttachment: 'fixed' }}>
-                {/* Header Chat - Nome DocZap modificado */}
-                <header className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-4 py-3 flex items-center justify-between text-white shadow-[0_4px_20px_rgba(26,54,93,0.3)] z-20 shrink-0 relative">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => setViewChat(null)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors active:scale-90">
-                            <ArrowLeft className="w-6 h-6" />
-                        </button>
-                        <Avatar className="w-10 h-10 border border-white/20 shadow-md">
+            <div className="flex flex-col h-screen" style={{ backgroundColor: '#F1F5F9', backgroundImage: bgPattern, backgroundAttachment: 'fixed' }}>
+                {/* Header Chat */}
+                <header className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-3 py-2.5 flex items-center gap-2 text-white shadow-[0_2px_10px_rgba(26,54,93,0.3)] z-20 shrink-0 relative">
+                    <button onClick={() => setViewChat(null)} className="flex items-center gap-1 hover:bg-white/10 p-1.5 -ml-1 rounded-full transition-colors active:scale-90">
+                        <ArrowLeft className="w-6 h-6" />
+                        <Avatar className="w-10 h-10 border border-white/10">
                             <AvatarImage src={chatAtivo.foto} />
                             <AvatarFallback>{chatAtivo.nome[0]}</AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-[15px] leading-tight drop-shadow-sm">{chatAtivo.nome}</span>
-                            </div>
-                            <span className="text-[11px] text-[#D4AF37] font-medium">{chatAtivo.online ? 'online' : 'visto por último hoje'}</span>
-                        </div>
+                    </button>
+
+                    <div className="flex flex-col flex-1 pl-1 cursor-pointer" onClick={() => toast.info('Ver perfil do contato')}>
+                        <span className="font-bold text-[16px] leading-tight drop-shadow-sm">{chatAtivo.nome}</span>
+                        <span className="text-[12.5px] text-zinc-300 font-medium">{chatAtivo.online ? 'online' : 'visto por último hoje'}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-white/90 relative">
-                        <Video className="w-5 h-5 hover:text-white transition-colors cursor-pointer active:scale-90" onClick={() => toast.info('Iniciando videochamada segura...')} />
-                        <Phone className="w-5 h-5 hover:text-white transition-colors cursor-pointer active:scale-90" onClick={() => toast.info('Chamada de voz conectando...')} />
-                        <MoreVertical className="w-5 h-5 cursor-pointer active:scale-90" onClick={() => setShowMenu(!showMenu)} />
-                        {showMenu && (
-                            <div className="absolute top-10 right-0 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 text-slate-800 font-medium">
-                                <button className="w-full text-left px-4 py-2 text-[14px] hover:bg-slate-50 transition-colors" onClick={() => setShowMenu(false)}>Ver Perfil Profissional</button>
-                                <button className="w-full text-left px-4 py-2 text-[14px] hover:bg-slate-50 transition-colors" onClick={() => setShowMenu(false)}>Pesquisar</button>
-                                <button className="w-full text-left px-4 py-2 text-[14px] hover:bg-slate-50 transition-colors text-red-500" onClick={() => { setShowMenu(false); toast.success('Conversa silenciada'); }}>Silenciar notificações</button>
-                            </div>
-                        )}
+
+                    <div className="flex items-center gap-4 text-white p-1">
+                        <Video className="w-[22px] h-[22px] active:scale-90 transition-transform" onClick={() => toast.info('Iniciando videochamada segura...')} />
+                        <Phone className="w-[20px] h-[20px] active:scale-90 transition-transform" onClick={() => toast.info('Chamada de voz conectando...')} />
+                        <MoreVertical className="w-5 h-5 active:scale-90 transition-transform" />
                     </div>
                 </header>
 
                 {/* Mensagens */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-6 relative z-0 backdrop-blur-[2px]">
-                    <div className="flex justify-center mb-4">
-                        <span className="bg-[#1A365D]/10 backdrop-blur-md border border-white/40 text-[#1A365D] text-[10px] px-3 py-1.5 rounded-2xl uppercase font-black tracking-widest shadow-sm">DocZap Conectado de ponta a ponta</span>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-6 relative z-0" onClick={() => setActiveMessageId(null)}>
+                    <div className="flex justify-center mb-6">
+                        <div className="bg-[#FFF8DD] text-slate-700 text-[11px] px-4 py-2 rounded-lg text-center shadow-sm max-w-[90%] border border-[#E8C55E]/40 font-medium">
+                            🔒 As mensagens são protegidas com criptografia de ponta a ponta. A DocZap não pode ler ou ouvir o que você envia.
+                        </div>
                     </div>
 
-                    {msgs.map((msg) => (
-                        <div key={msg.id} className={`flex flex-col items-${msg.sender === 'user' ? 'end' : 'start'} max-w-[85%] ${msg.sender === 'user' ? 'ml-auto' : 'mr-auto'}`}>
-                            <div className={`p-3 rounded-2xl shadow-[0_2px_4px_rgba(0,0,0,0.1)] text-[14.5px] font-medium relative ${msg.sender === 'user'
-                                ? 'bg-gradient-to-br from-[#E2C358] to-[#D4AF37] text-[#1A365D] rounded-tr-sm border border-[#CBA035]'
-                                : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'
-                                }`}>
-                                {msg.text}
+                    {msgs.map((msg, index) => {
+                        const isFirstOfDay = index === 0 || msgs[index - 1].date !== msg.date;
+                        return (
+                            <div key={msg.id}>
+                                {isFirstOfDay && (
+                                    <div className="flex justify-center my-4">
+                                        <span className="bg-[#E2E8F0]/90 backdrop-blur-sm text-slate-700 font-bold text-[11px] px-3 py-1 rounded-lg uppercase tracking-wider shadow-sm">
+                                            {msg.date}
+                                        </span>
+                                    </div>
+                                )}
+
+                                <div
+                                    className={`flex flex-col max-w-[85%] relative ${msg.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'}`}
+                                >
+                                    {/* Overlay de Reações */}
+                                    {activeMessageId === msg.id && (
+                                        <div className={`absolute z-30 -top-12 flex items-center gap-1 bg-white px-3 py-2 rounded-full shadow-xl border border-slate-100 ${msg.sender === 'user' ? 'right-0' : 'left-0'}`}>
+                                            {['❤️', '👍', '😂', '😮', '😢', '🙏'].map(emoji => (
+                                                <button key={emoji} onClick={(e) => { e.stopPropagation(); handleAddReaction(msg.id, emoji) }} className="text-xl hover:scale-125 transition-transform active:scale-90">{emoji}</button>
+                                            ))}
+                                            <div className="w-px h-6 bg-slate-200 mx-1"></div>
+                                            <button onClick={(e) => { e.stopPropagation(); initReply(msg) }} className="text-slate-500 hover:text-blue-500 transition-colors p-1"><Reply className="w-5 h-5" /></button>
+                                        </div>
+                                    )}
+
+                                    {/* Balão de Mensagem */}
+                                    <div
+                                        onDoubleClick={() => handleDoubleClick(msg.id)}
+                                        onPointerDown={() => handlePointerDown(msg.id)}
+                                        onPointerUp={handlePointerUp}
+                                        onPointerLeave={handlePointerUp}
+                                        className={`p-[3px] rounded-2xl shadow-sm relative transition-opacity ${activeMessageId && activeMessageId !== msg.id ? 'opacity-50' : 'opacity-100'} ${msg.sender === 'user'
+                                                ? 'bg-gradient-to-br from-[#E2C358] to-[#D4AF37] text-[#1A365D] rounded-tr-sm border border-[#CBA035]/60'
+                                                : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'
+                                            }`}>
+
+                                        {/* Box de Resposta (Quote) */}
+                                        {msg.replyTo && (
+                                            <div className={`mx-[5px] mt-[5px] mb-[2px] p-2 rounded-xl text-[13px] border-l-4 ${msg.sender === 'user' ? 'bg-[#1A365D]/10 border-[#1A365D]' : 'bg-slate-100 border-[#2D5284]'}`}>
+                                                <p className="font-bold text-[11px] mb-0.5 opacity-80">{msg.replyTo.sender === 'user' ? 'Você' : chatAtivo.nome}</p>
+                                                <p className="opacity-90 font-medium truncate max-w-[200px]">{msg.replyTo.text}</p>
+                                            </div>
+                                        )}
+
+                                        <div className="px-3 pt-1.5 pb-2 text-[15px] font-medium leading-[1.3] relative min-w-[70px]">
+                                            {msg.audioUrl ? (
+                                                <div className="flex items-center gap-2 pt-1 pb-2">
+                                                    <Mic className="w-5 h-5 opacity-70" />
+                                                    <audio controls src={msg.audioUrl} className="h-8 w-44 rounded-full outline-none" style={{ backgroundColor: 'transparent' }} />
+                                                </div>
+                                            ) : (
+                                                <span className="break-words">{msg.text}</span>
+                                            )}
+
+                                            {/* Hora da mensagem flotando no canto inferior */}
+                                            <span className={`float-right text-[10px] mt-2.5 -mr-1 ml-3 font-bold flex items-center gap-1 ${msg.sender === 'user' ? 'text-[#1A365D]/80' : 'text-slate-400'}`}>
+                                                {msg.time}
+                                                {msg.sender === 'user' && <CheckCheck className="w-[14px] h-[14px] text-blue-600 inline" />}
+                                            </span>
+
+                                            {/* Reação Exibida */}
+                                            {msg.reaction && (
+                                                <div className={`absolute -bottom-3 ${msg.sender === 'user' ? '-left-2' : '-right-2'} bg-white text-[10px] rounded-full px-1.5 py-0.5 shadow-md border border-slate-100 z-10`}>
+                                                    {msg.reaction}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <span className="text-[9px] text-slate-500 font-bold mt-1 pl-1 pr-1 flex items-center gap-1">
-                                {msg.time}
-                                {msg.sender === 'user' && <CheckCheck className="w-3 h-3 text-blue-500 inline" />}
-                            </span>
-                        </div>
-                    ))}
+                        )
+                    })}
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input Area */}
-                <div className="p-3 bg-[#F1F5F9] border-t border-slate-200/60 pb-8 flex items-end gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-20 shrink-0 relative">
+                {/* Input Area (WhatsApp Style Simplificado) */}
+                <div className="bg-[#F6F6F6] p-2 pb-6 flex items-end gap-2 z-20 shrink-0 relative bg-opacity-95 backdrop-blur-md">
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
 
-                    {showEmojis && (
-                        <div className="absolute bottom-[calc(100%+8px)] left-2 bg-white border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.1)] rounded-2xl p-2 flex gap-2">
-                            {EMOJIS.map(emoji => (
-                                <button key={emoji} onClick={() => { setInputValue(prev => prev + emoji); setShowEmojis(false); }} className="text-xl hover:scale-110 transition-transform">{emoji}</button>
-                            ))}
-                        </div>
-                    )}
+                    <div className="flex-1 bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col transition-all">
 
-                    {!isRecording && (
-                        <>
-                            <button onClick={() => setShowEmojis(!showEmojis)} className={`p-2 rounded-full transition-colors mb-0.5 active:scale-90 ${showEmojis ? 'text-blue-500 bg-blue-50' : 'text-slate-500 hover:bg-slate-200'}`}><Smile className="w-6 h-6" /></button>
-                            <button onClick={() => fileInputRef.current?.click()} className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5 active:scale-90"><Paperclip className="w-6 h-6" /></button>
-                            <div className="flex-1 relative">
+                        {/* Preview de Resposta */}
+                        {replyingToMsg && (
+                            <div className="bg-slate-50 border-b border-slate-100 p-2 pl-3 flex items-center justify-between">
+                                <div className="border-l-4 border-blue-400 pl-2">
+                                    <p className="text-[11px] font-bold text-blue-500">{replyingToMsg.sender === 'user' ? 'Respondendo a Você' : chatAtivo.nome}</p>
+                                    <p className="text-[12px] text-slate-500 truncate max-w-[200px]">{replyingToMsg.text}</p>
+                                </div>
+                                <button onClick={() => setReplyingToMsg(null)} className="p-2 text-slate-400 hover:text-red-500 rounded-full active:scale-90"><X className="w-5 h-5" /></button>
+                            </div>
+                        )}
+
+                        {isRecording ? (
+                            <div className="min-h-[46px] flex items-center px-4 gap-3 bg-red-50/50">
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></div>
+                                <span className="text-red-500 font-bold text-[15px]">
+                                    {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                                </span>
+                                <span className="text-[12px] text-red-400 ml-auto animate-pulse">Deslize para cancelar </span>
+                            </div>
+                        ) : (
+                            <div className="flex items-end min-h-[46px] relative px-1">
                                 <textarea
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Mensagem"
                                     rows={1}
-                                    className="w-full bg-white rounded-[24px] py-3 px-5 text-[15px] outline-none border border-slate-200 shadow-sm focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all resize-none overflow-hidden min-h-[46px] flex items-center"
+                                    className="w-full bg-transparent py-3 pl-4 pr-24 text-[16px] outline-none resize-none overflow-hidden max-h-[120px] self-center my-auto"
+                                    style={{ lineHeight: '1.2' }}
                                 />
-                            </div>
-                        </>
-                    )}
 
-                    {isRecording && (
-                        <div className="flex-1 bg-white rounded-[24px] border border-red-200 shadow-sm min-h-[46px] flex items-center px-5 mb-0.5 gap-3 animate-pulse">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                            <span className="text-red-500 font-bold text-[14px]">
-                                Gravando 0:0{recordingTime > 9 ? recordingTime : `0${recordingTime}`}
-                            </span>
-                        </div>
-                    )}
+                                {/* Ações In-Input (Clipe e Câmera) */}
+                                <div className="absolute right-2 bottom-1.5 flex gap-1">
+                                    <button onClick={() => fileInputRef.current?.click()} className="text-slate-400 p-2 hover:bg-slate-100 rounded-full transition-colors active:scale-90"><Paperclip className="w-5 h-5 -rotate-45" /></button>
+                                    <button onClick={() => toast.info('Abrindo câmera nativa...')} className="text-slate-400 p-2 hover:bg-slate-100 rounded-full transition-colors active:scale-90"><Camera className="w-[22px] h-[22px]" /></button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {inputValue.trim() && !isRecording ? (
-                        <button onClick={() => handleSend()} className="bg-[#2D5284] text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-transform flex items-center justify-center">
-                            <Send className="w-5 h-5 ml-1" />
+                        <button onClick={() => handleSend()} className="bg-[#2D5284] text-white w-[46px] h-[46px] rounded-full shadow-md active:scale-90 transition-transform flex items-center justify-center shrink-0 mb-0.5">
+                            <Send className="w-[20px] h-[20px] ml-1" />
                         </button>
                     ) : (
-                        <button onClick={handleMicClick} className={`${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#2D5284] hover:bg-[#1A365D]'} text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-all flex items-center justify-center`}>
-                            {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5 fill-current" />}
+                        <button onClick={handleMicClick} className={`${isRecording ? 'bg-red-500 shadow-red-500/30' : 'bg-[#2D5284]'} text-white w-[46px] h-[46px] rounded-full shadow-md active:scale-90 transition-all flex items-center justify-center shrink-0 mb-0.5`}>
+                            {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-[22px] h-[22px] fill-current" />}
                         </button>
                     )}
                 </div>
@@ -287,82 +462,69 @@ export default function MensagensPage() {
         )
     }
 
+    // LISTA DE CONVERSAS (WhatsApp Style = Flat, sem cards marginais)
     return (
-        <div className="min-h-screen bg-[#F1F5F9] pb-24 font-sans">
-            {/* Header Lista estilo Dashboard (Clean, Foco na Busca) */}
-            <header className="bg-[#2D5284] px-5 pt-5 pb-8 rounded-b-[24px] shadow-sm relative z-20 mb-8 font-sans">
-                <div className="flex justify-between items-center mb-4">
-                    <div className="flex flex-col">
-                        <span className="text-white text-[19px] font-bold leading-tight">Joce Moreno</span>
+        <div className="min-h-screen bg-white pb-24 font-sans">
+            {/* Header Lista estilo Clean WhatsApp/Dashboard */}
+            <header className="bg-[#2D5284] px-5 pt-8 pb-4 shadow-sm relative z-20">
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center text-white">
+                        <span className="text-[22px] font-bold tracking-tight">Doc</span>
+                        <span className="text-[22px] font-black text-[#D4AF37]">Match</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-end">
-                            <div className="flex items-center bg-[#1A365D]/30 px-2 py-0.5 rounded-full border border-white/10 mb-[2px]">
-                                <span className="text-[14px] font-bold text-[#D4AF37]">Doc</span>
-                                <span className="text-[14px] font-bold text-white ml-[1px]">Zap</span>
-                            </div>
-                            <span className="text-[9px] text-[#D4AF37] font-black uppercase tracking-widest mr-1">Premium</span>
-                        </div>
-                        <Avatar className="w-12 h-12 border border-white/10 shadow-sm">
-                            <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
-                            <AvatarFallback className="bg-[#1A365D] text-white">JM</AvatarFallback>
-                        </Avatar>
+                    <div className="flex items-center gap-1.5 text-white/90">
+                        <button className="p-2.5 rounded-full hover:bg-white/10 transition-colors active:scale-90"><Camera className="w-[22px] h-[22px]" /></button>
+                        <button className="p-2.5 rounded-full hover:bg-white/10 transition-colors active:scale-90"><Search className="w-5 h-5" /></button>
+                        <button className="p-2.5 rounded-full hover:bg-white/10 transition-colors active:scale-90"><MoreVertical className="w-5 h-5" /></button>
                     </div>
-                </div>
-
-                {/* BUSCA OVERLAPPING */}
-                <div className="absolute left-5 right-5 -bottom-6 z-30">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" strokeWidth={2} />
-                    <input
-                        type="text"
-                        placeholder="Pesquise por mensagem ou pessoa..."
-                        className="w-full bg-white border-0 rounded-[16px] py-[15px] flex items-center pl-12 pr-12 shadow-[0_8px_20px_rgba(0,0,0,0.12)] focus:ring-0 text-[14px] font-medium text-slate-600 outline-none placeholder:text-slate-400"
-                    />
-                    <button className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37] opacity-80 hover:opacity-100 transition-opacity">
-                        <Mic className="w-5 h-5" strokeWidth={2.5} />
-                    </button>
                 </div>
             </header>
 
-            {/* Lista de Conversas - Relevo 3D nos cards, mantendo grid do app intacto */}
-            <main className="px-5 space-y-2 pt-6">
-                {conversasMock.map((conversa) => {
-                    const ultMsg = msgsPorChat[conversa.id] ? msgsPorChat[conversa.id][msgsPorChat[conversa.id].length - 1] : { text: '', time: conversa.horario }
+            {/* Lista Plana (Edge to Edge, sem gaps brutais) */}
+            <main className="">
+                <div className="px-5 py-3 flex items-center gap-4 text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-100" onClick={() => toast.info('Nova Lista de Transmissão ou Grupo de Saúde')}>
+                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center shadow-sm">
+                        <ArrowLeft className="w-5 h-5 rotate-180 text-[#2D5284]" />
+                    </div>
+                    <span className="font-bold text-[16px] text-[#2D5284]">Nova Solicitação Médica</span>
+                </div>
+
+                {conversasMock.map((conversa, i) => {
+                    const messages = msgsPorChat[conversa.id]
+                    const ultMsg = messages ? messages[messages.length - 1] : { text: '', time: conversa.horario }
                     return (
                         <button
                             key={conversa.id}
                             onClick={() => setViewChat(conversa.id)}
-                            className="w-full flex items-center gap-3 p-3 rounded-[20px] bg-white border border-slate-100 transition-all duration-300 transform active:scale-[0.98] group relative overflow-hidden"
-                            style={{
-                                boxShadow: '0 4px 15px -4px rgba(26,54,93,0.08), 0 2px 6px -2px rgba(26,54,93,0.04), inset 0 2px 4px rgba(255,255,255,1)'
-                            }}
+                            className="w-full flex items-center px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer group"
                         >
-                            <div className="relative shrink-0 mr-1 pl-1">
-                                <Avatar className="w-16 h-16 border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300">
+                            <div className="relative shrink-0 mr-4">
+                                <Avatar className="w-14 h-14">
                                     <AvatarImage src={conversa.foto} className="object-cover" />
-                                    <AvatarFallback className="bg-slate-100 text-[#1A365D] font-bold text-xl">{conversa.nome[0]}</AvatarFallback>
+                                    <AvatarFallback className="bg-[#E2E8F0] text-[#1A365D] font-bold text-xl">{conversa.nome[0]}</AvatarFallback>
                                 </Avatar>
                                 {conversa.online && (
-                                    <span className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-[2.5px] border-white shadow-sm z-10"></span>
+                                    <span className="absolute bottom-[2px] right-[2px] w-[14px] h-[14px] bg-emerald-500 rounded-full border-2 border-white z-10"></span>
                                 )}
                             </div>
-                            <div className="flex-1 text-left min-w-0 pr-1">
-                                <div className="flex justify-between items-center mb-1">
-                                    <h3 className="font-black text-[#1A365D] text-[15.5px] leading-tight truncate tracking-tight">{conversa.nome}</h3>
-                                    <span className={conversa.naoLidas > 0 ? "text-[11px] font-black text-[#D4AF37] whitespace-nowrap" : "text-[11px] font-bold text-slate-400 whitespace-nowrap"}>
+
+                            {/* Border na div interior para replicar a divisória exata do zap */}
+                            <div className={`flex-1 text-left min-w-0 pb-3 pt-1 ${i !== conversasMock.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                                <div className="flex justify-between items-baseline mb-0.5">
+                                    <h3 className="font-bold text-[#1A365D] text-[17px] leading-tight truncate">{conversa.nome}</h3>
+                                    <span className={conversa.naoLidas > 0 ? "text-[12px] font-black text-emerald-500" : "text-[12px] font-medium text-slate-400"}>
                                         {ultMsg.time}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center pr-1">
-                                    <p className={`text-[13px] truncate pr-4 ${conversa.naoLidas > 0 ? 'text-[#1A365D] font-extrabold' : 'text-slate-500 font-medium'}`}>
-                                        {ultMsg.text || conversa.ultimaMensagem}
+                                    <p className={`text-[14.5px] truncate pr-4 ${conversa.naoLidas > 0 ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
+                                        {ultMsg.text}
                                     </p>
-                                    {conversa.naoLidas > 0 ? (
-                                        <div className="bg-[#D4AF37] text-[#1A365D] text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(212,175,55,0.6)] shrink-0">
+
+                                    {conversa.naoLidas > 0 && (
+                                        <div className="bg-emerald-500 text-white text-[11px] font-bold min-w-[20px] h-[20px] px-1.5 rounded-full flex items-center justify-center shrink-0">
                                             {conversa.naoLidas}
                                         </div>
-                                    ) : (
-                                        <CheckCheck className="w-4 h-4 text-blue-400 shrink-0" strokeWidth={3} />
                                     )}
                                 </div>
                             </div>
@@ -371,7 +533,6 @@ export default function MensagensPage() {
                 })}
             </main>
 
-            {/* BottomNav original para não quebrar layout da porta 3001 */}
             <BottomNav activeTab="mensagens" />
         </div>
     )
