@@ -93,7 +93,7 @@ export default function DashboardPage() {
                                 </div>
                             )
                         },
-                        { label: 'Minhas', desc: 'Receitas', href: '/receitas', icon: <Image src="/icone-receitas.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Receitas" /> },
+                        { label: 'Minhas', desc: 'Receitas', href: '/receitas', icon: <Image src="/icone-receitas.png.png" width={48} height={48} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Receitas" /> },
                         { label: 'Comparador', desc: 'de Preços', href: '/comparar-precos', icon: <Image src="/icone-balanca.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Comparador" /> },
                         { label: 'Minha', desc: 'Cesta', href: '/cesta', icon: <Image src="/icone-cesta.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Cesta" /> },
                     ].map((item, i) => (
