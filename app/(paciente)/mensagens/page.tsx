@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send, Paperclip, Mic, X, Square, Reply, Heart, ThumbsUp, Laugh, Frown } from 'lucide-react'
+import { Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send, Paperclip, Mic, X, Square, Reply, Heart, ThumbsUp, Laugh, Frown, Bell } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
 import { toast } from 'sonner'
 
-// Novo Padrão de fundo inicial para marcação (O usuário passará o prompt ao Gemini depois)
-const bgPattern = `url("data:image/svg+xml,%3Csvg width='300' height='300' viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232D5284' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.12'%3E%3Cpath d='M30,40 a10,10 0 0,1 20,0 c0,10 -10,18 -10,18 c0,0 -10,-8 -10,-18 z'/%3E%3Cpath d='M90,30 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 z'/%3E%3Crect x='150' y='50' width='12' height='30' rx='6' transform='rotate(45 156 65)'/%3E%3Cline x1='146' y1='65' x2='166' y2='65' transform='rotate(45 156 65)'/%3E%3Cpath d='M230,40 v15 a15,15 0 0,0 30,0 v-15'/%3E%3Ccircle cx='245' cy='75' r='8'/%3E%3Cpath d='M40,110 v20 a6,6 0 1,0 12,0 v-20 a6,6 0 1,0 -12,0'/%3E%3Cpolyline points='80,120 90,120 95,105 105,135 110,120 120,120'/%3E%3Crect x='140' y='120' width='30' height='15' rx='3' transform='rotate(-30 155 127)'/%3E%3Ccircle cx='155' cy='127' r='2' transform='rotate(-30 155 127)'/%3E%3Cpath d='M220,140 l15,-15 M230,150 l15,-15 M215,135 l8,-8 M240,125 l8,-8'/%3E%3Crect x='215' y='125' width='22' height='8' transform='rotate(-45 226 129)'/%3E%3Cpath d='M200,200 a10,10 0 0,1 20,0 c0,10 -10,18 -10,18 c0,0 -10,-8 -10,-18 z'/%3E%3Cpath d='M260,190 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 z'/%3E%3Crect x='30' y='210' width='12' height='30' rx='6' transform='rotate(45 36 225)'/%3E%3Cline x1='26' y1='225' x2='46' y2='225' transform='rotate(45 36 225)'/%3E%3Cpath d='M80,200 v15 a15,15 0 0,0 30,0 v-15'/%3E%3Ccircle cx='95' cy='235' r='8'/%3E%3Cpath d='M270,270 v20 a6,6 0 1,0 12,0 v-20 a6,6 0 1,0 -12,0'/%3E%3Cpolyline points='130,280 140,280 145,265 155,295 160,280 170,280'/%3E%3C/g%3E%3C/svg%3E")`
+// Fundo exportado via public/
+const bgPattern = `url("/fundo-doczap.svg")`
 
 type MsgType = {
     id: string;
@@ -69,6 +69,7 @@ export default function MensagensPage() {
     const longPressTimer = useRef<NodeJS.Timeout | null>(null)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const cameraInputRef = useRef<HTMLInputElement>(null)
 
     // Gerenciamento Inteligente de Mensagens
     const [msgsPorChat, setMsgsPorChat] = useState<Record<string, MsgType[]>>({
@@ -359,8 +360,8 @@ export default function MensagensPage() {
                                         onPointerUp={handlePointerUp}
                                         onPointerLeave={handlePointerUp}
                                         className={`p-[3px] rounded-2xl shadow-sm relative transition-opacity ${activeMessageId && activeMessageId !== msg.id ? 'opacity-50' : 'opacity-100'} ${msg.sender === 'user'
-                                                ? 'bg-gradient-to-br from-[#E2C358] to-[#D4AF37] text-[#1A365D] rounded-tr-sm border border-[#CBA035]/60'
-                                                : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'
+                                            ? 'bg-gradient-to-br from-[#E2C358] to-[#D4AF37] text-[#1A365D] rounded-tr-sm border border-[#CBA035]/60'
+                                            : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'
                                             }`}>
 
                                         {/* Box de Resposta (Quote) */}
@@ -403,10 +404,11 @@ export default function MensagensPage() {
                 </div>
 
                 {/* Input Area (WhatsApp Style Simplificado) */}
-                <div className="bg-[#F6F6F6] p-2 pb-6 flex items-end gap-2 z-20 shrink-0 relative bg-opacity-95 backdrop-blur-md">
+                <div className="bg-[#F6F6F6] p-2 pb-6 flex items-end gap-2 z-20 shrink-0 relative bg-opacity-95 backdrop-blur-md border-t border-slate-200/60">
                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+                    <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={handleFileChange} />
 
-                    <div className="flex-1 bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden flex flex-col transition-all">
+                    <div className="flex-1 bg-white rounded-[24px] border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col transition-all">
 
                         {/* Preview de Resposta */}
                         {replyingToMsg && (
@@ -442,7 +444,7 @@ export default function MensagensPage() {
                                 {/* Ações In-Input (Clipe e Câmera) */}
                                 <div className="absolute right-2 bottom-1.5 flex gap-1">
                                     <button onClick={() => fileInputRef.current?.click()} className="text-slate-400 p-2 hover:bg-slate-100 rounded-full transition-colors active:scale-90"><Paperclip className="w-5 h-5 -rotate-45" /></button>
-                                    <button onClick={() => toast.info('Abrindo câmera nativa...')} className="text-slate-400 p-2 hover:bg-slate-100 rounded-full transition-colors active:scale-90"><Camera className="w-[22px] h-[22px]" /></button>
+                                    <button onClick={() => cameraInputRef.current?.click()} className="text-slate-400 p-2 hover:bg-slate-100 rounded-full transition-colors active:scale-90"><Camera className="w-[22px] h-[22px]" /></button>
                                 </div>
                             </div>
                         )}
@@ -462,26 +464,41 @@ export default function MensagensPage() {
         )
     }
 
-    // LISTA DE CONVERSAS (WhatsApp Style = Flat, sem cards marginais)
+    // LISTA DE CONVERSAS (WhatsApp Style = Flat, sem cards marginais, cores douradas)
     return (
         <div className="min-h-screen bg-white pb-24 font-sans">
-            {/* Header Lista estilo Clean WhatsApp/Dashboard */}
-            <header className="bg-[#2D5284] px-5 pt-8 pb-4 shadow-sm relative z-20">
-                <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center text-white">
-                        <span className="text-[22px] font-bold tracking-tight">Doc</span>
-                        <span className="text-[22px] font-black text-[#D4AF37]">Match</span>
+            {/* Header Lista estilo Dashboard (A pedido do usuário) */}
+            <header className="bg-gradient-to-br from-[#1A365D] to-[#2D5284] px-5 pt-8 pb-10 rounded-b-[40px] shadow-[0_15px_40px_rgba(26,54,93,0.3)] relative z-20 mb-8 border-b border-white/10 ring-1 ring-white/10">
+                <div className="flex justify-between items-center mb-6 relative z-10">
+                    <div className="flex items-center">
+                        <span className="text-[26px] font-black tracking-tight text-white drop-shadow-sm">Doc<span className="text-[#D4AF37]">Zap</span></span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-white/90">
-                        <button className="p-2.5 rounded-full hover:bg-white/10 transition-colors active:scale-90"><Camera className="w-[22px] h-[22px]" /></button>
-                        <button className="p-2.5 rounded-full hover:bg-white/10 transition-colors active:scale-90"><Search className="w-5 h-5" /></button>
-                        <button className="p-2.5 rounded-full hover:bg-white/10 transition-colors active:scale-90"><MoreVertical className="w-5 h-5" /></button>
+
+                    <div className="flex items-center gap-4">
+                        <button className="relative text-white hover:text-gray-200 transition-colors bg-white/10 p-2.5 rounded-full shadow-sm active:scale-95" onClick={() => router.push('/notificacoes')}>
+                            <Bell strokeWidth={2} className="w-[20px] h-[20px]" />
+                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#EF4444] rounded-full border-2 border-[#1A365D]"></span>
+                        </button>
+                        <Avatar className="w-[46px] h-[46px] border-2 border-white/20 shadow-md">
+                            <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
+                            <AvatarFallback className="bg-[hsl(222,35%,20%)] text-white font-bold">JM</AvatarFallback>
+                        </Avatar>
                     </div>
+                </div>
+
+                {/* BUSCA OVERLAPPING */}
+                <div className="absolute left-5 right-5 -bottom-7 z-30">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-[18px] h-[18px]" strokeWidth={2.5} />
+                    <input
+                        type="text"
+                        placeholder="Pesquise por mensagem ou pessoa..."
+                        className="w-full bg-white border-0 rounded-[20px] py-[16px] flex items-center pl-11 pr-4 shadow-[0_8px_24px_rgba(26,54,93,0.15)] focus:ring-2 focus:ring-[#D4AF37]/40 text-[14px] font-bold text-slate-600 outline-none placeholder:text-slate-400 placeholder:font-medium"
+                    />
                 </div>
             </header>
 
             {/* Lista Plana (Edge to Edge, sem gaps brutais) */}
-            <main className="">
+            <main className="pt-2">
                 <div className="px-5 py-3 flex items-center gap-4 text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-100" onClick={() => toast.info('Nova Lista de Transmissão ou Grupo de Saúde')}>
                     <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center shadow-sm">
                         <ArrowLeft className="w-5 h-5 rotate-180 text-[#2D5284]" />
@@ -499,30 +516,30 @@ export default function MensagensPage() {
                             className="w-full flex items-center px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer group"
                         >
                             <div className="relative shrink-0 mr-4">
-                                <Avatar className="w-14 h-14">
+                                <Avatar className="w-[52px] h-[52px]">
                                     <AvatarImage src={conversa.foto} className="object-cover" />
                                     <AvatarFallback className="bg-[#E2E8F0] text-[#1A365D] font-bold text-xl">{conversa.nome[0]}</AvatarFallback>
                                 </Avatar>
                                 {conversa.online && (
-                                    <span className="absolute bottom-[2px] right-[2px] w-[14px] h-[14px] bg-emerald-500 rounded-full border-2 border-white z-10"></span>
+                                    <span className="absolute bottom-[2px] right-[2px] w-[14px] h-[14px] bg-[#D4AF37] rounded-full border-2 border-white z-10"></span>
                                 )}
                             </div>
 
                             {/* Border na div interior para replicar a divisória exata do zap */}
                             <div className={`flex-1 text-left min-w-0 pb-3 pt-1 ${i !== conversasMock.length - 1 ? 'border-b border-slate-100' : ''}`}>
                                 <div className="flex justify-between items-baseline mb-0.5">
-                                    <h3 className="font-bold text-[#1A365D] text-[17px] leading-tight truncate">{conversa.nome}</h3>
-                                    <span className={conversa.naoLidas > 0 ? "text-[12px] font-black text-emerald-500" : "text-[12px] font-medium text-slate-400"}>
+                                    <h3 className="font-bold text-[#1A365D] text-[16px] leading-tight truncate">{conversa.nome}</h3>
+                                    <span className={conversa.naoLidas > 0 ? "text-[12px] font-black text-[#D4AF37]" : "text-[12px] font-medium text-slate-400"}>
                                         {ultMsg.time}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center pr-1">
-                                    <p className={`text-[14.5px] truncate pr-4 ${conversa.naoLidas > 0 ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
+                                    <p className={`text-[14px] truncate pr-4 ${conversa.naoLidas > 0 ? 'text-[#1A365D] font-bold' : 'text-slate-500'}`}>
                                         {ultMsg.text}
                                     </p>
 
                                     {conversa.naoLidas > 0 && (
-                                        <div className="bg-emerald-500 text-white text-[11px] font-bold min-w-[20px] h-[20px] px-1.5 rounded-full flex items-center justify-center shrink-0">
+                                        <div className="bg-[#D4AF37] text-white text-[11px] font-bold min-w-[20px] h-[20px] px-1.5 rounded-full flex items-center justify-center shrink-0 shadow-sm">
                                             {conversa.naoLidas}
                                         </div>
                                     )}
