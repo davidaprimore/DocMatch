@@ -8,7 +8,7 @@ import { BottomNav } from '@/components/BottomNav'
 import { toast } from 'sonner'
 
 // Padrão de fundo em SVG com símbolos médicos (estetoscópio, pílula, coração, cruz verde simplificados)
-const bgPattern = `url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%231A365D' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.05'%3E%3Cpath d='M20 20v-4h-4v4h-4v4h4v4h4v-4h4v-4h-4z'/%3E%3Cpath d='M80 80v-4h-4v4h-4v4h4v4h4v-4h4v-4h-4z'/%3E%3Crect x='60' y='20' width='16' height='8' rx='4' transform='rotate(45 68 24)'/%3E%3Crect x='20' y='80' width='16' height='8' rx='4' transform='rotate(-45 28 84)'/%3E%3Cpath d='M100 30a6 6 0 0 0-12 0c0 7 12 16 12 16s12-9 12-16a6 6 0 0 0-12 0z'/%3E%3Cpath d='M40 90a6 6 0 0 0-12 0c0 7 12 16 12 16s12-9 12-16a6 6 0 0 0-12 0z'/%3E%3Cpath d='M30 40 A10 10 0 0 1 50 40 L50 60 A5 5 0 0 1 40 60 L40 50'/%3E%3Cpath d='M90 100 A10 10 0 0 1 110 100 L110 120 A5 5 0 0 1 100 120 L100 110'/%3E%3C/g%3E%3C/svg%3E")`
+const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232D5284' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.15'%3E%3Cpath d='M20 20v-4h-4v4h-4v4h4v4h4v-4h4v-4h-4z'/%3E%3Cpath d='M80 80v-4h-4v4h-4v4h4v4h4v-4h4v-4h-4z'/%3E%3Crect x='60' y='20' width='16' height='8' rx='4' transform='rotate(45 68 24)'/%3E%3Crect x='20' y='80' width='16' height='8' rx='4' transform='rotate(-45 28 84)'/%3E%3Cpath d='M100 30a6 6 0 0 0-12 0c0 7 12 16 12 16s12-9 12-16a6 6 0 0 0-12 0z'/%3E%3Cpath d='M40 90a6 6 0 0 0-12 0c0 7 12 16 12 16s12-9 12-16a6 6 0 0 0-12 0z'/%3E%3Cpath d='M30 40 A10 10 0 0 1 50 40 L50 60 A5 5 0 0 1 40 60 L40 50'/%3E%3Cpath d='M90 100 A10 10 0 0 1 110 100 L110 120 A5 5 0 0 1 100 120 L100 110'/%3E%3C/g%3E%3C/svg%3E")`
 
 const conversasMock = [
     {
@@ -165,9 +165,9 @@ export default function MensagensPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4 text-white/90">
-                        <Video className="w-5 h-5 hover:text-white transition-colors cursor-pointer" onClick={() => toast.info('Videochamada indisponível no plano atual.')} />
-                        <Phone className="w-5 h-5 hover:text-white transition-colors cursor-pointer" onClick={() => toast.info('Chamada de voz conectando...')} />
-                        <MoreVertical className="w-5 h-5 cursor-pointer" />
+                        <Video className="w-5 h-5 hover:text-white transition-colors cursor-pointer active:scale-90" onClick={() => toast.info('Iniciando videochamada segura...')} />
+                        <Phone className="w-5 h-5 hover:text-white transition-colors cursor-pointer active:scale-90" onClick={() => toast.info('Chamada de voz conectando...')} />
+                        <MoreVertical className="w-5 h-5 cursor-pointer active:scale-90" onClick={() => toast.info('Opções da conversa')} />
                     </div>
                 </header>
 
@@ -196,8 +196,8 @@ export default function MensagensPage() {
 
                 {/* Input Area */}
                 <div className="p-3 bg-[#F1F5F9] border-t border-slate-200/60 pb-8 flex items-end gap-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-10 shrink-0 relative">
-                    <button className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5"><Smile className="w-6 h-6" /></button>
-                    <button className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5"><Paperclip className="w-6 h-6" /></button>
+                    <button onClick={() => toast.info('Abrindo painel de emojis...')} className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5 active:scale-90"><Smile className="w-6 h-6" /></button>
+                    <button onClick={() => toast.info('Anexar arquivo clínico ou imagem...')} className="text-slate-500 p-2 hover:bg-slate-200 rounded-full transition-colors mb-0.5 active:scale-90"><Paperclip className="w-6 h-6" /></button>
                     <div className="flex-1 relative">
                         <textarea
                             value={inputValue}
@@ -213,7 +213,7 @@ export default function MensagensPage() {
                             <Send className="w-5 h-5 ml-1" />
                         </button>
                     ) : (
-                        <button className="bg-[#2D5284] text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-transform flex items-center justify-center">
+                        <button onClick={() => toast.success('Gravando mensagem de áudio...')} className="bg-[#2D5284] text-white p-3.5 mb-0.5 rounded-full shadow-[0_4px_10px_rgba(45,82,132,0.3)] active:scale-90 transition-transform flex items-center justify-center">
                             <Mic className="w-5 h-5 fill-current" />
                         </button>
                     )}
@@ -245,25 +245,25 @@ export default function MensagensPage() {
             </header>
 
             {/* Lista de Conversas - Relevo 3D nos cards, mantendo grid do app intacto */}
-            <main className="px-5 space-y-4 pt-10">
+            <main className="px-5 space-y-2 pt-6">
                 {conversasMock.map((conversa) => {
                     const ultMsg = msgsPorChat[conversa.id] ? msgsPorChat[conversa.id][msgsPorChat[conversa.id].length - 1] : { text: '', time: conversa.horario }
                     return (
                         <button
                             key={conversa.id}
                             onClick={() => setViewChat(conversa.id)}
-                            className="w-full flex items-center gap-4 p-4 rounded-[28px] bg-white border border-slate-100 transition-all duration-300 transform active:scale-[0.98] group relative overflow-hidden"
+                            className="w-full flex items-center gap-3 p-3 rounded-[20px] bg-white border border-slate-100 transition-all duration-300 transform active:scale-[0.98] group relative overflow-hidden"
                             style={{
-                                boxShadow: '0 8px 24px -6px rgba(26,54,93,0.1), 0 4px 10px -4px rgba(26,54,93,0.06), inset 0 2px 4px rgba(255,255,255,1)'
+                                boxShadow: '0 4px 15px -4px rgba(26,54,93,0.08), 0 2px 6px -2px rgba(26,54,93,0.04), inset 0 2px 4px rgba(255,255,255,1)'
                             }}
                         >
                             <div className="relative shrink-0">
-                                <Avatar className="w-16 h-16 border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.08)] group-hover:scale-105 transition-transform duration-300">
+                                <Avatar className="w-13 h-13 border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.06)] group-hover:scale-105 transition-transform duration-300">
                                     <AvatarImage src={conversa.foto} className="object-cover" />
-                                    <AvatarFallback className="bg-slate-100 text-[#1A365D] font-bold text-xl">{conversa.nome[0]}</AvatarFallback>
+                                    <AvatarFallback className="bg-slate-100 text-[#1A365D] font-bold text-lg">{conversa.nome[0]}</AvatarFallback>
                                 </Avatar>
                                 {conversa.online && (
-                                    <span className="absolute bottom-0 right-1 w-4 h-4 bg-emerald-500 rounded-full border-[3px] border-white shadow-sm"></span>
+                                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[2px] border-white shadow-sm"></span>
                                 )}
                             </div>
                             <div className="flex-1 text-left min-w-0 pr-1">
