@@ -1,0 +1,10 @@
+eb8bab2|chore: fix lint errors and finalize UI 3D refinements
+ebc2423|style: premium 3D UI refinements (contrast & depth), enable profile editing and notification settings
+c15f95b|style: refine dashboard icon, create messages screen and menu page
+7aff163|feat: implement monetization strategy (plans, trial, slot rapido) and migrate to next.js 15
+edf38e4|chore: reestrutura arquitetura movendo projeto vite para a raiz e remove dependencias antigas
+9d1458a|Organiza+º+úo estrutural, integra+º+úo do Pro-Max dashboard e atualiza+º+úo cont+¡nua
+76b2b10|fix: resolve typescript types and update frontend ui configs
+d94c89b|feat: setup inicial do DocMatch
+fca63c8|feat: initial commit
+c6476bd|Initial commit from Create Next App
