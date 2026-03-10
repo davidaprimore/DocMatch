@@ -1,7 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     extend: {
       colors: {
@@ -48,6 +52,13 @@ module.exports = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // DocMatch brand colours
+        brand: {
+          blue: "#2D5284",
+          'blue-dark': "#1A365D",
+          gold: "#D4AF37",
+          'gold-dark': "#B8860B",
+        },
       },
       borderRadius: {
         xl: "calc(var(--radius) + 4px)",
@@ -55,6 +66,10 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         xs: "calc(var(--radius) - 6px)",
+      },
+      fontFamily: {
+        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-plus-jakarta)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
@@ -72,11 +87,21 @@ module.exports = {
           "0%,70%,100%": { opacity: "1" },
           "20%,50%": { opacity: "0" },
         },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
+        "fade-in": "fade-in 0.3s ease-out forwards",
+        "slide-up": "slide-up 0.4s ease-out forwards",
       },
     },
   },

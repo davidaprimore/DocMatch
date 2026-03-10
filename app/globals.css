@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 96%;
+    --foreground: 222 47% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 18%;
+    --primary: 203 40% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 203 30% 95%;
+    --secondary-foreground: 203 40% 39%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 45 70% 47%;
+    --accent-foreground: 222 47% 18%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 203 40% 39%;
+    --radius: 0.75rem;
+    --font-plus-jakarta: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-dm-sans);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* Hide scrollbar for mobile carousels */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Gold Gradient */
+.gold-gradient { background: linear-gradient(135deg, #C9A227 0%, #A8841D 100%); }
+
+/* Safe Area for Mobile PWA */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+/* Card Shadows */
+.card-shadow { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.card-shadow:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+/* DocMatch Premium Shadows */
+.shadow-premium {
+  box-shadow: 0 32px 64px -12px rgba(26,54,93,0.28), 0 16px 32px -8px rgba(26,54,93,0.18), inset 0 2px 4px rgba(255,255,255,0.8);
+}
+.shadow-card {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
