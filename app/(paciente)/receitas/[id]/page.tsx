@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { QRCodeSVG } from 'qrcode.react'
 import {
@@ -96,11 +96,12 @@ function MedRowGenerico({ med, generico, index, isLast }: { med: typeof receitaM
     )
 }
 
-export default function ReceitaDetalhePage({ params }: { params: { id: string } }) {
+export default function ReceitaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id: paramsId } = use(params)
     const router = useRouter()
     const [activeTab, setActiveTab] = useState<'original' | 'generico'>('original')
 
-    const receitaId = params?.id ?? receitaMock.id
+    const receitaId = paramsId ?? receitaMock.id
     const medico = medicosMock.find(m => m.id === receitaMock.medico_id) ?? medicosMock[0]
 
     const receitaCode = generateReceitaCode(receitaId)

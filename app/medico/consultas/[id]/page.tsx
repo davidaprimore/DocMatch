@@ -1,14 +1,16 @@
 'use client'
 
+import { use } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Clock, MapPin, Video, User, Phone, Clipboard, FileText, CheckCircle, ChevronRight } from 'lucide-react'
 import { consultasMock } from '@/data/mockData'
 import { toast } from 'sonner'
 
-export default function DetalheConsultaMedicoPage({ params }: { params: { id: string } }) {
+export default function DetalheConsultaMedicoPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params)
     const router = useRouter()
-    // No Next.js 15, params pode ser uma promise ou objeto dependendo do setup, aqui usamos como objeto sync para simplicidade mock
-    const consulta = consultasMock.find(c => c.id === params.id) || consultasMock[0]
+    // No Next.js 15, params é uma promise
+    const consulta = consultasMock.find(c => c.id === id) || consultasMock[0]
 
     const handleFinalizar = () => {
         toast.success('Consulta finalizada! Prontuário salvo.')
