@@ -35,71 +35,69 @@ export function Header({
 
     return (
         <header className={cn(
-            "bg-[#2D5284] px-5 pt-3 pb-8 rounded-b-[32px] shadow-md relative z-10 mb-6",
+            "bg-[#2D5284] px-5 pt-2 pb-7 rounded-b-[28px] shadow-lg relative z-10 mb-6",
             className
         )}>
-            {/* Linha Superior: Back Button/Avatar e Logo */}
-            <div className="flex justify-between items-start -mb-1">
-                <div className="flex items-center gap-3">
+            {/* Linha Superior: Logo e Ícones (Agora alinhados horizontalmente para reduzir espaço vertical) */}
+            <div className="flex justify-between items-center mb-1">
+                <div className="flex items-center gap-2">
                     {variant === 'page' && showBackButton && (
                         <button 
                             onClick={onBack || (() => router.back())} 
-                            className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95 mt-1"
+                            className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                     )}
                     
-                    {variant === 'dashboard' && userAvatar && (
-                        <div className="flex items-center gap-3 cursor-pointer group" onClick={onAvatarClick}>
-                            <div className="w-14 h-14 rounded-2xl border-2 border-white/20 overflow-hidden shadow-sm group-hover:scale-105 transition-transform">
-                                <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex flex-col mt-1">
-                                <span className="text-white/80 text-[11px] font-medium leading-none mb-0.5 whitespace-nowrap">Olá,</span>
-                                <span className="text-white text-[15px] font-bold leading-none whitespace-nowrap">{userName}</span>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {variant === 'page' && title && (
-                        <h1 className="text-white font-bold text-[18px] mt-2 ml-1">{title}</h1>
-                    )}
-                    {variant === 'page' && !title && children && (
-                        <div className="mt-2">{children}</div>
-                    )}
-                </div>
-                
-                {/* Lado Direito: Logo e Ícones abaixo dele */}
-                <div className="flex flex-col items-end">
-                    {/* Logo DocMatch/Zap */}
-                    <div className="flex items-center cursor-pointer mb-1" onClick={() => router.push('/dashboard')}>
-                        <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                        <span className="text-[18px] font-bold text-white ml-[1px] leading-none">
+                    {/* Logo DocMatch/Zap — Alinhado à esquerda na variante page para dar espaço ao título */}
+                    <div className="flex items-center cursor-pointer" onClick={() => router.push('/dashboard')}>
+                        <span className="text-[17px] font-black text-[#D4AF37]">Doc</span>
+                        <span className="text-[17px] font-black text-white ml-[1px]">
                             {(title === 'DocZap' || title === 'Mensagens' || className?.includes('doczap')) ? 'Zap' : 'Match'}
                         </span>
                     </div>
-
-                    {/* Ícones (Sino e Menu) - Alinhados à direita do DocMatch e mais próximos */}
-                    <div className="flex items-center gap-3 pr-1 -mt-1">
-                        {showNotifications && (
-                            <button 
-                                className="relative text-white hover:text-gray-200 transition-colors p-1" 
-                                onClick={() => router.push('/notificacoes')}
-                            >
-                                <Bell className="w-5 h-5 text-white shadow-sm" />
-                                <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold border border-[#2D5284] shadow-sm">3</span>
-                            </button>
-                        )}
-                        
-                        <button 
-                            className="text-white hover:text-gray-200 transition-colors p-1"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        >
-                            <Menu className="w-6 h-6 text-white shadow-sm" />
-                        </button>
-                    </div>
                 </div>
+                
+                {/* Lado Direito: Ícones (Sino e Menu) — Mais próximos e alinhados */}
+                <div className="flex items-center gap-2">
+                    {showNotifications && (
+                        <button 
+                            className="relative text-white hover:text-gray-200 transition-colors p-1.5" 
+                            onClick={() => router.push('/notificacoes')}
+                        >
+                            <Bell className="w-5 h-5" />
+                            <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold border border-[#2D5284]">3</span>
+                        </button>
+                    )}
+                    
+                    <button 
+                        className="text-white hover:text-gray-200 transition-colors p-1.5"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Segunda Linha: Título ou Informações do Usuário */}
+            <div className="mt-2 flex items-center justify-between">
+                {variant === 'dashboard' && userAvatar ? (
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={onAvatarClick}>
+                        <div className="w-12 h-12 rounded-xl border-2 border-white/20 overflow-hidden shadow-md group-hover:scale-105 transition-transform">
+                            <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-white/70 text-[11px] font-medium leading-none mb-1">Olá,</span>
+                            <span className="text-white text-[16px] font-black leading-none">{userName}</span>
+                        </div>
+                    </div>
+                ) : variant === 'page' && (title || children) ? (
+                    <div className="flex items-center gap-2">
+                        {title && <h1 className="text-white font-black text-[18px] tracking-tight">{title}</h1>}
+                        {!title && children && children}
+                    </div>
+                ) : null}
             </div>
 
             {/* Menu Suspenso Elegante (Sanduíche) */}

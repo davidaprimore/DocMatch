@@ -52,10 +52,10 @@ export default function ReceitasPage() {
                     const st = statusConfig[receita.status]
 
                     return (
-                        <button
+                        <div
                             key={receita.id}
                             onClick={() => router.push(`/receitas/${receita.id}`)}
-                            className={`${glassCard} rounded-[22px] w-full text-left overflow-hidden active:scale-[0.99] transition-transform`}
+                            className={`${glassCard} rounded-[22px] w-full text-left overflow-hidden active:scale-[0.99] transition-transform cursor-pointer`}
                         >
                             {/* Foto + nome + especialidade + status */}
                             <div className="flex items-center justify-between px-4 pt-4 pb-3 gap-3">
@@ -134,7 +134,7 @@ export default function ReceitasPage() {
                                     </div>
                                 </div>
                             </div>
-                        </button>
+                        </div>
                     )
                 })}
             </main>
