@@ -1,73 +1,134 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ShieldCheck, Pill, ShoppingCart, Info, ChevronRight, Download, Share2, Calendar } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
+import {
+    ArrowLeft, ShieldCheck, ShoppingCart, ChevronRight,
+    Download, Share2, Calendar, Zap, ChevronDown
+} from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
 import { receitaMock, medicosMock } from '@/data/mockData'
 import { dateToDisplay } from '@/lib/utils/masks'
+import { generateReceitaCode, formatReceitaCode, generateQRData } from '@/lib/utils/receitaCode'
 
 // Mapa de medicamentos comerciais → genéricos correspondentes
-const genericosMap: Record<string, { nome: string; concentracao: string; obs?: string }[]> = {
+const genericosMap: Record<string, { nome: string; concentracao: string; obs: string }[]> = {
     'Dipirona Sódica 500mg': [
-        { nome: 'Dipirona Sódica (Genérico)', concentracao: '500mg', obs: 'Equivalente terapêutico idêntico' },
-        { nome: 'Novalgina 500mg', concentracao: '500mg', obs: 'Referência comercial' },
+        { nome: 'Dipirona Sódica (Genérico)', concentracao: '500mg', obs: 'Bioequivalente aprovado pela ANVISA' },
+        { nome: 'Novalgina 500mg', concentracao: '500mg', obs: 'Medicamento de referência' },
     ],
     'Amoxicilina 500mg': [
         { nome: 'Amoxicilina (Genérico)', concentracao: '500mg', obs: 'Mesmo princípio ativo — bioequivalente' },
-        { nome: 'Amoxil 500mg', concentracao: '500mg', obs: 'Referência de marca' },
+        { nome: 'Amoxil 500mg', concentracao: '500mg', obs: 'Medicamento de referência' },
     ],
     'Omeprazol 20mg': [
         { nome: 'Omeprazol (Genérico)', concentracao: '20mg', obs: 'Bioequivalente aprovado pela ANVISA' },
-        { nome: 'Peprazol 20mg', concentracao: '20mg', obs: 'Versão similar' },
+        { nome: 'Peprazol 20mg', concentracao: '20mg', obs: 'Medicamento similar' },
     ],
 }
 
-// QR Code SVG simples — padrão de módulos preto/branco
-const QRCodeDisplay = ({ code }: { code: string }) => {
-    // Padrão fixo de módulos 17x17 para visual de QRCode (decorativo premium)
-    const pattern = [
-        [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0],
-        [1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1],
-        [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0],
-        [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1],
-        [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0],
-        [1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1],
-    ]
-    const size = 7
-    return (
-        <svg width={17 * size} height={17 * size} viewBox={`0 0 ${17 * size} ${17 * size}`} xmlns="http://www.w3.org/2000/svg">
-            {pattern.map((row, r) =>
-                row.map((cell, c) =>
-                    cell ? (
-                        <rect key={`${r}-${c}`} x={c * size} y={r * size} width={size} height={size} fill="#1A365D" rx="1" />
-                    ) : null
-                )
-            )}
-        </svg>
-    )
-}
+// Ícone SVG elegante de cápsula — desenhado à mão
+const CapsuleIcon = ({ className = 'w-4 h-4', color = 'currentColor' }: { className?: string; color?: string }) => (
+    <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="8" width="20" height="8" rx="4" stroke={color} strokeWidth="1.5" />
+        <line x1="12" y1="8" x2="12" y2="16" stroke={color} strokeWidth="1.5" />
+        <rect x="2" y="8" width="10" height="8" rx="4" fill={color} fillOpacity="0.15" />
+    </svg>
+)
 
 const glassCard = `bg-white/80 backdrop-blur-md border border-white/90 shadow-[0_8px_32px_rgba(31,62,109,0.10),0_2px_8px_rgba(31,62,109,0.05),inset_0_1px_2px_rgba(255,255,255,0.95)]`
 
+// Card de medicamento individual com toggle de genérico
+function MedicamentoCard({ med }: { med: typeof receitaMock.medicamentos[0] }) {
+    const [showGenericos, setShowGenericos] = useState(false)
+    const genericos = genericosMap[med.nome] ?? []
+
+    return (
+        <div className="p-4">
+            {/* Medicamento exatamente como prescrito */}
+            <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-start gap-3 flex-1">
+                    <div className="w-9 h-9 rounded-xl bg-[#2D5284]/8 border border-[#2D5284]/12 flex items-center justify-center shrink-0 mt-0.5">
+                        <CapsuleIcon className="w-5 h-5" color="#2D5284" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-[14px] text-[#1A365D] leading-tight">{med.nome}</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{med.principio_ativo} · {med.concentracao} · {med.forma_farmaceutica}</p>
+                    </div>
+                </div>
+                <span className="bg-[#2D5284]/8 text-[#2D5284] text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 border border-[#2D5284]/12">
+                    {med.quantidade} un.
+                </span>
+            </div>
+
+            {/* Posologia — destaque azul */}
+            <div className="bg-gradient-to-r from-blue-50/80 to-slate-50/60 rounded-xl px-3 py-2.5 mb-3 border border-blue-100/60">
+                <p className="text-[12px] text-[#2D5284] font-semibold leading-relaxed">{med.posologia}</p>
+                {med.uso_continuo && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                        <p className="text-[11px] text-amber-700 font-bold">Uso contínuo</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Botão para revelar genéricos */}
+            {genericos.length > 0 && (
+                <>
+                    <button
+                        onClick={() => setShowGenericos(!showGenericos)}
+                        className="w-full flex items-center justify-between text-left px-3 py-2 rounded-xl border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 transition-all active:scale-[0.99]"
+                    >
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-3.5 h-3.5 text-slate-400" strokeWidth={1.5} />
+                            <span className="text-[12px] text-slate-500 font-semibold">Ver opções de genérico</span>
+                        </div>
+                        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showGenericos ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Genéricos expandíveis */}
+                    {showGenericos && (
+                        <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden">
+                            <div className="px-3 py-1.5 bg-slate-100/70">
+                                <p className="text-[10px] text-slate-500 font-bold tracking-wide uppercase">Alternativas genéricas ao prescrito</p>
+                            </div>
+                            <div className="divide-y divide-slate-100">
+                                {genericos.map((gen, j) => (
+                                    <div key={j} className="px-3 py-2.5 flex items-start justify-between gap-2">
+                                        <div className="flex items-start gap-2">
+                                            <CapsuleIcon className="w-4 h-4 mt-0.5 shrink-0" color="#64748b" />
+                                            <div>
+                                                <p className="text-[12px] font-bold text-slate-700">{gen.nome}</p>
+                                                <p className="text-[10px] text-slate-400 mt-0.5">{gen.obs}</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-[11px] font-semibold text-slate-400 shrink-0">{gen.concentracao}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    )
+}
+
 export default function ReceitaDetalhePage({ params }: { params: { id: string } }) {
     const router = useRouter()
+    const receitaId = params?.id ?? receitaMock.id
     const medico = medicosMock.find(m => m.id === receitaMock.medico_id) ?? medicosMock[0]
+
+    // Geração determinística do código e QRData com base no ID da receita
+    const receitaCode = generateReceitaCode(receitaId)
+    const receitaCodeFormatted = formatReceitaCode(receitaCode)
+    const qrData = generateQRData(receitaId, medico.id)
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-28 font-sans">
 
-            {/* HEADER — padrão pt-4 pb-12 */}
+            {/* HEADER — padrão pt-4 pb-12, com card overlapping */}
             <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-[0_8px_24px_rgba(45,82,132,0.35)] relative z-20">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -87,21 +148,24 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                         </div>
                     </div>
                 </div>
-            </header>
 
-            <div className="px-5 -mt-5 space-y-4">
-
-                {/* Status badge + validade */}
-                <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-emerald-700 font-bold text-[13px]">Receita Ativa</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-400 text-[12px]">
-                        <Calendar className="w-3.5 h-3.5" />
-                        Válida até {dateToDisplay(receitaMock.validade)}
+                {/* Card de status overlapping — metade no azul, metade fora */}
+                <div className="absolute left-5 right-5 -bottom-[28px] z-30">
+                    <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                            <span className="text-emerald-700 font-bold text-[13px]">Receita Ativa</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[12px]">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>Válida até {dateToDisplay(receitaMock.validade)}</span>
+                        </div>
                     </div>
                 </div>
+            </header>
+
+            {/* Espaço para o card overlapping */}
+            <div className="mt-12 px-5 space-y-4">
 
                 {/* Médico prescritor */}
                 <div className={`${glassCard} rounded-[22px] p-4 flex items-center gap-4`}>
@@ -111,111 +175,73 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                         <p className="text-[13px] text-[#2D5284] font-semibold">{medico.especialidade}</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">{medico.crm}</p>
                     </div>
-                    <div className="flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <div className="flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                         <span className="text-emerald-700 text-[10px] font-bold">Verificado</span>
                     </div>
                 </div>
 
-                {/* QR Code + Código de Validação — estilo pergaminho premium */}
+                {/* QRCode Real + Código */}
                 <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
-                    {/* Faixa dourada superior */}
+                    {/* Barra superior */}
                     <div className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-4 py-2.5 flex items-center justify-between">
-                        <p className="text-white/80 text-[11px] font-semibold tracking-wider uppercase">Código de Validação</p>
-                        <div className="flex gap-2">
-                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Compartilhar">
-                                <Share2 className="w-4 h-4" />
-                            </button>
-                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Baixar">
-                                <Download className="w-4 h-4" />
-                            </button>
+                        <p className="text-white/80 text-[11px] font-semibold tracking-wider uppercase">Código de Validação — Farmácia</p>
+                        <div className="flex gap-3">
+                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Compartilhar"><Share2 className="w-4 h-4" /></button>
+                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Baixar"><Download className="w-4 h-4" /></button>
                         </div>
                     </div>
-                    {/* QR Code centralizado */}
-                    <div className="p-6 flex flex-col items-center">
-                        <div className="bg-white p-4 rounded-2xl shadow-[0_4px_20px_rgba(26,54,93,0.12)] border border-slate-100/60 mb-4">
-                            <QRCodeDisplay code={receitaMock.qr_code ?? 'DOCMATCH-REC-001-20240310'} />
+
+                    {/* QRCode e Código — layout horizontal compacto */}
+                    <div className="p-5 flex items-center gap-5">
+                        {/* QRCode real - qrcode.react */}
+                        <div className="bg-white rounded-2xl p-3 shadow-[0_4px_16px_rgba(26,54,93,0.10)] border border-slate-100/60 shrink-0">
+                            <QRCodeSVG
+                                value={qrData}
+                                size={120}
+                                level="M"
+                                fgColor="#1A365D"
+                                bgColor="#FFFFFF"
+                                includeMargin={false}
+                            />
                         </div>
-                        {/* Código alfanumérico abaixo do QR */}
-                        <div className="bg-[#F0F4F8] border border-slate-200/80 rounded-xl px-5 py-2.5 text-center">
-                            <p className="text-[22px] font-black text-[#1A365D] tracking-[0.2em] font-mono">
-                                {(receitaMock.qr_code ?? 'DOCMATCH-REC-001-20240310').replace('DOCMATCH-REC-', '').replace('-20240310', '')}
+
+                        {/* Código formatado */}
+                        <div className="flex-1">
+                            <p className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase mb-2">Código único</p>
+                            <div className="bg-[#EEF2F7] rounded-xl px-3 py-2.5 border border-slate-200/60">
+                                <p className="text-[20px] font-black text-[#1A365D] tracking-[0.22em] font-mono leading-none">
+                                    {receitaCodeFormatted}
+                                </p>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-2 leading-snug">
+                                Apresente o QRCode ou este código na farmácia
                             </p>
-                            <p className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">Apresente este código na farmácia</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Medicamentos — com genéricos embutidos */}
+                {/* Medicamentos — prescrição original primeiro, genérico por toggle */}
                 <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
                     <div className="px-4 pt-4 pb-3 flex items-center gap-2 border-b border-slate-100/80">
                         <div className="w-7 h-7 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-                            <Pill className="w-4 h-4 text-[#D4AF37]" />
+                            <CapsuleIcon className="w-4 h-4" color="#D4AF37" />
                         </div>
                         <h3 className="font-bold text-[#1A365D] text-[14px]">Medicamentos Prescritos</h3>
-                        <span className="ml-auto bg-blue-50 text-[#2D5284] text-[11px] font-bold px-2 py-0.5 rounded-full">{receitaMock.medicamentos.length}</span>
+                        <span className="ml-auto bg-blue-50 text-[#2D5284] text-[11px] font-bold px-2 py-0.5 rounded-full border border-blue-100">{receitaMock.medicamentos.length}</span>
                     </div>
 
                     <div className="divide-y divide-slate-100/80">
-                        {receitaMock.medicamentos.map((med, i) => {
-                            const genericos = genericosMap[med.nome] ?? []
-                            return (
-                                <div key={i} className="p-4">
-                                    {/* Medicamento prescrito */}
-                                    <div className="flex items-start justify-between gap-3 mb-3">
-                                        <div className="flex items-start gap-3 flex-1">
-                                            <div className="w-9 h-9 rounded-xl bg-[#2D5284]/10 flex items-center justify-center shrink-0 mt-0.5">
-                                                <Pill className="w-4 h-4 text-[#2D5284]" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="font-bold text-[14px] text-[#1A365D] leading-tight">{med.nome}</p>
-                                                <p className="text-[11px] text-slate-400 mt-0.5">{med.principio_ativo} · {med.concentracao} · {med.forma_farmaceutica}</p>
-                                            </div>
-                                        </div>
-                                        <span className="bg-slate-100 text-slate-600 text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0">{med.quantidade} un.</span>
-                                    </div>
-
-                                    {/* Posologia */}
-                                    <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/60 rounded-xl px-3 py-2.5 mb-3 border border-blue-100/60">
-                                        <p className="text-[12px] text-[#2D5284] font-semibold leading-relaxed">{med.posologia}</p>
-                                        {med.uso_continuo && (
-                                            <div className="flex items-center gap-1.5 mt-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                                                <p className="text-[11px] text-amber-700 font-bold">Uso contínuo</p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Seção de genéricos — claramente separada */}
-                                    {genericos.length > 0 && (
-                                        <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 overflow-hidden">
-                                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-100/70">
-                                                <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                                <p className="text-[11px] text-slate-500 font-semibold">Opções de genérico — alternativas ao prescrito</p>
-                                            </div>
-                                            <div className="divide-y divide-slate-100">
-                                                {genericos.map((gen, j) => (
-                                                    <div key={j} className="px-3 py-2.5 flex items-start justify-between gap-2">
-                                                        <div>
-                                                            <p className="text-[12px] font-bold text-slate-700">{gen.nome}</p>
-                                                            {gen.obs && <p className="text-[10px] text-slate-400 mt-0.5">{gen.obs}</p>}
-                                                        </div>
-                                                        <span className="text-[11px] font-semibold text-slate-500 shrink-0">{gen.concentracao}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )
-                        })}
+                        {receitaMock.medicamentos.map((med, i) => (
+                            <MedicamentoCard key={i} med={med} />
+                        ))}
                     </div>
                 </div>
 
                 {/* Observações do médico */}
                 {receitaMock.observacoes && (
                     <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
-                        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-4 pt-4 pb-3 border-b border-amber-100/80">
+                        <div className="bg-gradient-to-r from-amber-50/80 to-yellow-50/60 px-4 py-3 border-b border-amber-100/60">
                             <p className="font-bold text-amber-800 text-[13px]">Observações do Médico</p>
                         </div>
                         <div className="px-4 py-3">

@@ -49,7 +49,7 @@ export default function ReceitasPage() {
                 </div>
             </header>
 
-            {/* Subtítulo flutuante */}
+            {/* Subtítulo flutuante — saindo do header */}
             <div className="px-5 -mt-5 mb-5">
                 <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
                     <div className="flex items-center gap-2">
