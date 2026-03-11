@@ -32,17 +32,16 @@ const goldCard = `bg-gradient-to-br from-[#F9F0D4] to-[#FBF6E4] border border-[#
 const tabActive = `flex-1 py-2.5 font-bold text-[13px] text-[#1A365D] bg-white rounded-xl shadow-sm transition-all`
 const tabInactive = `flex-1 py-2.5 font-medium text-[13px] text-slate-400 transition-all`
 
-// Row de medicamento — receita original 
-function MedRowOriginal({ med, isLast }: { med: typeof receitaMock.medicamentos[0]; isLast: boolean }) {
+// Row de medicamento — receita original (estilo receita convencional)
+function MedRowOriginal({ med, index, isLast }: { med: typeof receitaMock.medicamentos[0]; index: number; isLast: boolean }) {
     return (
-        <div className={`px-4 py-4 ${!isLast ? 'border-b border-slate-100/80' : ''}`}>
-            <div className="flex items-start justify-between gap-3 mb-2.5">
-                <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-[#2D5284]/8 flex items-center justify-center shrink-0 border border-[#2D5284]/10">
-                        <ShieldCheck className="w-4 h-4 text-[#2D5284]" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-[14px] text-[#1A365D] leading-snug">{med.nome}</p>
+        <div className={`px-4 py-4 ${!isLast ? 'border-b border-slate-100' : ''}`}>
+            {/* Linha principal: número + nome + quantidade */}
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+                <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                    <span className="text-[13px] font-black text-[#2D5284] shrink-0 mt-[1px] tabular-nums">{index}.</span>
+                    <div className="flex-1 min-w-0">
+                        <p className="font-black text-[16px] text-[#1A365D] leading-tight">{med.nome}</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">{med.principio_ativo} · {med.concentracao} · {med.forma_farmaceutica}</p>
                     </div>
                 </div>
@@ -51,15 +50,15 @@ function MedRowOriginal({ med, isLast }: { med: typeof receitaMock.medicamentos[
                 </span>
             </div>
 
-            {/* Posologia em destaque */}
-            <div className="ml-11 space-y-1.5">
-                <div className="bg-gradient-to-r from-[#2D5284]/6 to-[#1A365D]/4 rounded-xl px-3 py-2.5 border-l-2 border-[#2D5284]/40">
-                    <p className="text-[12px] text-[#1A365D] font-semibold leading-relaxed">{med.posologia}</p>
-                </div>
+            {/* Posologia em itálico, estilo receita */}
+            <div className="ml-[22px]">
+                <p className="italic text-[12.5px] text-slate-600 leading-relaxed border-l-2 border-[#2D5284]/25 pl-3">
+                    {med.posologia}
+                </p>
                 {med.uso_continuo && (
-                    <div className="flex items-center gap-1.5 px-1">
+                    <div className="flex items-center gap-1.5 pl-3 mt-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shrink-0" />
-                        <p className="text-[11px] text-[#B8860B] font-bold">Uso contínuo — não interromper sem orientação médica</p>
+                        <p className="text-[11px] text-[#B8860B] font-semibold">Uso contínuo</p>
                     </div>
                 )}
             </div>
@@ -70,32 +69,27 @@ function MedRowOriginal({ med, isLast }: { med: typeof receitaMock.medicamentos[
 type GenericoItem = { nome: string; concentracao: string; forma: string; posologia: string; obs: string }
 
 // Row de medicamento — genérico
-function MedRowGenerico({ med, generico, isLast }: { med: typeof receitaMock.medicamentos[0]; generico: GenericoItem | undefined; isLast: boolean }) {
+function MedRowGenerico({ med, generico, index, isLast }: { med: typeof receitaMock.medicamentos[0]; generico: GenericoItem | undefined; index: number; isLast: boolean }) {
     if (!generico) return null
     return (
-        <div className={`px-4 py-4 ${!isLast ? 'border-b border-[#D4AF37]/15' : ''}`}>
-            <div className="flex items-start justify-between gap-3 mb-2.5">
-                <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 flex items-center justify-center shrink-0 border border-[#D4AF37]/25">
-                        <Leaf className="w-4 h-4 text-[#B8860B]" />
-                    </div>
-                    <div>
-                        <p className="font-bold text-[14px] text-[#7A5C00] leading-snug">{generico.nome} <span className="text-[11px] font-normal text-[#B8860B]/80"> · Genérico</span></p>
-                        <p className="text-[11px] text-[#B8860B]/70 mt-0.5">{generico.concentracao} · {generico.forma}</p>
+        <div className={`px-4 py-4 ${!isLast ? 'border-b border-slate-100' : ''}`}>
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+                <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                    <span className="text-[13px] font-black text-[#2D5284] shrink-0 mt-[1px] tabular-nums">{index}.</span>
+                    <div className="flex-1 min-w-0">
+                        <p className="font-black text-[16px] text-[#1A365D] leading-tight">{generico.nome} <span className="text-[11px] font-semibold text-slate-400">· Genérico</span></p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{generico.concentracao} · {generico.forma}</p>
                     </div>
                 </div>
-                <span className="shrink-0 text-[11px] font-bold text-[#B8860B] bg-[#D4AF37]/15 border border-[#D4AF37]/30 px-2.5 py-1 rounded-full">
+                <span className="shrink-0 text-[11px] font-bold text-[#2D5284] bg-[#2D5284]/8 border border-[#2D5284]/12 px-2.5 py-1 rounded-full">
                     {med.quantidade} un.
                 </span>
             </div>
-
-            <div className="ml-11 space-y-1.5">
-                <div className="bg-[#D4AF37]/8 rounded-xl px-3 py-2.5 border-l-2 border-[#D4AF37]/50">
-                    <p className="text-[12px] text-[#7A5C00] font-semibold leading-relaxed">{generico.posologia}</p>
-                </div>
-                <div className="flex items-start gap-1.5 px-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />
-                    <p className="text-[10px] text-slate-500 leading-snug">{generico.obs}</p>
+            <div className="ml-[22px]">
+                <p className="italic text-[12.5px] text-slate-600 leading-relaxed border-l-2 border-[#2D5284]/25 pl-3">{generico.posologia}</p>
+                <div className="flex items-center gap-1.5 pl-3 mt-1.5">
+                    <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <p className="text-[10px] text-slate-500">{generico.obs}</p>
                 </div>
             </div>
         </div>
@@ -197,7 +191,7 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                         <div className="flex-1">
                             <p className="text-[10px] text-slate-400 font-semibold tracking-[0.15em] uppercase mb-2">Código único</p>
                             <div className="bg-[#D4AF37]/10 rounded-xl px-3 py-2.5 border border-[#D4AF37]/30 mb-2">
-                                <p className="text-[21px] font-black text-[#C9A227] tracking-[0.20em] font-mono leading-none">
+                                <p className="text-[17px] font-black text-[#A07820] tracking-[0.12em] font-mono leading-none whitespace-nowrap">
                                     {receitaCodeFormatted}
                                 </p>
                             </div>
@@ -231,7 +225,7 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                             </div>
                             <div className="divide-y divide-slate-100/80 pb-2">
                                 {receitaMock.medicamentos.map((med, i) => (
-                                    <MedRowOriginal key={i} med={med} isLast={i === receitaMock.medicamentos.length - 1} />
+                                    <MedRowOriginal key={i} med={med} index={i + 1} isLast={i === receitaMock.medicamentos.length - 1} />
                                 ))}
                             </div>
                         </>
@@ -254,7 +248,7 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                                     const key = med.nome
                                     const gen = genericosBase[key]?.[0]
                                     return (
-                                        <MedRowGenerico key={i} med={med} generico={gen} isLast={i === receitaMock.medicamentos.length - 1} />
+                                        <MedRowGenerico key={i} med={med} generico={gen} index={i + 1} isLast={i === receitaMock.medicamentos.length - 1} />
                                     )
                                 })}
                             </div>
