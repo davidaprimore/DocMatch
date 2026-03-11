@@ -87,7 +87,7 @@ export default function PerfilMedicoPage() {
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-32 font-sans">
 
             {/* ── HEADER COMPACTO (igual ao dashboard) ── */}
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-[0_8px_24px_rgba(45,82,132,0.35)] relative z-10">
+            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-[0_8px_24px_rgba(45,82,132,0.35)] relative z-20">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={() => router.back()}
@@ -117,7 +117,7 @@ export default function PerfilMedicoPage() {
                 </div>
 
                 {/* Foto overlapping — centralizada sobre o header */}
-                <div className="absolute -bottom-[48px] left-1/2 -translate-x-1/2 z-20">
+                <div className="absolute -bottom-[48px] left-1/2 -translate-x-1/2 z-10">
                     <div className="relative">
                         {/* Foto */}
                         <div className="w-[108px] h-[108px] rounded-[26px] overflow-hidden border-4 border-white shadow-[0_12px_32px_rgba(45,82,132,0.28)]">

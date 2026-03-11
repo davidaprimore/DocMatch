@@ -37,12 +37,15 @@ Você agora atua como o **Analista Front-End e UI Designer da DocMatch**. Ao ser
 - Para stats (Avaliação, Experiência, Consultas), envolva o ícone em um círculo colorido suave: `<div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center"><Star className="w-5 h-5 text-amber-400 fill-amber-400" /></div>`.
 - Ícones de experiência: use `Clock4` (não Clock). Ícones de consultas realizadas: use `Stethoscope`.
 
-### 4.2 Cabeçalhos (Header) — Padrão RIGOROSO
-- **TODA tela** deve ter header azul `bg-[#2D5284]` com `rounded-b-3xl` e `padding-top: pt-4 pb-12`.
+### 4.2 Cabeçalhos (Header) — Padrão RIGOROSO E INVIOLÁVEL
+- **TODA tela** DEVE ter header azul `bg-[#2D5284]` com `rounded-b-3xl`, `pt-4` e **obrigatoriamente `pb-12`**.
+- ⛔ **PROIBIDO** qualquer outra altura de padding inferior: `pb-8`, `pb-10`, `pb-16`, `pt-5`, `pb-6` ou similar.
+- A altura da **parte azul do header é FIXA e IGUAL em TODAS as telas** — referência: dashboard do paciente.
 - Lado **esquerdo**: botão voltar (`ArrowLeft`) + título da tela, alinhados à esquerda.
 - Lado **direito**: sino de notificações com badge vermelho + logo `DocMatch` (Doc dourado, Match branco).
-- **JAMAIS** use sigla, abreviação ou qualquer variação da marca. A logo é sempre `<span class="text-[#D4AF37]">Doc</span><span class="text-white">Match</span>`.
-- Headers em telas de perfil/herói podem usar foto overlapping: a foto do perfil em `-mt-X` sobrepondo o fundo azul, com o header sem título mas mantendo logo+sino.
+- O sino de notificações DEVE estar dentro do `<header>` com `z-index` superior ao de qualquer elemento overlapping (ex.: foto de perfil). O header deve ter `z-20` e elementos overlapping (foto) `z-10`.
+- **JAMAIS** use sigla, abreviação ou qualquer variação da marca. A logo é sempre: `<span class="text-[#D4AF37]">Doc</span><span class="text-white">Match</span>`.
+- Headers em telas de perfil/herói que usam foto overlapping: background do header tem `z-20`, foto overlapping tem `z-10`.
 
 ### 4. Condensamento e Espaçamentos (Regra de Ouro Mobile)
 - **ZERO BURACOS:** Sem espaço não-utilizado excessivo.

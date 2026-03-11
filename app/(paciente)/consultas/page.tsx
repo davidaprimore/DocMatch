@@ -20,7 +20,7 @@ export default function ConsultasPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-4 pb-6 rounded-b-3xl shadow-md z-20 mb-4">
+            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md z-20 mb-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95">

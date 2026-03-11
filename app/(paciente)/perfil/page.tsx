@@ -16,7 +16,7 @@ export default function PerfilPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-5 pb-16 rounded-b-[32px] shadow-md z-20 mb-14 relative">
+            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md z-20 mb-14 relative">
                 <div className="flex items-center gap-3">
                     <button onClick={() => router.back()} className="text-white"><ArrowLeft className="w-5 h-5" /></button>
                     <h1 className="text-white font-bold text-[18px]">Meu Perfil</h1>
