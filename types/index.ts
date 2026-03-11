@@ -35,16 +35,24 @@ export interface Medico extends User {
     bio: string
     foto_url?: string
     endereco_consultorio: Endereco
+    endereco_consultorio_2?: Endereco
     planos_saude_aceitos: PlanoSaude[]
     valor_consulta: number
     valor_consulta_particular: number
     horarios_disponiveis: Horario[]
+    horarios_disponiveis_2?: Horario[]
     avaliacao: number
     total_avaliacoes: number
     assinatura: AssinaturaMedico
     destaque: boolean
     formacao?: string[]
     experiencia?: string
+    sociais?: {
+        instagram?: string
+        telegram?: string
+        facebook?: string
+        site?: string
+    }
 }
 
 export interface Farmacia {

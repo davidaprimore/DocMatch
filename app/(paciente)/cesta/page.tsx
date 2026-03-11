@@ -1,52 +1,74 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus, MapPin, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus, MapPin, ExternalLink, CreditCard } from 'lucide-react'
+import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency, formatDistance } from '@/lib/utils/masks'
 
 export default function CestaPage() {
     const router = useRouter()
-    const { porFarmacia, total, count, atualizarQuantidade, remover, limpar } = useCart()
+    const { porFarmacia, total, count, adicionar, atualizarQuantidade, remover, limpar } = useCart()
+
+    // Efeito para popular a cesta com mocks para visualização (conforme pedido pelo usuário)
+    useEffect(() => {
+        if (count === 0) {
+            adicionar({
+                id: 'med_001',
+                nome: 'Amoxicilina 500mg',
+                principio_ativo: 'Amoxicilina',
+                concentracao: '500mg',
+                farmacia_id: 'farm_001',
+                farmacia_nome: 'Droga Raia - Augusta',
+                preco_unitario: 24.90,
+                quantidade: 1,
+                distancia_km: 0.8,
+                whatsapp: '5511999999999'
+            })
+            adicionar({
+                id: 'med_002',
+                nome: 'Dipirona Sódica 500mg',
+                principio_ativo: 'Dipirona',
+                concentracao: '500mg',
+                farmacia_id: 'farm_001',
+                farmacia_nome: 'Droga Raia - Augusta',
+                preco_unitario: 12.50,
+                quantidade: 2,
+                distancia_km: 0.8,
+                whatsapp: '5511999999999'
+            })
+        }
+    }, [count, adicionar])
 
     const farmaciasIds = Object.keys(porFarmacia)
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-32">
-            {/* Header */}
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md z-20 mb-6 relative">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="text-white p-2 -ml-2 rounded-full hover:bg-white/10">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <h1 className="text-white font-bold text-[18px]">Minha Cesta</h1>
-                    </div>
-                    {count > 0 && (
-                        <button onClick={limpar} className="text-white/60 text-[11px] font-bold uppercase tracking-wider">Limpar</button>
-                    )}
-                </div>
+            {/* Header Padronizado */}
+            <Header showBackButton showNotifications>
+                <h1 className="text-white font-bold text-[18px]">Minha Cesta</h1>
+            </Header>
 
-                {/* Resumo Overlap */}
-                <div className="absolute left-5 right-5 -bottom-6 z-30">
-                    <div className="bg-white rounded-[20px] p-4 shadow-card border border-white/60 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
-                                <ShoppingCart className="w-5 h-5 text-[#D4AF37]" />
-                            </div>
-                            <div>
-                                <p className="text-[13px] font-bold text-[#1A365D]">{count} item{count !== 1 ? 's' : ''}</p>
-                                <p className="text-[11px] text-slate-400">Prontos para compra</p>
-                            </div>
+            {/* Resumo Overlap (Fixo abaixo do header) */}
+            <div className="px-5 -mt-12 mb-8 relative z-30">
+                <div className="bg-white rounded-[20px] p-4 shadow-card border border-white/60 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-full flex items-center justify-center">
+                            <ShoppingCart className="w-5 h-5 text-[#D4AF37]" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] text-slate-400 font-medium uppercase">Total</p>
-                            <p className="text-[20px] font-black text-[#1A365D]">{formatCurrency(total)}</p>
+                        <div>
+                            <p className="text-[13px] font-bold text-[#1A365D]">{count} item{count !== 1 ? 's' : ''}</p>
+                            <p className="text-[11px] text-slate-400">Prontos para compra</p>
                         </div>
                     </div>
+                    <div className="text-right">
+                        <p className="text-[11px] text-slate-400 font-medium uppercase">Total</p>
+                        <p className="text-[20px] font-black text-[#1A365D]">{formatCurrency(total)}</p>
+                    </div>
                 </div>
-            </header>
+            </div>
 
             <main className="px-5 pt-8 space-y-6">
                 {count === 0 ? (
@@ -143,6 +165,18 @@ export default function CestaPage() {
                             </section>
                         )
                     })
+                )}
+
+                {count > 0 && (
+                    <div className="px-5 mt-8 mb-12">
+                        <button 
+                            onClick={() => router.push('/cesta/checkout')}
+                            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black rounded-2xl py-4 text-[14px] shadow-[0_4px_16px_rgba(212,175,55,0.3)] flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform"
+                        >
+                            <CreditCard className="w-5 h-5" />
+                            Finalizar Compra ({formatCurrency(total)})
+                        </button>
+                    </div>
                 )}
             </main>
 

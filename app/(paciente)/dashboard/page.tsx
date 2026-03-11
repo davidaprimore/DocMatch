@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ChevronRight, Heart, Bell, Star, Menu as MenuIcon } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
+import { Header } from '@/components/Header'
 import { medicosMock } from '@/data/mockData'
 import { useCart } from '@/hooks/useCart'
 import { cn } from '@/lib/utils'
@@ -29,37 +30,16 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
-            {/* HEADER AZUL PREMIUM */}
-            <header className={cn(
-                "bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md relative z-20 mb-6 transition-all duration-300",
-                scrolled ? "pt-2 pb-10" : "pt-4 pb-12"
-            )}>
-                <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10 border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => router.push('/menu')}>
-                            <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
-                            <AvatarFallback className="bg-[hsl(222,35%,20%)] text-white">JM</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                            <span className="text-white/80 text-[11px] font-medium leading-none mb-0.5">Bem-vinda de volta,</span>
-                            <span className="text-white text-[15px] font-bold leading-none">Joce Moreno</span>
-                        </div>
-                    </div>
-                    {/* Componente Constante: Logo + Notificações */}
-                    <div className="flex items-center gap-4">
-                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold border border-[#2D5284]">3</span>
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => router.push('/menu')} className="text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors">
-                                <MenuIcon className="w-5 h-5" />
-                            </button>
-                            <div className="flex items-center">
-                                <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                                <span className="text-[18px] font-bold text-white ml-[1px] leading-none">Match</span>
-                            </div>
-                        </div>
+            {/* HEADER AZUL PREMIUM PADRONIZADO */}
+            <Header showNotifications showBackButton={false}>
+                <div className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10 border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => router.push('/menu')}>
+                        <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
+                        <AvatarFallback className="bg-[hsl(222,35%,20%)] text-white">JM</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className="text-white/80 text-[11px] font-medium leading-none mb-0.5">Bem-vinda de volta,</span>
+                        <span className="text-white text-[15px] font-bold leading-none">Joce Moreno</span>
                     </div>
                 </div>
 
@@ -82,7 +62,7 @@ export default function DashboardPage() {
                         <line x1="12" x2="12" y1="19" y2="22" />
                     </svg>
                 </div>
-            </header>
+            </Header>
 
             <main className="px-4 pt-5 pb-8 space-y-3">
                 {/* Banner Economia */}

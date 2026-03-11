@@ -148,35 +148,47 @@ export default function PerfilMedicoPage() {
                 </div>
             </header>
 
-            {/* ── NOME + ESPECIALIDADE ── */}
-            <div className="pt-[60px] px-5 text-center mb-5">
-                <h1 className="text-[20px] font-black text-[#1A365D] mb-0.5">{medico.nome}</h1>
-                <p className="text-[#2D5284] font-bold text-[14px]">{medico.especialidade}</p>
-                {medico.subespecialidade && <p className="text-slate-400 text-[12px] mt-0.5">{medico.subespecialidade}</p>}
-                <p className="text-[10px] text-slate-400 font-semibold mt-1 tracking-wide">{medico.crm}</p>
-                <div className="flex items-center justify-center gap-1 mt-2">
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i <= Math.round(medico.avaliacao) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`} />
-                    ))}
-                    <span className="text-slate-600 text-[12px] font-bold ml-1">{medico.avaliacao}</span>
-                    <span className="text-slate-400 text-[11px]">({medico.total_avaliacoes})</span>
+            {/* ── REDES SOCIAIS (CTA Especialista) ── */}
+            {medico.sociais && (Object.keys(medico.sociais).length > 0) && (
+                <div className="px-5 mb-5 flex flex-wrap justify-center gap-3">
+                    {medico.sociais.instagram && (
+                        <button 
+                            onClick={() => window.open(medico.sociais?.instagram, '_blank')}
+                            className="bg-gradient-to-tr from-[#F58529] via-[#D10869] to-[#8134AF] p-2.5 rounded-2xl text-white shadow-md active:scale-95 transition-all"
+                            title="Instagram"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </button>
+                    )}
+                    {medico.sociais.telegram && (
+                        <button 
+                            onClick={() => window.open(medico.sociais?.telegram, '_blank')}
+                            className="bg-[#0088cc] p-2.5 rounded-2xl text-white shadow-md active:scale-95 transition-all"
+                            title="Telegram"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.05 1.577c-.393-.016-.784.08-1.117.235-.484.225-5.32 2.37-10.348 4.632-13.06 5.87-14.471 6.544-14.777 6.94-.367.476-.388 1.135-.053 1.633.284.423.834.708 1.954 1.042.8.238 1.905.518 2.66.67l1.7.34 2.115 6.46c.304.93.94 1.583 1.694 1.638.74.053 1.46-.356 1.906-1.077.202-.325.337-.624.584-1.127.23-.466.574-1.155 1.693-2.272l5.77 4.246c.6.438 1.168.613 1.695.534.52-.08.91-.424 1.144-1.043.235-.624 9.112-21.783 9.385-22.51.274-.728.164-1.393-.207-1.848-.37-.455-1.018-.707-1.6-.702zm-12.27 13.626s.013-.01.014-.01l-.105.474-.182.818c-.144.654-.3.943-.496 1.196l-.01.015c-.21.274-.32.324-.44.25-.133-.082-.366-.525-.366-.525l-1.92-5.86 1.83.364 1.688 3.282z"/></svg>
+                        </button>
+                    )}
+                    {medico.sociais.facebook && (
+                        <button 
+                            onClick={() => window.open(medico.sociais?.facebook, '_blank')}
+                            className="bg-[#1877F2] p-2.5 rounded-2xl text-white shadow-md active:scale-95 transition-all"
+                            title="Facebook"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </button>
+                    )}
+                    {medico.sociais.site && (
+                        <button 
+                            onClick={() => window.open(medico.sociais?.site, '_blank')}
+                            className="bg-white border border-slate-200 text-[#2D5284] p-2.5 rounded-2xl shadow-md active:scale-95 transition-all"
+                            title="Website"
+                        >
+                            <Building2 className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
-            </div>
-
-            {/* ── STATS ROW ── */}
-            <div className="px-5 grid grid-cols-3 gap-3 mb-5">
-                {[
-                    { icon: <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center mb-1.5"><Star className="w-4 h-4 text-amber-400 fill-amber-400" /></div>, value: medico.avaliacao.toString(), sub: `${medico.total_avaliacoes} aval.` },
-                    { icon: <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mb-1.5"><Clock4 className="w-4 h-4 text-[#2D5284]" strokeWidth={2} /></div>, value: '10+', sub: 'anos' },
-                    { icon: <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mb-1.5"><Stethoscope className="w-4 h-4 text-emerald-500" strokeWidth={1.8} /></div>, value: '1,5k', sub: 'realizadas' },
-                ].map((s, idx) => (
-                    <div key={idx} className={`${glassCard} rounded-[20px] p-3 flex flex-col items-center text-center`}>
-                        {s.icon}
-                        <p className="font-black text-[18px] text-[#1A365D] leading-none">{s.value}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5 font-medium">{s.sub}</p>
-                    </div>
-                ))}
-            </div>
+            )}
 
             {/* ── ABAS ── */}
             <div className="px-5 mb-4">

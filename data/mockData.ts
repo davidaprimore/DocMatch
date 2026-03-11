@@ -89,6 +89,12 @@ export const medicosMock: Medico[] = [
     destaque: true,
     formacao: ['Faculdade de Medicina USP', 'Residência em Dermatologia - HC-FMUSP', 'Especialização em Dermatologia Estética'],
     experiencia: '15 anos de experiência em dermatologia clínica e estética',
+    sociais: {
+      instagram: 'https://instagram.com/dra.anasilva',
+      telegram: 'https://t.me/draanasilva',
+      facebook: 'https://facebook.com/draanasilva.dermato',
+      site: 'https://anasilva.com.br'
+    }
   },
   {
     id: 'med_002',
@@ -136,6 +142,10 @@ export const medicosMock: Medico[] = [
     destaque: true,
     formacao: ['Faculdade de Medicina UNIFESP', 'Residência em Cardiologia - INCOR'],
     experiencia: '20 anos de experiência em cardiologia',
+    sociais: {
+      instagram: 'https://instagram.com/dr.carlossantos',
+      site: 'https://carlossantoscardio.com.br'
+    }
   },
   {
     id: 'med_003',
