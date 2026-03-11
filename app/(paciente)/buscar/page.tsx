@@ -102,24 +102,48 @@ export default function BuscarPage() {
 
                 {/* PAINEL DE FILTRO DE RAIO (ESTILO TINDER) */}
                 {showFilters && (
-                    <div className="bg-white rounded-[20px] p-4 shadow-xl border border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <div className="flex justify-between items-center mb-3">
-                            <h4 className="text-[13px] font-bold text-slate-700 flex items-center gap-1.5">
-                                <Navigation className="w-3.5 h-3.5 text-[#2D5284]" />
-                                Raio de Alcance
-                            </h4>
-                            <span className="text-[14px] font-black text-[#2D5284] bg-blue-50 px-3 py-1 rounded-full">
-                                {raioKm >= 1000 ? 'Brasil' : `${raioKm} km`}
+                    <div className="bg-white rounded-[24px] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.1)] border border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div className="flex justify-between items-center mb-5">
+                            <div>
+                                <h4 className="text-[14px] font-black text-slate-800 flex items-center gap-2">
+                                    <MapPin className="w-4 h-4 text-[#2D5284]" />
+                                    Distância Máxima
+                                </h4>
+                                <p className="text-[11px] text-slate-400 font-medium">Busca estilo Tinder</p>
+                            </div>
+                            <span className="text-[15px] font-black text-[#2D5284] bg-[#2D5284]/5 px-4 py-2 rounded-2xl border border-[#2D5284]/10">
+                                {raioKm >= 1000 ? 'Brasil Inteiro' : `${raioKm} km`}
                             </span>
                         </div>
-                        <input 
-                            type="range" min="1" max="1000" step="5"
-                            value={raioKm} onChange={e => setRaioKm(Number(e.target.value))}
-                            className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#2D5284]"
-                        />
-                        <div className="flex justify-between mt-1 text-[10px] text-slate-400 font-bold uppercase">
-                            <span>Perto (1km)</span>
-                            <span>Muito Longe (1000km+)</span>
+                        
+                        <div className="relative h-10 flex items-center px-2">
+                            <input 
+                                type="range" min="1" max="1000" step="5"
+                                value={raioKm} onChange={e => setRaioKm(Number(e.target.value))}
+                                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#2D5284] z-10"
+                            />
+                            {/* Pontos de referência no slider */}
+                            <div className="absolute inset-x-0 h-1.5 flex justify-between px-2 pointer-events-none">
+                                {[0, 250, 500, 750, 1000].map(pt => (
+                                    <div key={pt} className="w-1 h-1 bg-slate-300 rounded-full mt-[2px]" />
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="flex justify-between mt-3 px-1">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Vizinho (1km)</span>
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Nacional (1000km)</span>
+                        </div>
+
+                        {/* DICA DE GPS (GUIA RÁPIDO) */}
+                        <div className="mt-6 p-4 bg-emerald-50 rounded-[20px] border border-emerald-100/50 flex gap-3 items-center">
+                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm border border-emerald-100">
+                                <span className="text-xl">📍</span>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[11.5px] font-bold text-emerald-800 leading-tight">Como ativar localização real?</p>
+                                <p className="text-[10px] text-emerald-600/80 mt-1">Clique no cadeado <span className="font-black">🔒</span> ao lado da URL {'>'} Configurações {'>'} Localização {'>'} Permitir.</p>
+                            </div>
                         </div>
                     </div>
                 )}
