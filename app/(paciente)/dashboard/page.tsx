@@ -1,15 +1,19 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ChevronRight, Heart, Bell, Star } from 'lucide-react'
+import { ChevronRight, Heart, Bell, Star, Menu as MenuIcon } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
 import { medicosMock } from '@/data/mockData'
+import { useCart } from '@/hooks/useCart'
+import { cn } from '@/lib/utils'
 
 export default function DashboardPage() {
     const router = useRouter()
+    const { count } = useCart()
+    const [scrolled, setScrolled] = useState(false)
 
     const medicosSugeridos = [
         { ...medicosMock[0], foto_url: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=150&auto=format&fit=crop', rating: 4.9, favorito: false },
@@ -18,19 +22,21 @@ export default function DashboardPage() {
     ]
 
     useEffect(() => {
-        window.history.pushState(null, '', window.location.href)
-        const handlePopState = () => window.history.pushState(null, '', window.location.href)
-        window.addEventListener('popstate', handlePopState)
-        return () => window.removeEventListener('popstate', handlePopState)
+        const handleScroll = () => setScrolled(window.scrollY > 20)
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
             {/* HEADER AZUL PREMIUM */}
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md relative z-20 mb-6">
+            <header className={cn(
+                "bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md relative z-20 mb-6 transition-all duration-300",
+                scrolled ? "pt-2 pb-10" : "pt-4 pb-12"
+            )}>
                 <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10 border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => router.push('/notificacoes')}>
+                        <Avatar className="w-10 h-10 border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => router.push('/menu')}>
                             <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
                             <AvatarFallback className="bg-[hsl(222,35%,20%)] text-white">JM</AvatarFallback>
                         </Avatar>
@@ -42,12 +48,17 @@ export default function DashboardPage() {
                     {/* Componente Constante: Logo + Notificações */}
                     <div className="flex items-center gap-4">
                         <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
+                            <Bell className="w-5 h-5" />
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold border border-[#2D5284]">3</span>
                         </button>
-                        <div className="flex items-center">
-                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                            <span className="text-[18px] font-bold text-white ml-[1px] leading-none">Match</span>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => router.push('/menu')} className="text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors">
+                                <MenuIcon className="w-5 h-5" />
+                            </button>
+                            <div className="flex items-center">
+                                <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
+                                <span className="text-[18px] font-bold text-white ml-[1px] leading-none">Match</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,7 +107,16 @@ export default function DashboardPage() {
                         },
                         { label: 'Minhas', desc: 'Receitas', href: '/receitas', icon: <Image src="/icone-receitas.png.png" width={48} height={48} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Receitas" /> },
                         { label: 'Comparador', desc: 'de Preços', href: '/comparar-precos', icon: <Image src="/icone-balanca.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Comparador" /> },
-                        { label: 'Minha', desc: 'Cesta', href: '/cesta', icon: <Image src="/icone-cesta.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Cesta" /> },
+                        { label: 'Minha', desc: 'Cesta', href: '/cesta', icon: (
+                            <div className="relative">
+                                <Image src="/icone-cesta.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform" alt="Cesta" />
+                                {count > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#D4AF37] text-[#1A365D] text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#1A365D] shadow-lg">
+                                        {count}
+                                    </span>
+                                )}
+                            </div>
+                        ) },
                     ].map((item, i) => (
                         <div key={i} className="flex flex-col items-center">
                             <button

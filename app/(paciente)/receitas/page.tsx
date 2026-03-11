@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
     ArrowLeft, FileText, ChevronRight, Download, Share2,
-    Clock, ShieldCheck, Stethoscope
+    Clock, ShieldCheck, Stethoscope, Menu as MenuIcon
 } from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
 import { receitaMock, medicosMock } from '@/data/mockData'
@@ -46,9 +46,14 @@ export default function ReceitasPage() {
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
                             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
                         </button>
-                        <div className="flex items-center">
-                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                            <span className="text-[18px] font-bold text-white ml-[1px]">Match</span>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => router.push('/menu')} className="text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors">
+                                <MenuIcon className="w-5 h-5" />
+                            </button>
+                            <div className="flex items-center">
+                                <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
+                                <span className="text-[18px] font-bold text-white ml-[1px]">Match</span>
+                            </div>
                         </div>
                     </div>
                 </div>
