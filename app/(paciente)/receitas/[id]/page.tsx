@@ -134,12 +134,12 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                     {/* QR Code centralizado */}
                     <div className="p-6 flex flex-col items-center">
                         <div className="bg-white p-4 rounded-2xl shadow-[0_4px_20px_rgba(26,54,93,0.12)] border border-slate-100/60 mb-4">
-                            <QRCodeDisplay code={receitaMock.qr_code} />
+                            <QRCodeDisplay code={receitaMock.qr_code ?? 'DOCMATCH-REC-001-20240310'} />
                         </div>
                         {/* Código alfanumérico abaixo do QR */}
                         <div className="bg-[#F0F4F8] border border-slate-200/80 rounded-xl px-5 py-2.5 text-center">
                             <p className="text-[22px] font-black text-[#1A365D] tracking-[0.2em] font-mono">
-                                {receitaMock.qr_code.replace('DOCMATCH-REC-', '').replace('-20240310', '')}
+                                {(receitaMock.qr_code ?? 'DOCMATCH-REC-001-20240310').replace('DOCMATCH-REC-', '').replace('-20240310', '')}
                             </p>
                             <p className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">Apresente este código na farmácia</p>
                         </div>
