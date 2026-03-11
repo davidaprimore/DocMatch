@@ -52,20 +52,20 @@ export default function ReceitasPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Card overlapping — igual à barra de busca do dashboard */}
+                <div className="absolute left-5 right-5 -bottom-[28px] z-30">
+                    <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                            <p className="text-[13px] font-semibold text-[#1A365D]">{mockReceitas.length} receitas no histórico</p>
+                        </div>
+                        <p className="text-[11px] text-slate-400">Assinadas digitalmente</p>
+                    </div>
+                </div>
             </header>
 
-            {/* Card flutuante — -mt-5 sai do header, mas o main começa embaixo sempre */}
-            <div className="relative z-10 -mt-5 px-5 mb-5">
-                <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
-                    <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                        <p className="text-[13px] font-semibold text-[#1A365D]">{mockReceitas.length} receitas no histórico</p>
-                    </div>
-                    <p className="text-[11px] text-slate-400">Assinadas digitalmente</p>
-                </div>
-            </div>
-
-            <main className="px-5 pb-24 space-y-4">
+            <main className="px-5 pt-10 pb-24 space-y-4">
                 {mockReceitas.map(receita => {
                     const medico = medicoMap[receita.medico_id]
                     const st = statusConfig[receita.status]

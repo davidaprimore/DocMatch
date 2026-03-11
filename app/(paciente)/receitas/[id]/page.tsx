@@ -67,8 +67,10 @@ function MedRowOriginal({ med, isLast }: { med: typeof receitaMock.medicamentos[
     )
 }
 
+type GenericoItem = { nome: string; concentracao: string; forma: string; posologia: string; obs: string }
+
 // Row de medicamento — genérico
-function MedRowGenerico({ med, generico, isLast }: { med: typeof receitaMock.medicamentos[0]; generico: ReturnType<typeof genericosBase['']>[0] | undefined; isLast: boolean }) {
+function MedRowGenerico({ med, generico, isLast }: { med: typeof receitaMock.medicamentos[0]; generico: GenericoItem | undefined; isLast: boolean }) {
     if (!generico) return null
     return (
         <div className={`px-4 py-4 ${!isLast ? 'border-b border-[#D4AF37]/15' : ''}`}>
@@ -166,40 +168,40 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                     </div>
                 </div>
 
-                {/* ── QRCode + Código Dourado ── */}
-                <div className={`${goldCard} rounded-[22px] overflow-hidden`}>
-                    {/* Barra dourada */}
-                    <div className="bg-gradient-to-r from-[#C9A227] to-[#E2C84A] px-4 py-2.5 flex items-center justify-between">
-                        <p className="text-[#7A5C00] text-[11px] font-black tracking-wider uppercase">Código de Validação — Farmácia</p>
+                {/* ── QRCode + Código (card branco, QR e código em dourado) ── */}
+                <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
+                    {/* Barra azul padrão */}
+                    <div className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-4 py-2.5 flex items-center justify-between">
+                        <p className="text-white/80 text-[11px] font-semibold tracking-wider uppercase">Código de Validação — Farmácia</p>
                         <div className="flex gap-3">
-                            <button className="text-[#7A5C00]/70 hover:text-[#7A5C00] transition-colors" aria-label="Compartilhar"><Share2 className="w-4 h-4" /></button>
-                            <button className="text-[#7A5C00]/70 hover:text-[#7A5C00] transition-colors" aria-label="Baixar"><Download className="w-4 h-4" /></button>
+                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Compartilhar"><Share2 className="w-4 h-4" /></button>
+                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Baixar"><Download className="w-4 h-4" /></button>
                         </div>
                     </div>
 
                     {/* QRCode lado a lado com código */}
                     <div className="p-5 flex items-center gap-5">
-                        {/* QRCode dourado */}
-                        <div className="bg-white rounded-2xl p-3 shadow-[0_4px_16px_rgba(212,175,55,0.20)] border border-[#D4AF37]/20 shrink-0">
+                        {/* QRCode em dourado sobre fundo branco */}
+                        <div className="bg-white rounded-2xl p-3 shadow-[0_4px_16px_rgba(26,54,93,0.10)] border border-slate-100 shrink-0">
                             <QRCodeSVG
                                 value={qrData}
                                 size={110}
                                 level="M"
-                                fgColor="#7A5C00"
+                                fgColor="#C9A227"
                                 bgColor="#FFFFFF"
                                 includeMargin={false}
                             />
                         </div>
 
-                        {/* Código */}
+                        {/* Código alfanumérico dourado */}
                         <div className="flex-1">
-                            <p className="text-[10px] text-[#B8860B]/70 font-black tracking-[0.2em] uppercase mb-2">Código único</p>
+                            <p className="text-[10px] text-slate-400 font-semibold tracking-[0.15em] uppercase mb-2">Código único</p>
                             <div className="bg-[#D4AF37]/10 rounded-xl px-3 py-2.5 border border-[#D4AF37]/30 mb-2">
-                                <p className="text-[21px] font-black text-[#7A5C00] tracking-[0.20em] font-mono leading-none">
+                                <p className="text-[21px] font-black text-[#C9A227] tracking-[0.20em] font-mono leading-none">
                                     {receitaCodeFormatted}
                                 </p>
                             </div>
-                            <p className="text-[10px] text-[#B8860B]/60 leading-snug">
+                            <p className="text-[10px] text-slate-400 leading-snug">
                                 Apresente o QRCode<br />ou este código na farmácia
                             </p>
                         </div>
@@ -239,15 +241,15 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                     {activeTab === 'generico' && (
                         <>
                             <div className="px-4 pt-4 pb-2 flex items-center gap-2">
-                                <div className="w-1 h-5 rounded-full bg-[#D4AF37]" />
-                                <p className="font-bold text-[#7A5C00] text-[13px]">Equivalentes genéricos — mesma eficácia</p>
+                                <div className="w-1 h-5 rounded-full bg-[#2D5284]" />
+                                <p className="font-bold text-[#1A365D] text-[13px]">Equivalentes genéricos — mesma eficácia</p>
                             </div>
                             <div className="mx-4 mb-3 bg-amber-50 rounded-xl px-3 py-2 border border-amber-100">
                                 <p className="text-[11px] text-amber-700 leading-relaxed">
                                     ⚠️ Os genéricos abaixo são equivalentes terapêuticos aprovados pela ANVISA. Sempre consulte seu farmacêutico antes de substituir. A decisão final é do paciente.
                                 </p>
                             </div>
-                            <div className="divide-y divide-[#D4AF37]/10 pb-2">
+                            <div className="divide-y divide-slate-100/80 pb-2">
                                 {receitaMock.medicamentos.map((med, i) => {
                                     const key = med.nome
                                     const gen = genericosBase[key]?.[0]
@@ -276,14 +278,16 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                 )}
 
                 {/* CTA */}
-                <button
-                    onClick={() => router.push('/comparar-precos')}
-                    className="w-full bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] text-[#1A365D] font-black rounded-2xl py-4 flex items-center justify-center gap-2.5 text-[14px] shadow-[0_8px_24px_rgba(207,175,66,0.35)] hover:brightness-105 active:scale-[0.98] transition-all border border-[#E8C55E]/50"
-                >
-                    <ShoppingCart className="w-5 h-5" />
-                    Comparar Preços nas Farmácias
-                    <ChevronRight className="w-4 h-4 ml-auto" />
-                </button>
+                <div className="flex justify-center pb-2">
+                    <button
+                        onClick={() => router.push('/comparar-precos')}
+                        className="inline-flex items-center gap-3 bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] text-[#1A365D] font-black rounded-2xl px-6 py-3.5 text-[14px] shadow-[0_6px_20px_rgba(207,175,66,0.35)] hover:brightness-105 active:scale-[0.98] transition-all border border-[#E8C55E]/50"
+                    >
+                        <ShoppingCart className="w-5 h-5 shrink-0" />
+                        Comparar Preços nas Farmácias
+                        <ChevronRight className="w-4 h-4 shrink-0" />
+                    </button>
+                </div>
             </div>
             <BottomNav />
         </div>
