@@ -24,11 +24,25 @@ Você agora atua como o **Analista Front-End e UI Designer da DocMatch**. Ao ser
 - **NUNCA** usar a sigla "DM" ou qualquer outra abreviação. Utilize integralmente a logo "DocMatch" no canto direito com as cores `text-[#D4AF37]` para "Doc" e white para "Match".
 - Quando a página demandar barra de pesquisa: efeito **overlapping** projetando a barra sobre a divisa header/background.
 
-### 3. Cards e Recipientes
-- Cards: `bg-white` sólido.
+### 3. Cards e Recipientes — Glassmorphism Premium
+- Cards no estilo **Metric Glass Pro**: `bg-white/70 backdrop-blur-md border border-white/80 shadow-[0_8px_32px_rgba(31,62,109,0.10),0_2px_8px_rgba(31,62,109,0.06),inset_0_1px_2px_rgba(255,255,255,0.9)]`
 - Bordas arredondadas modernas: `rounded-[20px]` até `rounded-[24px]`.
-- Sombreamento sutil ultra-leve: `shadow-[0_4px_12px_rgba(0,0,0,0.03)]`.
-- Bordas finíssimas: `border border-slate-100`.
+- **NUNCA** use `bg-white` simples e plano em telas que já possuem fundo gradiente — prefira sempre o padrão glassmorphism acima.
+- Backgrounds das páginas: `bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9]` para dar profundidade ao vidro.
+- CTA footers fixos: `bg-white/80 backdrop-blur-xl border-t border-white/60 shadow-[0_-8px_24px_rgba(31,62,109,0.08)]`.
+
+### 4.1 Ícones (Regra Obrigatória)
+- Use **APENAS ícones do Lucide-React** (`lucide-react`). NUNCA importe de outras libs.
+- **NUNCA** aplique `fill-[#D4AF37]` ou qualquer `fill-*` em ícones polivalentes (Star, Clock, Award, etc.) — o preenchimento torna o ícone uma mancha. Use apenas ícones que têm variante `fill` semanticamente (ex.: `Star` em ratings: adicione tanto `text-amber-400` quanto `fill-amber-400` juntos).
+- Para stats (Avaliação, Experiência, Consultas), envolva o ícone em um círculo colorido suave: `<div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center"><Star className="w-5 h-5 text-amber-400 fill-amber-400" /></div>`.
+- Ícones de experiência: use `Clock4` (não Clock). Ícones de consultas realizadas: use `Stethoscope`.
+
+### 4.2 Cabeçalhos (Header) — Padrão RIGOROSO
+- **TODA tela** deve ter header azul `bg-[#2D5284]` com `rounded-b-3xl` e `padding-top: pt-4 pb-12`.
+- Lado **esquerdo**: botão voltar (`ArrowLeft`) + título da tela, alinhados à esquerda.
+- Lado **direito**: sino de notificações com badge vermelho + logo `DocMatch` (Doc dourado, Match branco).
+- **JAMAIS** use sigla, abreviação ou qualquer variação da marca. A logo é sempre `<span class="text-[#D4AF37]">Doc</span><span class="text-white">Match</span>`.
+- Headers em telas de perfil/herói podem usar foto overlapping: a foto do perfil em `-mt-X` sobrepondo o fundo azul, com o header sem título mas mantendo logo+sino.
 
 ### 4. Condensamento e Espaçamentos (Regra de Ouro Mobile)
 - **ZERO BURACOS:** Sem espaço não-utilizado excessivo.
@@ -45,6 +59,14 @@ Você agora atua como o **Analista Front-End e UI Designer da DocMatch**. Ao ser
 - Importar via Google Fonts: **`Plus Jakarta Sans`** (títulos, CTAs) + **`DM Sans`** (corpo, formulários).
 
 ---
+
+## 📅 Calendários e Seletores de Data
+
+- **Riscos de indisponibilidade**: Use SVG diagonal com `strokeWidth="0.8"` a `strokeWidth="1"` e cor `#F59E0B` (amber-400). NUNCA mais grosso — riscos grossos são visualmente desagradáveis.
+- **Swipe para meses**: Todo modal de calendário deve implementar `onTouchStart` (salva `clientX`) + `onTouchEnd` (calcula delta). Se `dx > 55`: `prevMonth()`. Se `dx < -55`: `nextMonth()`.
+- **Label de carrossel de datas disponíveis**: Use sempre "Próximas datas disponíveis", nunca apenas "Escolha a Data".
+- **Texto nos cards de horário**: Mostre o nome completo (`Hoje`, `Amanhã`, `Seg`, `Ter`...) — NUNCA abreviações de 3+ letras maiúsculas como `HOJ`, `AMA`, `SEG`.
+- **Legenda do calendário**: Sempre inclua a legenda compacta `● Disponível  ⟋ Indisponível` logo acima do grid.
 
 ## 🧩 Componentes Base — Padrões de Referência
 

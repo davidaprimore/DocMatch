@@ -223,7 +223,7 @@ export default function AgendarPage() {
 
             {/* CARROSSEL DE DATAS */}
             <div className="px-5 mb-5">
-                <h3 className="text-[#1A365D] font-bold text-[15px] mb-3 px-1">Escolha a Data</h3>
+                <h3 className="text-[#1A365D] font-bold text-[15px] mb-3 px-1">Próximas datas disponíveis</h3>
                 <div className="flex gap-2.5 pb-2 overflow-x-auto no-scrollbar snap-x" role="listbox" aria-label="Selecionar data">
                     {nextDays.map((dia, idx) => {
                         const isSelected = selectedDay?.dateText === dia.dateText
@@ -291,8 +291,8 @@ export default function AgendarPage() {
                                         <Zap className="absolute top-2 right-2 w-3.5 h-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />
                                     )}
                                     <div>
-                                        <span className={`text-[9px] font-bold tracking-widest uppercase block mb-0.5 ${isSelected ? 'text-white/60' : slot.isFast ? 'text-amber-600' : 'text-slate-400'}`}>
-                                            {selectedDay?.label.substring(0, 3)}
+                                        <span className={`text-[9px] font-semibold block mb-0.5 ${isSelected ? 'text-white/60' : slot.isFast ? 'text-amber-600' : 'text-slate-400'}`}>
+                                            {selectedDay?.label === 'Hoje' ? 'Hoje' : selectedDay?.label === 'Amanhã' ? 'Amanhã' : selectedDay?.label}
                                         </span>
                                         <span className={`text-[19px] font-black leading-none block ${isSelected ? 'text-white' : slot.isFast ? 'text-amber-700' : 'text-[#1A365D]'}`}>
                                             {slot.time}
@@ -370,7 +370,16 @@ export default function AgendarPage() {
             {showFullCalendar && (
                 <>
                     <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40" onClick={() => setShowFullCalendar(false)} />
-                    <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.12)] z-50 p-5 pt-4 animate-in slide-in-from-bottom-[100%] duration-300 h-[85vh] flex flex-col">
+                    <div
+                        className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.12)] z-50 p-5 pt-4 animate-in slide-in-from-bottom-[100%] duration-300 h-[85vh] flex flex-col"
+                        onTouchStart={(e) => { (e.currentTarget as any)._touchX = e.touches[0].clientX }}
+                        onTouchEnd={(e) => {
+                            const start = (e.currentTarget as any)._touchX ?? 0
+                            const dx = e.changedTouches[0].clientX - start
+                            if (dx > 55) prevMonth()
+                            else if (dx < -55) nextMonth()
+                        }}
+                    >
                         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5 shrink-0" />
 
                         <div className="flex justify-between items-center mb-4 shrink-0">
@@ -457,13 +466,12 @@ export default function AgendarPage() {
                                                 {/* Risco diagonal VISÍVEL para dias indisponíveis */}
                                                 {isUnavailable && !isToday && (
                                                     <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                        {/* Linha diagonal nítida */}
                                                         <svg viewBox="0 0 40 40" className="absolute inset-0 w-full h-full" aria-hidden="true">
-                                                            <line x1="8" y1="32" x2="32" y2="8" stroke={isPast ? "#9CA3AF" : "#D97706"} strokeWidth="1.5" strokeLinecap="round" />
+                                                            <line x1="10" y1="30" x2="30" y2="10" stroke={isPast ? '#CBD5E1' : '#F59E0B'} strokeWidth="0.8" strokeLinecap="round" />
                                                         </svg>
                                                     </span>
                                                 )}
-                                                <span className={`relative z-10 font-semibold text-[13px] ${isUnavailable && !isToday ? (isPast ? 'text-slate-300' : 'text-amber-400') : ''}`}>{dayNum}</span>
+                                                <span className={`relative z-10 font-semibold text-[13px] ${isUnavailable && !isToday ? (isPast ? 'text-slate-300' : 'text-slate-500') : ''}`}>{dayNum}</span>
                                             </button>
                                         </div>
                                     )
