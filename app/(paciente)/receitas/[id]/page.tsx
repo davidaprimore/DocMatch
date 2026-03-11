@@ -149,16 +149,16 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
             <div className="mt-12 px-5 space-y-4">
 
                 {/* Médico */}
-                <div className={`${glassCard} rounded-[22px] p-4 flex items-center gap-4`}>
-                    <img src={medico.foto_url} className="w-14 h-14 rounded-[16px] object-cover border-2 border-white shadow-[0_4px_12px_rgba(45,82,132,0.18)]" alt={medico.nome} />
+                <div className={`${glassCard} rounded-[22px] p-4 flex items-center gap-3`}>
+                    <img src={medico.foto_url} className="w-12 h-12 rounded-[14px] object-cover border-2 border-white shadow-[0_4px_12px_rgba(45,82,132,0.18)] shrink-0" alt={medico.nome} />
                     <div className="flex-1 min-w-0">
-                        <p className="font-black text-[15px] text-[#1A365D] leading-tight">{medico.nome}</p>
-                        <p className="text-[13px] text-[#2D5284] font-semibold">{medico.especialidade}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{medico.crm}</p>
+                        <p className="font-black text-[14px] text-[#1A365D] leading-tight truncate">{medico.nome}</p>
+                        <p className="text-[12px] text-[#2D5284] font-semibold">{medico.especialidade}</p>
+                        <p className="text-[10px] text-slate-400">{medico.crm}</p>
                     </div>
-                    <div className="flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 shrink-0">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-emerald-700 text-[10px] font-bold">CRM Verificado</span>
+                    <div className="flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 shrink-0">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        <span className="text-emerald-700 text-[10px] font-bold whitespace-nowrap">CRM Verificado</span>
                     </div>
                 </div>
 
@@ -275,11 +275,11 @@ export default function ReceitaDetalhePage({ params }: { params: { id: string } 
                 <div className="flex justify-center pb-2">
                     <button
                         onClick={() => router.push('/comparar-precos')}
-                        className="inline-flex items-center gap-3 bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] text-[#1A365D] font-black rounded-2xl px-6 py-3.5 text-[14px] shadow-[0_6px_20px_rgba(207,175,66,0.35)] hover:brightness-105 active:scale-[0.98] transition-all border border-[#E8C55E]/50"
+                        className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] text-[#1A365D] font-black rounded-2xl px-5 py-3 text-[13px] shadow-[0_6px_20px_rgba(207,175,66,0.35)] hover:brightness-105 active:scale-[0.98] transition-all border border-[#E8C55E]/50"
                     >
-                        <ShoppingCart className="w-5 h-5 shrink-0" />
+                        <ShoppingCart className="w-4 h-4 shrink-0" />
                         Comparar Preços nas Farmácias
-                        <ChevronRight className="w-4 h-4 shrink-0" />
+                        <ChevronRight className="w-3.5 h-3.5 shrink-0" />
                     </button>
                 </div>
             </div>
