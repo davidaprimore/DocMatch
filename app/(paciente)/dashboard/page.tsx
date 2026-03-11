@@ -33,6 +33,7 @@ export default function DashboardPage() {
             {/* HEADER AZUL PREMIUM PADRONIZADO */}
             <div className="relative mb-8">
                 <Header 
+                    variant="dashboard"
                     showNotifications 
                     showBackButton={false}
                     userAvatar="/avatar-joce.png"

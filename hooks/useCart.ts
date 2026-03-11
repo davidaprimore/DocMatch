@@ -15,6 +15,8 @@ export interface ItemCesta {
     whatsapp?: string
     farmacia_lat?: number
     farmacia_lng?: number
+    priceVariation?: 'up' | 'down' | 'none'
+    isCheapest?: boolean
 }
 
 interface CartState {

@@ -5,6 +5,8 @@ import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Calendar as CalendarIcon, Clock, Zap, Star, ShieldCheck, Filter, Building2, Video, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 import { medicosMock } from '@/data/mockData'
 import { toast } from 'sonner'
+import { Header } from '@/components/Header'
+import { cn } from '@/lib/utils'
 
 type SelectedSlotType = { time: string, price: string, isFast: boolean } | null;
 type DayInfo = { dia_semana: number; label: string; dateText: string; fullDate: Date; };
@@ -145,27 +147,10 @@ export default function AgendarPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
-            {/* HEADER */}
-            <header className="px-5 pt-4 pb-12 bg-[#2D5284] rounded-b-3xl relative shadow-[0_8px_24px_rgba(45,82,132,0.4)] z-10">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95" aria-label="Voltar">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <h1 className="text-white font-bold text-[18px]">Agendar Consulta</h1>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')} aria-label="Notificações">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
-                        </button>
-                        <div className="flex items-center">
-                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                            <span className="text-[18px] font-bold text-white ml-[1px] leading-none">Match</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            {/* HEADER PADRONIZADO */}
+            <Header showBackButton showNotifications userAvatar="/avatar-joce.png" userName="Joce Moreno">
+                <h1 className="text-white font-bold text-[18px]">Agendar Consulta</h1>
+            </Header>
 
             {/* CARD DO MÉDICO — Glass */}
             <div className="px-5 -mt-5 relative z-20 mb-5">
@@ -312,6 +297,70 @@ export default function AgendarPage() {
                         })}
                     </div>
                 )}
+            </div>
+
+            {/* Redes Sociais - Inserido no final antes dos botões de ação final */}
+            <div className="px-5 mb-8">
+                <div className={`${glassCard} rounded-[24px] p-5`}>
+                    <h3 className="text-[#1A365D] font-black text-[14px] mb-4 uppercase tracking-wider">Redes Sociais & Contato</h3>
+                    <div className="grid grid-cols-4 gap-4">
+                        {[
+                            { icon: 'instagram', url: medico.sociais?.instagram, label: 'Instagram', color: 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]' },
+                            { icon: 'telegram', url: medico.sociais?.telegram, label: 'Telegram', color: 'bg-[#229ED9]' },
+                            { icon: 'facebook', url: medico.sociais?.facebook, label: 'Facebook', color: 'bg-[#1877F2]' },
+                            { icon: 'x', url: '#', label: 'X (Twitter)', color: 'bg-black' },
+                        ].map((soc, i) => (
+                            <button 
+                                key={i}
+                                onClick={() => soc.url && soc.url !== '#' && window.open(soc.url, '_blank')}
+                                className="flex flex-col items-center gap-2 group"
+                            >
+                                <div className={cn(
+                                    "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-active:scale-90",
+                                    soc.color
+                                )}>
+                                    {soc.icon === 'instagram' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771-4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>}
+                                    {soc.icon === 'telegram' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>}
+                                    {soc.icon === 'facebook' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>}
+                                    {soc.icon === 'x' && <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z"/></svg>}
+                                </div>
+                                <span className="text-[10px] font-bold text-[#1A365D]/60 uppercase tracking-tight">{soc.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Redes Sociais - Inserido antes dos botões finais */}
+            <div className="px-5 mb-8">
+                <div className={`${glassCard} rounded-[24px] p-5`}>
+                    <h3 className="text-[#1A365D] font-black text-[14px] mb-4 uppercase tracking-wider">Redes Sociais & Contato</h3>
+                    <div className="grid grid-cols-4 gap-4">
+                        {[
+                            { icon: 'instagram', url: medicoAny.sociais?.instagram, label: 'Instagram', color: 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]' },
+                            { icon: 'telegram', url: medicoAny.sociais?.telegram, label: 'Telegram', color: 'bg-[#229ED9]' },
+                            { icon: 'facebook', url: medicoAny.sociais?.facebook, label: 'Facebook', color: 'bg-[#1877F2]' },
+                            { icon: 'x', url: '#', label: 'X (Twitter)', color: 'bg-black' },
+                        ].map((soc, i) => (
+                            <button 
+                                key={i}
+                                onClick={() => soc.url && soc.url !== '#' && window.open(soc.url, '_blank')}
+                                className="flex flex-col items-center gap-2 group"
+                            >
+                                <div className={cn(
+                                    "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-active:scale-90",
+                                    soc.color
+                                )}>
+                                    {soc.icon === 'instagram' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>}
+                                    {soc.icon === 'telegram' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>}
+                                    {soc.icon === 'facebook' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>}
+                                    {soc.icon === 'x' && <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z"/></svg>}
+                                </div>
+                                <span className="text-[10px] font-bold text-[#1A365D]/60 uppercase tracking-tight">{soc.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* CONFIRMAÇÃO BOTTOM SHEET */}

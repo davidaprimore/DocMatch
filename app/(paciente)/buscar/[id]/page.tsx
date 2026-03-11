@@ -8,6 +8,7 @@ import {
     MessageCircle, Building2, Video, Send
 } from 'lucide-react'
 import { medicosMock } from '@/data/mockData'
+import { Header } from '@/components/Header'
 
 // Logos dos planos de saúde — usando texto estilizado com cores reais das marcas
 const PlanLogo = ({ operadora }: { operadora: string }) => {
@@ -86,109 +87,64 @@ export default function PerfilMedicoPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-32 font-sans">
 
-            {/* ── HEADER COMPACTO (igual ao dashboard) ── */}
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-[0_8px_24px_rgba(45,82,132,0.35)] relative z-20">
-                <div className="flex items-center justify-between">
-                    <button
-                        onClick={() => router.back()}
-                        className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95"
-                        aria-label="Voltar"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
+            {/* HEADER PADRONIZADO */}
+            <Header variant="page" title="Perfil do Médico" showBackButton showNotifications userAvatar="/avatar-joce.png" userName="Joce Moreno" />
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            className="relative text-white hover:text-gray-200 transition-colors"
-                            onClick={() => router.push('/notificacoes')}
-                            aria-label="Notificações"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                            </svg>
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
-                        </button>
-                        <div className="flex items-center">
-                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                            <span className="text-[18px] font-bold text-white ml-[1px]">Match</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Foto overlapping — centralizada sobre o header */}
-                <div className="absolute -bottom-[48px] left-1/2 -translate-x-1/2 z-10">
-                    <div className="relative">
-                        {/* Foto */}
-                        <div className="w-[108px] h-[108px] rounded-[26px] overflow-hidden border-4 border-white shadow-[0_12px_32px_rgba(45,82,132,0.28)]">
-                            <img src={medico.foto_url} alt={`Foto de ${medico.nome}`} className="w-full h-full object-cover" />
-                        </div>
-
-                        {/* Badge TOP — canto superior esquerdo */}
-                        {medico.destaque && (
-                            <div className="absolute -top-2 -left-2 bg-[#D4AF37] text-[#1A365D] text-[8px] font-black px-2 py-0.5 rounded-full shadow-md flex items-center gap-0.5">
-                                ⭐ Top
+            {/* CARD DO MÉDICO — Clean & Premium */}
+            <div className="px-5 -mt-5 relative z-20 mb-5">
+                <div className={`${glassCard} rounded-[24px] p-5`}>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="relative">
+                            <div className="w-[82px] h-[82px] rounded-[22px] overflow-hidden border-2 border-[#D4AF37]/20 shadow-lg">
+                                <img src={medico.foto_url} alt={`Foto de ${medico.nome}`} className="w-full h-full object-cover" />
                             </div>
-                        )}
-
-                        {/* Badge CRM — abaixo da foto centralizado */}
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[8.5px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-sm whitespace-nowrap">
-                            <ShieldCheck className="w-3 h-3 fill-white stroke-none" /> Verificado CRM
+                            {medico.destaque && (
+                                <div className="absolute -top-2 -left-2 bg-[#D4AF37] text-[#1A365D] text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">
+                                    ⭐ Top
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <h2 className="text-[#1A365D] font-bold text-[17px] leading-tight truncate">{medico.nome}</h2>
+                                <ShieldCheck className="w-4.5 h-4.5 text-[#D4AF37] shrink-0" />
+                            </div>
+                            <p className="text-slate-500 text-[13px] font-medium mb-2">{medico.especialidade}</p>
+                            <div className="bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-lg inline-flex items-center gap-1 border border-emerald-500/20">
+                                <ShieldCheck className="w-3 h-3" /> Verificado CRM
+                            </div>
                         </div>
 
-                        {/* Botão favoritar — canto superior direito */}
                         <button
                             onClick={() => setFavorito(!favorito)}
-                            className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition-transform active:scale-90"
-                            aria-label={favorito ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                            className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center shadow-sm active:scale-90 transition-all border border-slate-100"
                         >
-                            <Heart className={`w-4 h-4 transition-colors ${favorito ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
+                            <Heart className={`w-5 h-5 transition-colors ${favorito ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
                         </button>
                     </div>
-                </div>
-            </header>
 
-            {/* ── REDES SOCIAIS (CTA Especialista) ── */}
-            {medico.sociais && (Object.keys(medico.sociais).length > 0) && (
-                <div className="px-5 mb-5 flex flex-wrap justify-center gap-3">
-                    {medico.sociais.instagram && (
-                        <button 
-                            onClick={() => window.open(medico.sociais?.instagram, '_blank')}
-                            className="bg-gradient-to-tr from-[#F58529] via-[#D10869] to-[#8134AF] p-2.5 rounded-2xl text-white shadow-md active:scale-95 transition-all"
-                            title="Instagram"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                        </button>
-                    )}
-                    {medico.sociais.telegram && (
-                        <button 
-                            onClick={() => window.open(medico.sociais?.telegram, '_blank')}
-                            className="bg-[#0088cc] p-2.5 rounded-2xl text-white shadow-md active:scale-95 transition-all"
-                            title="Telegram"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.05 1.577c-.393-.016-.784.08-1.117.235-.484.225-5.32 2.37-10.348 4.632-13.06 5.87-14.471 6.544-14.777 6.94-.367.476-.388 1.135-.053 1.633.284.423.834.708 1.954 1.042.8.238 1.905.518 2.66.67l1.7.34 2.115 6.46c.304.93.94 1.583 1.694 1.638.74.053 1.46-.356 1.906-1.077.202-.325.337-.624.584-1.127.23-.466.574-1.155 1.693-2.272l5.77 4.246c.6.438 1.168.613 1.695.534.52-.08.91-.424 1.144-1.043.235-.624 9.112-21.783 9.385-22.51.274-.728.164-1.393-.207-1.848-.37-.455-1.018-.707-1.6-.702zm-12.27 13.626s.013-.01.014-.01l-.105.474-.182.818c-.144.654-.3.943-.496 1.196l-.01.015c-.21.274-.32.324-.44.25-.133-.082-.366-.525-.366-.525l-1.92-5.86 1.83.364 1.688 3.282z"/></svg>
-                        </button>
-                    )}
-                    {medico.sociais.facebook && (
-                        <button 
-                            onClick={() => window.open(medico.sociais?.facebook, '_blank')}
-                            className="bg-[#1877F2] p-2.5 rounded-2xl text-white shadow-md active:scale-95 transition-all"
-                            title="Facebook"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        </button>
-                    )}
-                    {medico.sociais.site && (
-                        <button 
-                            onClick={() => window.open(medico.sociais?.site, '_blank')}
-                            className="bg-white border border-slate-200 text-[#2D5284] p-2.5 rounded-2xl shadow-md active:scale-95 transition-all"
-                            title="Website"
-                        >
-                            <Building2 className="w-5 h-5" />
-                        </button>
-                    )}
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100/50">
+                        <div className="flex flex-col items-center flex-1">
+                            <div className="flex items-center gap-1 mb-0.5">
+                                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                <span className="text-[#1A365D] font-bold text-[14px]">{medico.avaliacao}</span>
+                            </div>
+                            <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Nota</span>
+                        </div>
+                        <div className="w-px h-8 bg-slate-100 mx-2" />
+                        <div className="flex flex-col items-center flex-1">
+                            <span className="text-[#1A365D] font-bold text-[14px]">{medico.total_avaliacoes}</span>
+                            <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Avaliações</span>
+                        </div>
+                        <div className="w-px h-8 bg-slate-100 mx-2" />
+                        <div className="flex flex-col items-center flex-1">
+                            <span className="text-[#1A365D] font-bold text-[14px]">{medico.experiencia ? medico.experiencia.split(' ')[0] : '0'}+ anos</span>
+                            <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Exp.</span>
+                        </div>
+                    </div>
                 </div>
-            )}
+            </div>
 
             {/* ── ABAS ── */}
             <div className="px-5 mb-4">
@@ -245,7 +201,7 @@ export default function PerfilMedicoPage() {
                             <div className="w-10 h-10 rounded-2xl bg-[#2D5284]/10 flex items-center justify-center shrink-0">
                                 <Clock4 className="w-5 h-5 text-[#2D5284]" />
                             </div>
-                            <p className="text-[13px] text-[#1A365D] font-semibold leading-snug">{medico.experiencia}</p>
+                            <p className="text-[13px] text-[#1A365D] font-semibold leading-snug">{medico.experiencia || 'Experiência verificada'}</p>
                         </div>
 
                         {/* Convênios com logos */}
@@ -358,6 +314,35 @@ export default function PerfilMedicoPage() {
                     </>
                 )}
             </div>
+
+            {/* ── REDES SOCIAIS & CONTATO ── (Bottom Section) */}
+            {medico.sociais && (Object.keys(medico.sociais).length > 0) && (
+                <div className="px-5 mb-8 pb-32"> {/* Added padding to not be covered by fixed CTA */}
+                    <h3 className="text-[#1A365D] font-bold text-[15px] mb-4 text-center">Conecte-se com {medico.nome.split(' ')[0]}</h3>
+                    <div className="flex justify-center gap-4">
+                        {medico.sociais.instagram && (
+                            <button onClick={() => window.open(medico.sociais?.instagram, '_blank')} className="bg-gradient-to-tr from-[#F58529] via-[#D10869] to-[#8134AF] p-3 rounded-2xl text-white shadow-lg active:scale-90 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259 0 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                            </button>
+                        )}
+                        {medico.sociais.telegram && (
+                            <button onClick={() => window.open(medico.sociais?.telegram, '_blank')} className="bg-[#0088cc] p-3 rounded-2xl text-white shadow-lg active:scale-90 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.05 1.577c-.393-.016-.784.08-1.117.235-.484.225-5.32 2.37-10.348 4.632-13.06 5.87-14.471 6.544-14.777 6.94-.367.476-.388 1.135-.053 1.633.284.423.834.708 1.954 1.042.8.238 1.905.518 2.66.67l1.7.34 2.115 6.46c.304.93.94 1.583 1.694 1.638.74.053 1.46-.356 1.906-1.077.202-.325.337-.624.584-1.127.23-.466.574-1.155 1.693-2.272l5.77 4.246c.6.438 1.168.613 1.695.534.52-.08.91-.424 1.144-1.043.235-.624 9.112-21.783 9.385-22.51.274-.728.164-1.393-.207-1.848-.37-.455-1.018-.707-1.6-.702zm-12.27 13.626s.013-.01.014-.01l-.105.474-.182.818c-.144.654-.3.943-.496 1.196l-.01.015c-.21.274-.32.324-.44.25-.133-.082-.366-.525-.366-.525l-1.92-5.86 1.83.364 1.688 3.282z"/></svg>
+                            </button>
+                        )}
+                        {medico.sociais.facebook && (
+                            <button onClick={() => window.open(medico.sociais?.facebook, '_blank')} className="bg-[#1877F2] p-3 rounded-2xl text-white shadow-lg active:scale-90 transition-all">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            </button>
+                        )}
+                        {medico.sociais.site && (
+                            <button onClick={() => window.open(medico.sociais?.site, '_blank')} className="bg-white border border-slate-200 text-[#2D5284] p-3 rounded-2xl shadow-lg active:scale-90 transition-all">
+                                <Building2 className="w-5 h-5" />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* ── CTA FIXO INFERIOR — 3 botões ── */}
             <div className="fixed bottom-0 left-0 right-0 px-5 pb-8 pt-4 bg-white/85 backdrop-blur-xl border-t border-white/60 shadow-[0_-8px_24px_rgba(31,62,109,0.08)] z-30">
