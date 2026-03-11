@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Calendar, Clock, MapPin, Video, CheckCircle2, XCircle, AlertCircle, CreditCard, MessageCircle, MoreVertical, Stethoscope } from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
 import { consultasMock, medicosMock } from '@/data/mockData'
@@ -16,11 +16,13 @@ const statusConfig = {
     nao_compareceu: { label: 'Faltou', bg: 'bg-amber-50', text: 'text-amber-600', icon: AlertCircle },
 }
 
-export default function ConsultaDetalhesPage({ params }: { params: { id: string } }) {
+export default function ConsultaDetalhesPage() {
     const router = useRouter()
+    const params = useParams()
+    const consultaId = params?.id as string
 
     // Identificar a Consulta Dinamicamente
-    const consulta = consultasMock.find((c: any) => c.id === params.id)
+    const consulta = consultasMock.find((c: any) => c.id === consultaId)
 
     if (!consulta) {
         return (

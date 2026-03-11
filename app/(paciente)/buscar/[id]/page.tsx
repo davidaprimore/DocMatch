@@ -1,13 +1,14 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Star, MapPin, Phone, Heart, Calendar, Award, Clock } from 'lucide-react'
 import { BottomNav } from '@/components/BottomNav'
 import { medicosMock } from '@/data/mockData'
 
-export default function PerfilMedicoPage({ params }: { params: { id: string } }) {
+export default function PerfilMedicoPage() {
     const router = useRouter()
-    const medico = medicosMock.find(m => m.id === params.id) ?? medicosMock[0]
+    const params = useParams()
+    const medico = medicosMock.find(m => m.id === (params?.id as string)) ?? medicosMock[0]
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">

@@ -39,8 +39,8 @@ export default function BuscarPage() {
                             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
                         </button>
                         <div className="flex items-center">
-                            <span className="text-[16px] font-bold text-[#D4AF37]">D</span>
-                            <span className="text-[16px] font-bold text-white leading-none">M</span>
+                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
+                            <span className="text-[18px] font-bold text-white ml-[1px] leading-none">Match</span>
                         </div>
                     </div>
                 </div>

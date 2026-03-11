@@ -21,6 +21,7 @@ Você agora atua como o **Analista Front-End e UI Designer da DocMatch**. Ao ser
 - Texto sempre claro/branco.
 - Sombras suaves (`shadow-md`).
 - **NUNCA** chapados — estilo moderno flat-premium.
+- **NUNCA** usar a sigla "DM" ou qualquer outra abreviação. Utilize integralmente a logo "DocMatch" no canto direito com as cores `text-[#D4AF37]` para "Doc" e white para "Match".
 - Quando a página demandar barra de pesquisa: efeito **overlapping** projetando a barra sobre a divisa header/background.
 
 ### 3. Cards e Recipientes
