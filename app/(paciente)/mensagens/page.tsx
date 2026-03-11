@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
     Search, MoreVertical, CheckCheck, Camera, Phone, Video, ArrowLeft, Send,
     Paperclip, Mic, X, Square, Reply, Heart, ThumbsUp, Laugh, Frown, Bell, Settings,
@@ -186,6 +186,7 @@ const conversasMock = [
 
 export default function MensagensPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [viewChat, setViewChat] = useState<string | null>(null)
     const [inputValue, setInputValue] = useState('')
 
@@ -244,6 +245,12 @@ export default function MensagensPage() {
     useEffect(() => {
         scrollToBottom()
     }, [viewChat, msgsPorChat])
+
+    // Abre conversa automaticamente se vier com ?chat=ID na URL
+    useEffect(() => {
+        const chatId = searchParams?.get('chat')
+        if (chatId) setViewChat(chatId)
+    }, [searchParams])
 
     // Timer do Áudio
     useEffect(() => {
