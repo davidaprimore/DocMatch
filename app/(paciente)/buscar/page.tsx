@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, MapPin, Star, Heart, SlidersHorizontal, Filter } from 'lucide-react'
+import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { medicosMock, especialidadesMock } from '@/data/mockData'
 
@@ -23,44 +24,24 @@ export default function BuscarPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md relative z-20 mb-6">
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <h1 className="text-white font-bold text-[18px]">Buscar Profissionais</h1>
-                    </div>
-                    {/* Componente Constante: Logo + Notificações */}
-                    <div className="flex items-center gap-4">
-                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
-                            <Star strokeWidth={2} className="w-[18px] h-[18px] opacity-0 absolute pointer-events-none" />{/* Spacer Ghost para manter alinhamento se trocar de icon*/}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
-                        </button>
-                        <div className="flex items-center">
-                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                            <span className="text-[18px] font-bold text-white ml-[1px] leading-none">Match</span>
-                        </div>
-                    </div>
+            <Header title="Buscar Profissionais" showBackButton showNotifications />
+
+            <div className="px-5 -mt-10 relative z-30 flex gap-2 mb-6">
+                <div className="flex-1 relative">
+                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                        type="text" value={busca} onChange={e => setBusca(e.target.value)}
+                        placeholder="Especialidade, nome ou sintoma..."
+                        className="w-full bg-white rounded-[16px] py-[14px] pr-4 shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-[13px] font-medium text-slate-600 outline-none placeholder:text-slate-400"
+                        style={{ paddingLeft: '3rem' }}
+                    />
                 </div>
-                <div className="absolute left-5 right-5 -bottom-6 z-30 flex gap-2">
-                    <div className="flex-1 relative">
-                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input
-                            type="text" value={busca} onChange={e => setBusca(e.target.value)}
-                            placeholder="Especialidade, nome ou sintoma..."
-                            className="w-full bg-white rounded-[16px] py-[14px] pr-4 shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-[13px] font-medium text-slate-600 outline-none placeholder:text-slate-400"
-                            style={{ paddingLeft: '3rem' }}
-                        />
-                    </div>
-                    <button className="w-12 h-12 bg-white rounded-[16px] flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-[#2D5284] flex-shrink-0">
-                        <SlidersHorizontal className="w-5 h-5" />
-                    </button>
-                </div>
-            </header>
+                <button className="w-12 h-12 bg-white rounded-[16px] flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-[#2D5284] flex-shrink-0">
+                    <SlidersHorizontal className="w-5 h-5" />
+                </button>
+            </div>
 
             <div className="px-4 pt-4 pb-3">
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">

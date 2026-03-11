@@ -52,7 +52,7 @@ export default function MenuPage() {
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000"></div>
                         <Avatar className="w-24 h-24 border-4 border-[#1A365D] relative shadow-2xl">
-                            <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
+                            <AvatarImage src="/avatar-joce.png" />
                             <AvatarFallback>JM</AvatarFallback>
                         </Avatar>
                         <div className="absolute bottom-0 right-0 bg-[#D4AF37] text-[#1A365D] p-1.5 rounded-full border-2 border-[#1A365D] shadow-lg">
@@ -120,7 +120,7 @@ export default function MenuPage() {
                 </div>
             </main>
 
-            <BottomNav activeTab="menu" />
+            <BottomNav />
         </div>
     )
 }

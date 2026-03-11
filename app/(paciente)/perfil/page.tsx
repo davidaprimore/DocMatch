@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, User, Phone, Mail, MapPin, ShieldCheck, Download, Trash2, Eye, ChevronRight, Camera } from 'lucide-react'
+import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { useAuth } from '@/hooks/useAuth'
 import { maskCPFPrivate, maskPhonePrivate } from '@/lib/utils/masks'
@@ -16,20 +17,19 @@ export default function PerfilPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md z-20 mb-14 relative">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => router.back()} className="text-white"><ArrowLeft className="w-5 h-5" /></button>
-                    <h1 className="text-white font-bold text-[18px]">Meu Perfil</h1>
-                </div>
-                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+            <Header title="Meu Perfil" showBackButton showNotifications />
+
+            <div className="flex flex-col items-center -mt-16 mb-6 relative z-30">
+                <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
                     <div className="relative">
-                        <img src="https://i.pravatar.cc/150?u=joce" className="w-20 h-20 rounded-full border-4 border-white shadow-lg" alt="Avatar" />
-                        <button className="absolute bottom-0 right-0 w-7 h-7 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md">
-                            <Camera className="w-3.5 h-3.5 text-[#1A365D]" />
+                        <img src="/avatar-joce.png" className="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover" alt="Joce Moreno" />
+                        <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md border-2 border-white hover:scale-110 transition-transform">
+                            <Camera className="w-4 h-4 text-[#1A365D]" />
                         </button>
                     </div>
                 </div>
-            </header>
+            </div>
 
             <div className="px-4 space-y-4">
                 <div className="text-center mb-2">

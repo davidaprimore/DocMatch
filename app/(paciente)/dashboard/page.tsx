@@ -31,21 +31,18 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
             {/* HEADER AZUL PREMIUM PADRONIZADO */}
-            <Header showNotifications showBackButton={false}>
-                <div className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10 border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => router.push('/menu')}>
-                        <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
-                        <AvatarFallback className="bg-[hsl(222,35%,20%)] text-white">JM</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <span className="text-white/80 text-[11px] font-medium leading-none mb-0.5">Bem-vinda de volta,</span>
-                        <span className="text-white text-[15px] font-bold leading-none">Joce Moreno</span>
-                    </div>
-                </div>
+            <div className="relative mb-8">
+                <Header 
+                    showNotifications 
+                    showBackButton={false}
+                    userAvatar="/avatar-joce.png"
+                    userName="Joce Moreno"
+                    onAvatarClick={() => router.push('/menu')}
+                />
 
                 {/* BUSCA OVERLAPPING */}
                 <div className="absolute left-5 right-5 -bottom-6 z-30">
-                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <input
@@ -56,13 +53,14 @@ export default function DashboardPage() {
                         onClick={() => router.push('/buscar')}
                         readOnly
                     />
-                    <svg className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="absolute right-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                         <line x1="12" x2="12" y1="19" y2="22" />
                     </svg>
                 </div>
-            </Header>
+            </div>
+
 
             <main className="px-4 pt-5 pb-8 space-y-3">
                 {/* Banner Economia */}

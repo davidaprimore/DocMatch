@@ -6,6 +6,7 @@ import {
     ArrowLeft, FileText, ChevronRight, Download, Share2,
     Clock, ShieldCheck, Stethoscope, Menu as MenuIcon
 } from 'lucide-react'
+import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { receitaMock, medicosMock } from '@/data/mockData'
 import { dateRelative, dateToDisplay } from '@/lib/utils/masks'
@@ -32,43 +33,18 @@ export default function ReceitasPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] font-sans">
 
-            {/* HEADER — padrão pt-4 pb-12 */}
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-[0_8px_24px_rgba(45,82,132,0.35)] relative z-20">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95" aria-label="Voltar">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <h1 className="text-white font-bold text-[18px]">Minhas Receitas</h1>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button className="relative text-white" onClick={() => router.push('/notificacoes')} aria-label="Notificações">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => router.push('/menu')} className="text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors">
-                                <MenuIcon className="w-5 h-5" />
-                            </button>
-                            <div className="flex items-center">
-                                <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                                <span className="text-[18px] font-bold text-white ml-[1px]">Match</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <Header title="Minhas Receitas" showBackButton showNotifications />
 
-                {/* Card overlapping — igual à barra de busca do dashboard */}
-                <div className="absolute left-5 right-5 -bottom-[28px] z-30">
-                    <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
-                        <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                            <p className="text-[13px] font-semibold text-[#1A365D]">{mockReceitas.length} receitas no histórico</p>
-                        </div>
-                        <p className="text-[11px] text-slate-400">Assinadas digitalmente</p>
+            {/* Card overlapping — igual à barra de busca do dashboard */}
+            <div className="px-5 -mt-10 relative z-30 mb-8">
+                <div className={`${glassCard} rounded-2xl px-4 py-4 flex items-center justify-between shadow-card`}>
+                    <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                        <p className="text-[14px] font-bold text-[#1A365D]">{mockReceitas.length} receitas no histórico</p>
                     </div>
+                    <p className="text-[11px] text-slate-400 font-medium">Assinadas digitalmente</p>
                 </div>
-            </header>
+            </div>
 
             <main className="px-5 pt-10 pb-24 space-y-4">
                 {mockReceitas.map(receita => {

@@ -23,13 +23,13 @@ export default function CheckoutPage() {
             <main className="px-5 -mt-8 space-y-4 relative z-30">
                 {/* Endereço */}
                 <section className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-[#2D5284]" />
+                    <div className="w-10 h-10 rounded-full border border-slate-100 overflow-hidden shadow-sm">
+                        <img src="/avatar-joce.png" alt="Joce Moreno" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                         <p className="text-[11px] text-slate-400 font-bold uppercase">Entregar em</p>
-                        <p className="text-[14px] font-bold text-slate-800">Rua Augusta, 500 - Apto 82</p>
-                        <p className="text-[12px] text-slate-500">Consolação, São Paulo - SP</p>
+                        <p className="text-[14px] font-bold text-slate-800">Joce Moreno</p>
+                        <p className="text-[12px] text-slate-500">Rua Augusta, 500 - Apto 82</p>
                     </div>
                     <ChevronRight className="w-5 h-5 text-slate-300" />
                 </section>

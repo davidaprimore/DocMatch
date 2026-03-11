@@ -11,6 +11,9 @@ interface HeaderProps {
     onBack?: () => void
     className?: string
     children?: React.ReactNode
+    userAvatar?: string
+    userName?: string
+    onAvatarClick?: () => void
 }
 
 export function Header({ 
@@ -19,7 +22,10 @@ export function Header({
     showNotifications = true, 
     onBack,
     className,
-    children
+    children,
+    userAvatar,
+    userName,
+    onAvatarClick
 }: HeaderProps) {
     const router = useRouter()
 
@@ -38,8 +44,21 @@ export function Header({
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                     )}
+                    
+                    {userAvatar && (
+                        <div className="flex items-center gap-3 cursor-pointer group" onClick={onAvatarClick}>
+                            <div className="w-10 h-10 rounded-full border-2 border-white/20 overflow-hidden shadow-sm group-hover:scale-105 transition-transform">
+                                <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-white/80 text-[11px] font-medium leading-none mb-0.5 whitespace-nowrap">Bem-vinda,</span>
+                                <span className="text-white text-[15px] font-bold leading-none whitespace-nowrap">{userName}</span>
+                            </div>
+                        </div>
+                    )}
+
                     {title && <h1 className="text-white font-bold text-[18px]">{title}</h1>}
-                    {!title && children}
+                    {!title && !userAvatar && children}
                 </div>
 
                 <div className="flex items-center gap-4">

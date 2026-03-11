@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Bell, Calendar, FileText, Tag, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { dateRelative } from '@/lib/utils/masks'
 
@@ -27,15 +28,13 @@ export default function NotificacoesPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md z-20 mb-5">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="text-white"><ArrowLeft className="w-5 h-5" /></button>
-                        <h1 className="text-white font-bold text-[18px]">Notificações</h1>
-                    </div>
-                    {naoLidas > 0 && <span className="bg-[#D4AF37] text-[#1A365D] text-[11px] font-black px-2.5 py-1 rounded-full">{naoLidas} novas</span>}
-                </div>
-            </header>
+            <Header title="Notificações" showBackButton>
+                {naoLidas > 0 && (
+                    <span className="bg-[#D4AF37] text-[#1A365D] text-[10px] font-black px-2 py-0.5 rounded-full ml-2">
+                        {naoLidas} novas
+                    </span>
+                )}
+            </Header>
 
             <main className="px-4 space-y-2">
                 {mockNotificacoes.map(n => {
