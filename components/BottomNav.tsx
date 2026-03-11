@@ -22,7 +22,7 @@ export function BottomNav({ activeTab }: BottomNavProps) {
 
     const getActive = (itemId: string, itemHref: string) => {
         if (activeTab) return activeTab === itemId
-        return pathname === itemHref || pathname.startsWith(itemHref + '/')
+        return pathname === itemHref || pathname?.startsWith(itemHref + '/')
     }
 
     return (

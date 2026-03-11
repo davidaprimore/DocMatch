@@ -86,7 +86,7 @@ export default function PerfilMedicoPage({ params }: { params: { id: string } })
                     <button className="flex-1 bg-slate-100 text-[#2D5284] font-bold rounded-2xl py-4 flex items-center justify-center gap-2 text-[14px]">
                         <Phone className="w-5 h-5" /> Contato
                     </button>
-                    <button onClick={() => router.push('/agendar')} className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black rounded-2xl py-4 flex items-center justify-center gap-2 text-[14px] shadow-[0_4px_16px_rgba(212,175,55,0.3)]">
+                    <button onClick={() => router.push(`/agendar/${medico.id}`)} className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black rounded-2xl py-4 flex items-center justify-center gap-2 text-[14px] shadow-[0_4px_16px_rgba(212,175,55,0.3)]">
                         <Calendar className="w-5 h-5" /> Agendar
                     </button>
                 </div>

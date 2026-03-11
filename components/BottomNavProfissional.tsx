@@ -20,7 +20,7 @@ export function BottomNavProfissional() {
             <div className="max-w-lg mx-auto px-2">
                 <div className="flex items-center justify-around h-[70px] pb-1">
                     {menuItems.map(item => {
-                        const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                        const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
                         return (
                             <Link key={item.id} href={item.href}
                                 className={cn('flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-2xl transition-all duration-300',

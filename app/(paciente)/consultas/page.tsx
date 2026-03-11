@@ -20,10 +20,25 @@ export default function ConsultasPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-5 pb-10 rounded-b-3xl shadow-md z-20 mb-5">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => router.back()} className="text-white"><ArrowLeft className="w-5 h-5" /></button>
-                    <h1 className="text-white font-bold text-[18px]">Minhas Consultas</h1>
+            <header className="bg-[#2D5284] px-5 pt-4 pb-6 rounded-b-3xl shadow-md z-20 mb-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95">
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-white font-bold text-[18px]">Minhas Consultas</h1>
+                    </div>
+                    {/* Componente Constante: Logo + Notificações */}
+                    <div className="flex items-center gap-4">
+                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
+                        </button>
+                        <div className="flex items-center">
+                            <span className="text-[16px] font-bold text-[#D4AF37]">D</span>
+                            <span className="text-[16px] font-bold text-white leading-none">M</span>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -72,7 +87,7 @@ export default function ConsultasPage() {
             </main>
 
             <div className="px-4 mt-4">
-                <button onClick={() => router.push('/agendar')} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black rounded-2xl py-4 text-[14px] shadow-[0_4px_16px_rgba(212,175,55,0.3)]">
+                <button onClick={() => router.push('/buscar')} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black rounded-2xl py-4 text-[14px] shadow-[0_4px_16px_rgba(212,175,55,0.3)] hover:scale-[1.02] transition-transform">
                     + Agendar Nova Consulta
                 </button>
             </div>

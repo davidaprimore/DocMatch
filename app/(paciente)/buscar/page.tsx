@@ -23,10 +23,26 @@ export default function BuscarPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
-            <header className="bg-[#2D5284] px-5 pt-5 pb-8 rounded-b-3xl shadow-md relative z-20 mb-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <button onClick={() => router.back()} className="text-white"><ArrowLeft className="w-5 h-5" /></button>
-                    <h1 className="text-white font-bold text-[18px]">Buscar Profissionais</h1>
+            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md relative z-20 mb-6">
+                <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95">
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-white font-bold text-[18px]">Buscar Profissionais</h1>
+                    </div>
+                    {/* Componente Constante: Logo + Notificações */}
+                    <div className="flex items-center gap-4">
+                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
+                            <Star strokeWidth={2} className="w-[18px] h-[18px] opacity-0 absolute pointer-events-none" />{/* Spacer Ghost para manter alinhamento se trocar de icon*/}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
+                        </button>
+                        <div className="flex items-center">
+                            <span className="text-[16px] font-bold text-[#D4AF37]">D</span>
+                            <span className="text-[16px] font-bold text-white leading-none">M</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="absolute left-5 right-5 -bottom-6 z-30 flex gap-2">
                     <div className="flex-1 relative">
@@ -89,7 +105,7 @@ export default function BuscarPage() {
                                 </div>
                                 <div className="flex items-center justify-between mt-2.5">
                                     <span className="text-[13px] font-bold text-[#2D5284]">R$ {m.valor_consulta.toLocaleString('pt-BR')}</span>
-                                    <button className="bg-[#2D5284] text-white text-[11px] font-bold px-3.5 py-1.5 rounded-xl shadow-sm hover:brightness-110 transition">
+                                    <button onClick={(e) => { e.stopPropagation(); router.push(`/agendar/${m.id}`) }} className="bg-[#2D5284] text-white text-[11px] font-bold px-3.5 py-1.5 rounded-xl shadow-sm hover:brightness-110 transition">
                                         Agendar
                                     </button>
                                 </div>

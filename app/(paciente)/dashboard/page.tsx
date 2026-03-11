@@ -27,26 +27,27 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
             {/* HEADER AZUL PREMIUM */}
-            <header className="bg-[#2D5284] px-5 pt-5 pb-8 rounded-b-2xl shadow-md relative z-20 mb-6">
+            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-md relative z-20 mb-6">
                 <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-3">
-                        <Avatar className="w-12 h-12 border border-white/20 shadow-sm">
+                        <Avatar className="w-10 h-10 border border-white/20 shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => router.push('/notificacoes')}>
                             <AvatarImage src="https://i.pravatar.cc/150?u=joce" />
                             <AvatarFallback className="bg-[hsl(222,35%,20%)] text-white">JM</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                            <span className="text-white/90 text-sm font-normal">Olá,</span>
-                            <span className="text-white text-base font-bold leading-tight">Joce Moreno</span>
+                            <span className="text-white/80 text-[11px] font-medium leading-none mb-0.5">Bem-vinda de volta,</span>
+                            <span className="text-white text-[15px] font-bold leading-none">Joce Moreno</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-5">
+                    {/* Componente Constante: Logo + Notificações */}
+                    <div className="flex items-center gap-4">
                         <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
-                            <Bell strokeWidth={2} className="w-[20px] h-[20px]" />
-                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center font-bold">3</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
                         </button>
                         <div className="flex items-center">
-                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
-                            <span className="text-[18px] font-bold text-white ml-[1px]">Match</span>
+                            <span className="text-[16px] font-bold text-[#D4AF37]">D</span>
+                            <span className="text-[16px] font-bold text-white leading-none">M</span>
                         </div>
                     </div>
                 </div>
@@ -83,7 +84,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-4 gap-3 mb-10 px-1 pt-2">
                     {[
                         {
-                            label: 'Agendar', desc: 'Consulta', href: '/agendar', icon: (
+                            label: 'Agendar', desc: 'Consulta', href: '/buscar', icon: (
                                 <div className="relative w-full h-full flex flex-col items-center justify-center pt-2">
                                     <Image src="/icone-agenda.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform -mt-2.5" alt="Agendar" />
                                     <div className="absolute inset-0 flex flex-col items-center justify-center pt-2.5">
