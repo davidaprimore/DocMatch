@@ -1,10 +1,10 @@
 // Dados Fictícios para Teste do DocMatch
-import type { 
-  Medico, 
-  Paciente, 
-  Farmacia, 
-  Consulta, 
-  Receita, 
+import type {
+  Medico,
+  Paciente,
+  Farmacia,
+  Consulta,
+  Receita,
   PlanoSaude,
   ResultadoComparacao,
   MedicamentoFarmacia
@@ -59,6 +59,23 @@ export const medicosMock: Medico[] = [
       { dia_semana: 3, hora_inicio: '14:00', hora_fim: '18:00' },
       { dia_semana: 5, hora_inicio: '09:00', hora_fim: '13:00' },
     ],
+    // Segundo endereço: Clinca em Moema (atende terças e quintas)
+    endereco_consultorio_2: {
+      cep: '04001-000',
+      logradouro: 'Alameda Dos Jurupês',
+      numero: '452',
+      complemento: 'Sala 201 - Clínica Lumina',
+      bairro: 'Moema',
+      cidade: 'São Paulo',
+      estado: 'SP',
+      latitude: -23.5930,
+      longitude: -46.6658,
+    } as any,
+    horarios_disponiveis_2: [
+      { dia_semana: 2, hora_inicio: '08:00', hora_fim: '12:00' }, // terça
+      { dia_semana: 4, hora_inicio: '13:00', hora_fim: '18:00' }, // quinta
+      { dia_semana: 6, hora_inicio: '09:00', hora_fim: '12:00' }, // sábado
+    ] as any,
     avaliacao: 4.8,
     total_avaliacoes: 127,
     assinatura: {

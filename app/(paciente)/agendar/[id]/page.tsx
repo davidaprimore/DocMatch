@@ -2,11 +2,12 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Calendar as CalendarIcon, Clock, MapPin, Video, Zap, Star, ShieldCheck, Filter, Building2, ChevronLeft, ChevronRight, Slash } from 'lucide-react'
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Zap, Star, ShieldCheck, Filter, Building2, Video, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 import { medicosMock } from '@/data/mockData'
 import { toast } from 'sonner'
 
 type SelectedSlotType = { time: string, price: string, isFast: boolean } | null;
+type DayInfo = { dia_semana: number; label: string; dateText: string; fullDate: Date; };
 
 export default function AgendarPage() {
     const router = useRouter()
@@ -14,102 +15,123 @@ export default function AgendarPage() {
 
     const medicoId = params?.id as string || 'med_001'
     const medico = medicosMock.find(m => m.id === medicoId) || medicosMock[0]
-
-    // Locais disponíveis
-    const locais = useMemo(() => [
-        { id: 'clinic', name: 'Consultório Principal', address: `${medico.endereco_consultorio.logradouro}, ${medico.endereco_consultorio.numero} - ${medico.endereco_consultorio.bairro}, ${medico.endereco_consultorio.cidade}`, icon: Building2 },
-        { id: 'tele', name: 'Telemedicina', address: 'Atendimento Online', icon: Video }
-    ], [medico])
-
-    const [selectedLocal, setSelectedLocal] = useState(locais[0])
+    const medicoAny = medico as any
 
     const todayDate = useMemo(() => new Date(), [])
     const currentHourString = `${todayDate.getHours().toString().padStart(2, '0')}:${todayDate.getMinutes().toString().padStart(2, '0')}`
 
-    const nomesDias = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const nomesMesesCompleto = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-    // Renderiza exatamente 10 dias disponíveis do médico
-    const nextDays = useMemo(() => {
-        const days = [];
+    // Locais disponíveis — monta incluindo o segundo consultório, se existir
+    const locais = useMemo(() => {
+        const list = [
+            {
+                id: 'clinic1',
+                name: 'Consultório Principal',
+                address: `${medico.endereco_consultorio.logradouro}, ${medico.endereco_consultorio.numero} — ${medico.endereco_consultorio.bairro}, ${medico.endereco_consultorio.cidade}`,
+                icon: Building2,
+                horarios: medico.horarios_disponiveis,
+            }
+        ]
+        if (medicoAny.endereco_consultorio_2) {
+            list.push({
+                id: 'clinic2',
+                name: `Clínica ${medicoAny.endereco_consultorio_2.complemento?.split(' - ')[1] || medicoAny.endereco_consultorio_2.bairro}`,
+                address: `${medicoAny.endereco_consultorio_2.logradouro}, ${medicoAny.endereco_consultorio_2.numero} — ${medicoAny.endereco_consultorio_2.bairro}`,
+                icon: Building2,
+                horarios: medicoAny.horarios_disponiveis_2,
+            })
+        }
+        list.push({
+            id: 'tele',
+            name: 'Telemedicina',
+            address: 'Atendimento Online',
+            icon: Video,
+            horarios: medico.horarios_disponiveis, // tele usa o mesmo horário do principal
+        })
+        return list
+    }, [medico, medicoAny])
+
+    const [selectedLocal, setSelectedLocal] = useState(locais[0])
+
+    // Ao trocar local, atualiza qual horarios usar
+    const horariosLocal = selectedLocal.horarios
+
+    // Gera 10 próximos dias disponíveis para o local selecionado
+    const nextDays = useMemo((): DayInfo[] => {
+        const days: DayInfo[] = [];
         let curDate = new Date(todayDate);
-        let iterations = 0;
-
-        while (days.length < 10 && iterations < 90) { // Limitador de segurança
-            const medicoAtende = medico.horarios_disponiveis.some(h => h.dia_semana === curDate.getDay());
-
-            if (medicoAtende) {
+        let iters = 0;
+        while (days.length < 10 && iters < 90) {
+            const atende = horariosLocal.some((h: any) => h.dia_semana === curDate.getDay());
+            if (atende) {
                 const isToday = curDate.toDateString() === todayDate.toDateString();
-                const isTomorrow = new Date(todayDate.getTime() + 86400000).toDateString() === curDate.toDateString();
-
+                const tomorrow = new Date(todayDate); tomorrow.setDate(todayDate.getDate() + 1);
+                const isTomorrow = curDate.toDateString() === tomorrow.toDateString();
                 days.push({
                     dia_semana: curDate.getDay(),
                     label: isToday ? 'Hoje' : isTomorrow ? 'Amanhã' : nomesDias[curDate.getDay()],
                     dateText: `${curDate.getDate()} ${nomesMeses[curDate.getMonth()]}`,
-                    fullDate: new Date(curDate)
+                    fullDate: new Date(curDate),
                 });
             }
             curDate.setDate(curDate.getDate() + 1);
-            iterations++;
+            iters++;
         }
         return days;
-    }, [medico, todayDate]);
+    }, [horariosLocal, todayDate]);
 
-    const [selectedDay, setSelectedDay] = useState(nextDays.length > 0 ? nextDays[0] : null)
+    const [selectedDay, setSelectedDay] = useState<DayInfo | null>(null)
+
+    // Atualiza dia selecionado quando o local muda
+    useEffect(() => {
+        setSelectedDay(nextDays.length > 0 ? nextDays[0] : null)
+        setSelectedSlot(null)
+    }, [selectedLocal])
+
+    useEffect(() => {
+        if (!selectedDay && nextDays.length > 0) setSelectedDay(nextDays[0])
+    }, [nextDays])
+
     const [selectedSlot, setSelectedSlot] = useState<SelectedSlotType>(null)
     const [showFullCalendar, setShowFullCalendar] = useState(false)
-
-    // Lógica para Modal do Calendário Mês a Mês
-    const [calendarMonthStart, setCalendarMonthStart] = useState(() => {
-        return new Date(todayDate.getFullYear(), todayDate.getMonth(), 1)
-    })
+    const [calendarMonthStart, setCalendarMonthStart] = useState(() => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1))
 
     const prevMonth = () => {
-        const nextTarget = new Date(calendarMonthStart.getFullYear(), calendarMonthStart.getMonth() - 1, 1);
-        if (nextTarget >= new Date(todayDate.getFullYear(), todayDate.getMonth(), 1)) {
-            setCalendarMonthStart(nextTarget)
-        }
+        const minMonth = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1)
+        const target = new Date(calendarMonthStart.getFullYear(), calendarMonthStart.getMonth() - 1, 1)
+        if (target >= minMonth) setCalendarMonthStart(target)
     }
     const nextMonth = () => setCalendarMonthStart(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
 
     const calendarDays = useMemo(() => {
-        const year = calendarMonthStart.getFullYear();
-        const month = calendarMonthStart.getMonth();
-        const firstDayIndex = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const year = calendarMonthStart.getFullYear()
+        const month = calendarMonthStart.getMonth()
+        const firstDayIdx = new Date(year, month, 1).getDay()
+        const daysInMonth = new Date(year, month + 1, 0).getDate()
+        const days: (Date | null)[] = []
+        for (let i = 0; i < firstDayIdx; i++) days.push(null)
+        for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d))
+        return days
+    }, [calendarMonthStart])
 
-        const days = [];
-        for (let i = 0; i < firstDayIndex; i++) days.push(null);
-        for (let d = 1; d <= daysInMonth; d++) days.push(new Date(year, month, d));
-        return days;
-    }, [calendarMonthStart]);
+    const allSlots = [
+        { time: '08:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
+        { time: '09:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
+        { time: '10:30', price: `R$ ${medico.valor_consulta}`, isFast: false },
+        { time: '14:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
+        { time: '16:30', price: `R$ ${medico.valor_consulta + 50}`, isFast: true },
+        { time: '18:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
+        { time: '19:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
+    ]
 
-    // Filtrar horários ultrapassados se for hoje
     const availableSlots = useMemo(() => {
-        const baseSlots = [
-            { time: '09:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
-            { time: '10:30', price: `R$ ${medico.valor_consulta}`, isFast: false },
-            { time: '14:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
-            { time: '16:30', price: `R$ ${medico.valor_consulta + 50}`, isFast: true },
-            { time: '18:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
-            { time: '19:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
-            { time: '21:30', price: `R$ ${medico.valor_consulta}`, isFast: false },
-            { time: '22:30', price: `R$ ${medico.valor_consulta}`, isFast: false },
-        ]
-
         if (!selectedDay) return []
-
-        if (selectedDay.label === 'Hoje') {
-            return baseSlots.filter(s => s.time >= currentHourString)
-        }
-        return baseSlots
-    }, [medico, selectedDay, currentHourString])
-
-    useEffect(() => {
-        // Zera a seleção se trocar de dia ou lugar
-        setSelectedSlot(null)
-    }, [selectedDay, selectedLocal])
+        if (selectedDay.label === 'Hoje') return allSlots.filter(s => s.time > currentHourString)
+        return allSlots
+    }, [selectedDay, currentHourString, selectedLocal])
 
     const handleConfirmar = () => {
         if (!selectedSlot || !selectedDay) return
@@ -118,20 +140,23 @@ export default function AgendarPage() {
         setTimeout(() => router.push('/dashboard'), 1500)
     }
 
+    // Glass card class reutilizável
+    const glassCard = `bg-white/70 backdrop-blur-md border border-white/80 shadow-[0_8px_32px_rgba(31,62,109,0.10),0_2px_8px_rgba(31,62,109,0.06),inset_0_1px_2px_rgba(255,255,255,0.9)]`
+
     return (
-        <div className="min-h-screen bg-slate-50 pb-20 font-sans">
-            <header className="px-5 pt-4 pb-12 bg-[#2D5284] rounded-b-3xl relative shadow-md z-10">
+        <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
+            {/* HEADER */}
+            <header className="px-5 pt-4 pb-12 bg-[#2D5284] rounded-b-3xl relative shadow-[0_8px_24px_rgba(45,82,132,0.4)] z-10">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95">
+                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95" aria-label="Voltar">
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <h1 className="text-white font-bold text-[18px]">Agendar Consulta</h1>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')}>
-                            <Star strokeWidth={2} className="w-[18px] h-[18px] opacity-0 absolute pointer-events-none" />
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                        <button className="relative text-white hover:text-gray-200 transition-colors" onClick={() => router.push('/notificacoes')} aria-label="Notificações">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
                             <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
                         </button>
                         <div className="flex items-center">
@@ -142,50 +167,53 @@ export default function AgendarPage() {
                 </div>
             </header>
 
-            <div className="px-5 -mt-4 relative z-20 mb-6">
-                <div className="bg-white rounded-[24px] p-5 flex items-center gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden group">
-                    <div className="w-20 h-20 rounded-2xl border-2 border-[#D4AF37]/30 overflow-hidden shrink-0 z-10">
-                        <img src={medico.foto_url} alt={medico.nome} className="w-full h-full object-cover" />
+            {/* CARD DO MÉDICO — Glass */}
+            <div className="px-5 -mt-5 relative z-20 mb-5">
+                <div className={`${glassCard} rounded-[24px] p-4 flex items-center gap-4`}>
+                    <div className="w-[68px] h-[68px] rounded-2xl border-2 border-[#D4AF37]/30 overflow-hidden shrink-0 shadow-md">
+                        <img src={medico.foto_url} alt={`Foto de perfil de ${medico.nome}`} className="w-full h-full object-cover" />
                     </div>
-                    <div className="z-10 flex-1">
-                        <div className="flex items-center gap-1.5 mb-1">
-                            <h2 className="text-[#1A365D] font-bold text-[16px] leading-tight line-clamp-1">{medico.nome}</h2>
-                            <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                            <h2 className="text-[#1A365D] font-bold text-[15px] leading-tight truncate">{medico.nome}</h2>
+                            <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0" aria-hidden="true" />
                         </div>
-                        <p className="text-slate-500 text-[12px] font-medium tracking-wide mb-2">{medico.especialidade}</p>
+                        <p className="text-slate-500 text-[12px] font-medium mb-1.5">{medico.especialidade}</p>
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-lg">
-                                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                                <span className="text-amber-700 text-[12px] font-bold">{medico.avaliacao}</span>
+                                <Star className="w-3 h-3 text-amber-500 fill-amber-500" aria-hidden="true" />
+                                <span className="text-amber-700 text-[11px] font-bold">{medico.avaliacao}</span>
                             </div>
                             <span className="text-slate-300 text-xs">•</span>
-                            <p className="text-slate-500 text-[12px] font-medium">{medico.total_avaliacoes} aval.</p>
+                            <p className="text-slate-500 text-[11px]">{medico.total_avaliacoes} avaliações</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* SELEÇÃO DO LOCAL DE ATENDIMENTO */}
-            <div className="px-5 mb-8">
-                <h3 className="text-[#1A365D] font-bold text-[16px] mb-3">Local de Atendimento</h3>
-                <div className="flex flex-col gap-3">
+            {/* SELEÇÃO DO LOCAL */}
+            <div className="px-5 mb-5">
+                <h3 className="text-[#1A365D] font-bold text-[15px] mb-3 px-1">Local de Atendimento</h3>
+                <div className="flex flex-col gap-2.5">
                     {locais.map(local => {
-                        const Icon = local.icon;
-                        const isSelected = selectedLocal.id === local.id;
+                        const Icon = local.icon
+                        const isSelected = selectedLocal.id === local.id
                         return (
                             <button
                                 key={local.id}
                                 onClick={() => setSelectedLocal(local)}
-                                className={`flex items-center gap-3 p-4 rounded-2xl border transition-all text-left ${isSelected
-                                    ? 'bg-blue-50/60 border-[#2D5284] shadow-sm ring-1 ring-[#2D5284]/10'
-                                    : 'bg-white border-slate-200 hover:border-slate-300'}`}
+                                aria-pressed={isSelected}
+                                className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left ${isSelected
+                                    ? `${glassCard} border-[#2D5284]/40 ring-2 ring-[#2D5284]/15 shadow-[0_8px_24px_rgba(45,82,132,0.15),inset_0_1px_2px_rgba(255,255,255,0.9)]`
+                                    : 'bg-white/50 border-white/60 backdrop-blur-sm hover:bg-white/70 shadow-[0_2px_8px_rgba(31,62,109,0.06)]'
+                                    }`}
                             >
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#2D5284]' : 'bg-slate-100'}`}>
-                                    <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-slate-500'}`} />
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#2D5284] shadow-[0_4px_12px_rgba(45,82,132,0.4)]' : 'bg-slate-100'}`}>
+                                    <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-slate-400'}`} aria-hidden="true" />
                                 </div>
-                                <div>
-                                    <p className={`font-bold text-[14px] ${isSelected ? 'text-[#1A365D]' : 'text-slate-700'}`}>{local.name}</p>
-                                    <p className={`text-[12px] ${isSelected ? 'text-[#2D5284]/70' : 'text-slate-500'}`}>{local.address}</p>
+                                <div className="min-w-0">
+                                    <p className={`font-bold text-[13px] leading-tight ${isSelected ? 'text-[#1A365D]' : 'text-slate-600'}`}>{local.name}</p>
+                                    <p className={`text-[11px] truncate ${isSelected ? 'text-[#2D5284]/70' : 'text-slate-400'}`}>{local.address}</p>
                                 </div>
                             </button>
                         )
@@ -193,185 +221,144 @@ export default function AgendarPage() {
                 </div>
             </div>
 
-            {/* CARROSSEL DE DATAS DISPONÍVEIS */}
-            <div className="px-5 mb-8">
-                <div className="flex justify-between items-end mb-4 px-1">
-                    <h3 className="text-[#1A365D] font-bold text-[16px]">Escolha a Data</h3>
-                </div>
-                <div className="flex gap-3 pb-2 overflow-x-auto no-scrollbar snap-x">
+            {/* CARROSSEL DE DATAS */}
+            <div className="px-5 mb-5">
+                <h3 className="text-[#1A365D] font-bold text-[15px] mb-3 px-1">Escolha a Data</h3>
+                <div className="flex gap-2.5 pb-2 overflow-x-auto no-scrollbar snap-x" role="listbox" aria-label="Selecionar data">
                     {nextDays.map((dia, idx) => {
-                        const isSelected = selectedDay?.dateText === dia.dateText;
+                        const isSelected = selectedDay?.dateText === dia.dateText
                         return (
                             <button
                                 key={idx}
                                 onClick={() => setSelectedDay(dia)}
-                                className={`snap-start shrink-0 flex flex-col items-center justify-center min-w-[75px] h-[90px] rounded-[20px] transition-all border ${isSelected
-                                    ? 'bg-[#2D5284] border-[#2D5284] shadow-md shadow-[#2D5284]/20 scale-105'
-                                    : 'bg-white border-slate-200 hover:border-slate-300 active:scale-95'
+                                role="option"
+                                aria-selected={isSelected}
+                                className={`snap-start shrink-0 flex flex-col items-center justify-center min-w-[68px] h-[84px] rounded-[18px] transition-all ${isSelected
+                                    ? 'bg-[#2D5284] shadow-[0_8px_24px_rgba(45,82,132,0.35),inset_0_1px_2px_rgba(255,255,255,0.2)] scale-105 border border-[#2D5284]'
+                                    : `${glassCard} hover:scale-[1.03] active:scale-95`
                                     }`}
                             >
-                                <span className={`text-[11px] font-semibold mb-1 tracking-wide ${isSelected ? 'text-white/90' : 'text-slate-500'}`}>
-                                    {dia.label}
-                                </span>
-                                <span className={`text-[18px] font-black leading-none ${isSelected ? 'text-white' : 'text-[#1A365D]'}`}>
-                                    {dia.dateText.split(' ')[0]}
-                                </span>
-                                <span className={`text-[11px] font-medium mt-1 ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
-                                    {dia.dateText.split(' ')[1]}
-                                </span>
+                                <span className={`text-[10px] font-bold mb-0.5 ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>{dia.label}</span>
+                                <span className={`text-[20px] font-black leading-none ${isSelected ? 'text-white' : 'text-[#1A365D]'}`}>{dia.dateText.split(' ')[0]}</span>
+                                <span className={`text-[10px] font-medium mt-0.5 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>{dia.dateText.split(' ')[1]}</span>
                             </button>
                         )
                     })}
                 </div>
-
                 <div className="mt-3 flex justify-center">
                     <button
                         onClick={() => setShowFullCalendar(true)}
-                        className="flex items-center gap-2 text-[12px] font-bold text-[#2D5284] bg-[#2D5284]/5 px-5 py-2.5 rounded-full border border-[#2D5284]/10 hover:bg-[#2D5284]/10 transition-colors"
+                        className="flex items-center gap-2 text-[12px] font-bold text-[#2D5284] bg-white/60 backdrop-blur-sm px-5 py-2 rounded-full border border-white/80 shadow-sm hover:bg-white/80 transition-colors"
                     >
-                        <CalendarIcon className="w-4 h-4" />
+                        <CalendarIcon className="w-3.5 h-3.5" />
                         Ver Calendário Completo
                     </button>
                 </div>
             </div>
 
-            {/* HORÁRIOS FILTRADOS */}
-            <div className="px-5 space-y-4 mb-24">
-                <div className="flex justify-between items-center px-1">
-                    <h3 className="text-[#1A365D] font-bold text-[16px]">Horários Disponíveis</h3>
-                    <button className="text-[#2D5284] flex items-center gap-1 text-sm font-medium"><Filter className="w-4 h-4" /> Filtro</button>
+            {/* HORÁRIOS — Grid Compacto */}
+            <div className="px-5 mb-10">
+                <div className="flex justify-between items-center mb-3 px-1">
+                    <h3 className="text-[#1A365D] font-bold text-[15px]">Horários Disponíveis</h3>
+                    <button className="text-[#2D5284] flex items-center gap-1 text-[12px] font-semibold" aria-label="Filtrar horários">
+                        <Filter className="w-3.5 h-3.5" /> Filtro
+                    </button>
                 </div>
 
                 {availableSlots.length === 0 ? (
-                    <div className="bg-slate-100 rounded-2xl p-6 text-center border border-slate-200/60">
-                        <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                        <p className="text-slate-500 font-medium text-[13px]">Nenhum horário disponível pro resto deste dia.</p>
+                    <div className={`${glassCard} rounded-2xl p-5 text-center`}>
+                        <Clock className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+                        <p className="text-slate-500 font-medium text-[13px]">Nenhum horário disponível.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                        {availableSlots.map((slot) => (
-                            <button
-                                key={slot.time}
-                                onClick={() => setSelectedSlot(slot)}
-                                className={`relative rounded-[20px] p-4 border transition-all active:scale-95 text-left flex flex-col justify-between h-[115px] shadow-[0_2px_8px_rgba(0,0,0,0.02)] ${selectedSlot?.time === slot.time
-                                    ? 'bg-[#2D5284] border-[#2D5284]'
-                                    : slot.isFast
-                                        ? 'bg-amber-50/50 border-amber-200 ring-1 ring-amber-100 hover:bg-amber-50'
-                                        : 'bg-white border-slate-100 hover:border-[#2D5284]/30'
-                                    }`}
-                            >
-                                <div className="flex justify-between items-start">
-                                    <div className="flex flex-col">
-                                        <span className={`text-[10px] font-bold tracking-widest uppercase mb-1 ${selectedSlot?.time === slot.time ? 'text-white/70' : slot.isFast ? 'text-amber-600' : 'text-slate-400'}`}>
-                                            {selectedDay?.label.substring(0, 4)} • {selectedDay?.dateText.split(' ')[0]}
+                    <div className="grid grid-cols-3 gap-2">
+                        {availableSlots.map((slot) => {
+                            const isSelected = selectedSlot?.time === slot.time
+                            return (
+                                <button
+                                    key={slot.time}
+                                    onClick={() => setSelectedSlot(slot)}
+                                    aria-pressed={isSelected}
+                                    className={`relative rounded-2xl px-3 py-3 border transition-all active:scale-95 text-left flex flex-col justify-between min-h-[86px]
+                                        ${isSelected
+                                            ? 'bg-[#2D5284] border-[#2D5284] shadow-[0_8px_20px_rgba(45,82,132,0.35),inset_0_1px_2px_rgba(255,255,255,0.15)]'
+                                            : slot.isFast
+                                                ? 'bg-amber-50/80 border-amber-200/80 backdrop-blur-sm shadow-[0_4px_16px_rgba(217,119,6,0.10),inset_0_1px_1px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(217,119,6,0.15)]'
+                                                : `${glassCard} hover:shadow-[0_8px_28px_rgba(31,62,109,0.14)]`
+                                        }`}
+                                >
+                                    {slot.isFast && !isSelected && (
+                                        <Zap className="absolute top-2 right-2 w-3.5 h-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />
+                                    )}
+                                    <div>
+                                        <span className={`text-[9px] font-bold tracking-widest uppercase block mb-0.5 ${isSelected ? 'text-white/60' : slot.isFast ? 'text-amber-600' : 'text-slate-400'}`}>
+                                            {selectedDay?.label.substring(0, 3)}
                                         </span>
-                                        <span className={`text-2xl font-black ${selectedSlot?.time === slot.time ? 'text-white' : slot.isFast ? 'text-amber-700' : 'text-[#1A365D]'}`}>{slot.time}</span>
+                                        <span className={`text-[19px] font-black leading-none block ${isSelected ? 'text-white' : slot.isFast ? 'text-amber-700' : 'text-[#1A365D]'}`}>
+                                            {slot.time}
+                                        </span>
                                     </div>
-                                    {slot.isFast && <Zap className={`w-5 h-5 ${selectedSlot?.time === slot.time ? 'text-amber-300 fill-amber-300' : 'text-amber-500 fill-amber-500'}`} />}
-                                </div>
-
-                                {slot.isFast ? (
-                                    <div className={`text-[10px] font-bold px-3 py-1.5 rounded-xl self-start flex items-center justify-center gap-1 mt-2 w-full uppercase shadow-sm ${selectedSlot?.time === slot.time ? 'bg-amber-400 text-amber-900 border-amber-300 shadow-amber-900/10' : 'bg-[#D4AF37] text-white shadow-[#D4AF37]/20'}`}>
-                                        <Zap className="w-3.5 h-3.5 fill-current" /> SLOT RÁPIDO
+                                    <div className={`flex items-center gap-1 mt-1 ${slot.isFast && !isSelected ? 'bg-amber-500 rounded-lg px-1.5 py-0.5' : ''}`}>
+                                        {slot.isFast && !isSelected
+                                            ? <span className="text-white text-[9px] font-black uppercase tracking-wide flex items-center gap-0.5"><Zap className="w-2.5 h-2.5 fill-white" />Rápido</span>
+                                            : <>
+                                                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSelected ? 'bg-emerald-300' : 'bg-emerald-400'}`}></div>
+                                                <span className={`text-[10px] font-semibold ${isSelected ? 'text-emerald-200' : 'text-slate-500'}`}>{slot.price}</span>
+                                            </>
+                                        }
                                     </div>
-                                ) : (
-                                    <div className="flex items-center gap-1.5 mt-2">
-                                        <div className={`w-2 h-2 rounded-full ${selectedSlot?.time === slot.time ? 'bg-emerald-300' : 'bg-emerald-400'}`}></div>
-                                        <span className={`text-[12px] font-semibold ${selectedSlot?.time === slot.time ? 'text-emerald-100' : 'text-slate-500'}`}>{slot.price}</span>
-                                    </div>
-                                )}
-                            </button>
-                        ))}
+                                </button>
+                            )
+                        })}
                     </div>
                 )}
-            </div>
-
-            {/* Banner Monetização */}
-            <div className="px-5 mb-10">
-                <div className="bg-gradient-to-br from-[#1A365D] to-[#2D5284] rounded-[24px] p-5 shadow-lg shadow-[#1A365D]/20 flex gap-4 items-center">
-                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                        <Zap className="w-6 h-6 text-[#D4AF37] fill-[#D4AF37]" />
-                    </div>
-                    <div className="flex-1">
-                        <h4 className="text-white font-bold text-[14px] leading-tight mb-1">Assine o Prime Match</h4>
-                        <p className="text-white/70 text-[11px] leading-snug">Tenha acesso a slots rápidos ilimitados, telemedicina e prioridade máxima 24/7.</p>
-                    </div>
-                </div>
             </div>
 
             {/* CONFIRMAÇÃO BOTTOM SHEET */}
             {selectedSlot && selectedDay && (
                 <>
-                    <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40 transition-opacity" onClick={() => setSelectedSlot(null)}></div>
-                    <div className="fixed bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 p-6 pt-4 animate-in slide-in-from-bottom-[100%] duration-300">
-                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+                    <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40" onClick={() => setSelectedSlot(null)} />
+                    <div className="fixed bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.12)] z-50 p-6 pt-4 animate-in slide-in-from-bottom-[100%] duration-300">
+                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
+                        <h3 className="text-[#1A365D] font-black text-xl mb-5 text-center">Confirmar Agendamento</h3>
 
-                        <h3 className="text-[#1A365D] font-black text-xl mb-6 text-center">Confirmar Agendamento</h3>
-
-                        <div className="bg-slate-50 border border-slate-100 rounded-[20px] p-4 mb-6 relative overflow-hidden">
+                        <div className={`${glassCard} rounded-[20px] p-4 mb-5 relative overflow-hidden`}>
                             {selectedSlot.isFast && (
-                                <div className="absolute top-0 right-0 bg-[#D4AF37] text-white text-[9px] font-bold px-3 py-1 rounded-bl-xl uppercase flex items-center gap-1 z-10">
+                                <div className="absolute top-0 right-0 bg-[#D4AF37] text-white text-[9px] font-bold px-3 py-1 rounded-bl-xl uppercase flex items-center gap-1">
                                     <Zap className="w-3 h-3 fill-current" /> Slot Rápido
                                 </div>
                             )}
-                            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-200/60">
-                                <img src={medico.foto_url} alt={medico.nome} className="w-12 h-12 rounded-full object-cover border border-slate-200 shrink-0" />
+                            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-200/60">
+                                <img src={medico.foto_url} alt={medico.nome} className="w-11 h-11 rounded-full object-cover border border-slate-200 shrink-0" />
                                 <div>
-                                    <h4 className="text-[#1A365D] font-bold text-[15px]">{medico.nome}</h4>
+                                    <h4 className="text-[#1A365D] font-bold text-[14px]">{medico.nome}</h4>
                                     <p className="text-slate-500 text-[12px]">{medico.especialidade}</p>
                                 </div>
                             </div>
-
                             <div className="space-y-2">
-                                <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                                            <CalendarIcon className="w-4 h-4 text-[#2D5284]" />
+                                {[
+                                    { icon: CalendarIcon, label: 'Data e Horário', value: `${selectedDay.dateText} às ${selectedSlot.time}`, color: 'bg-blue-50' },
+                                    { icon: MapPin, label: 'Local', value: selectedLocal.name, color: 'bg-indigo-50' },
+                                    { icon: ShieldCheck, label: 'Valor', value: selectedSlot.price, color: 'bg-amber-50' },
+                                ].map(({ icon: Icon, label, value, color }) => (
+                                    <div key={label} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center shrink-0`}>
+                                            <Icon className="w-4 h-4 text-[#2D5284]" />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Data e Horário</span>
-                                            <span className="text-[#1A365D] text-[13px] font-bold">{selectedDay.dateText} às {selectedSlot.time}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center">
-                                            <MapPin className="w-4 h-4 text-indigo-600" />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Local</span>
-                                            <span className="text-[#1A365D] text-[13px] font-bold">{selectedLocal.name}</span>
+                                        <div>
+                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wide block">{label}</span>
+                                            <span className="text-[#1A365D] text-[13px] font-bold">{value}</span>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
-                                            <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Valor</span>
-                                            <span className="text-[#1A365D] text-[13px] font-bold">{selectedSlot.price}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
 
                         <div className="flex gap-3">
-                            <button
-                                onClick={() => setSelectedSlot(null)}
-                                className="flex-[0.8] py-3.5 rounded-xl border-2 border-slate-200 text-slate-500 font-bold active:scale-95 transition-all text-[15px]"
-                            >
+                            <button onClick={() => setSelectedSlot(null)} className="flex-[0.8] py-3.5 rounded-xl border-2 border-slate-200 text-slate-500 font-bold active:scale-95 transition-all text-[14px]">
                                 Cancelar
                             </button>
-                            <button
-                                onClick={handleConfirmar}
-                                className="flex-[2] py-3.5 rounded-xl bg-[#2D5284] text-white font-bold shadow-lg shadow-[#2D5284]/30 hover:brightness-110 active:scale-95 transition-all text-[15px]"
-                            >
+                            <button onClick={handleConfirmar} className="flex-[2] py-3.5 rounded-xl bg-[#2D5284] text-white font-bold shadow-[0_8px_24px_rgba(45,82,132,0.4)] hover:brightness-110 active:scale-95 transition-all text-[14px]">
                                 Confirmar Agendamento
                             </button>
                         </div>
@@ -379,84 +366,107 @@ export default function AgendarPage() {
                 </>
             )}
 
-            {/* FULL CALENDAR Modal */}
+            {/* FULL CALENDAR MODAL */}
             {showFullCalendar && (
                 <>
-                    <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40 transition-opacity" onClick={() => setShowFullCalendar(false)}></div>
-                    <div className="fixed bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 p-6 pt-4 animate-in slide-in-from-bottom-[100%] duration-300 h-[85vh] flex flex-col">
-                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 shrink-0"></div>
+                    <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40" onClick={() => setShowFullCalendar(false)} />
+                    <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.12)] z-50 p-5 pt-4 animate-in slide-in-from-bottom-[100%] duration-300 h-[85vh] flex flex-col">
+                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5 shrink-0" />
 
-                        <div className="flex justify-between items-center mb-6 shrink-0">
+                        <div className="flex justify-between items-center mb-4 shrink-0">
                             <h3 className="text-[#1A365D] font-black text-xl">Selecionar Data</h3>
-                            <button onClick={() => setShowFullCalendar(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors"><ArrowLeft className="w-4 h-4" /></button>
+                            <button onClick={() => setShowFullCalendar(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors" aria-label="Fechar calendário">
+                                <ArrowLeft className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        {/* Navigation do Mês Atual */}
-                        <div className="flex items-center justify-between mb-6 shrink-0 border-b border-slate-100 pb-4">
+                        {/* Controle Mês */}
+                        <div className="flex items-center justify-between mb-5 shrink-0 bg-slate-50 rounded-2xl px-4 py-3">
                             <button
                                 onClick={prevMonth}
                                 disabled={calendarMonthStart <= new Date(todayDate.getFullYear(), todayDate.getMonth(), 1)}
-                                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-[#2D5284] hover:bg-[#2D5284]/5 disabled:opacity-30 disabled:bg-slate-50 transition-colors"
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-[#2D5284] hover:bg-[#2D5284]/10 disabled:opacity-30 disabled:bg-transparent transition-colors"
+                                aria-label="Mês anterior"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
-                            <h4 className="text-[#1A365D] font-bold text-[16px] uppercase tracking-wide">
+                            <h4 className="text-[#1A365D] font-bold text-[15px]">
                                 {nomesMesesCompleto[calendarMonthStart.getMonth()]} {calendarMonthStart.getFullYear()}
                             </h4>
-                            <button
-                                onClick={nextMonth}
-                                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-[#2D5284] hover:bg-[#2D5284]/5 transition-colors"
-                            >
+                            <button onClick={nextMonth} className="w-9 h-9 rounded-full flex items-center justify-center text-[#2D5284] hover:bg-[#2D5284]/10 transition-colors" aria-label="Próximo mês">
                                 <ChevronRight className="w-5 h-5" />
                             </button>
                         </div>
 
-                        {/* Corpo do Calendário Fixo Mês */}
+                        {/* Legenda */}
+                        <div className="flex items-center gap-4 mb-4 shrink-0 px-1">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded-full bg-[#2D5284]" />
+                                <span className="text-[11px] text-slate-500 font-medium">Disponível</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-3 h-3 rounded bg-slate-200 relative flex items-center justify-center">
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-full h-[1.5px] bg-slate-400 rotate-[135deg]" />
+                                    </div>
+                                </div>
+                                <span className="text-[11px] text-slate-500 font-medium">Indisponível</span>
+                            </div>
+                        </div>
+
+                        {/* Grid Calendário */}
                         <div className="flex-1 overflow-y-auto no-scrollbar">
-                            <div className="grid grid-cols-7 gap-y-4 gap-x-1 mb-2">
+                            <div className="grid grid-cols-7 gap-y-2 gap-x-0 mb-1">
                                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
-                                    <div key={i} className="text-center text-[12px] font-bold text-slate-400">{d}</div>
+                                    <div key={i} className="text-center text-[11px] font-bold text-slate-400 pb-2">{d}</div>
                                 ))}
 
                                 {calendarDays.map((date, idx) => {
-                                    if (!date) return <div key={`empty-${idx}`} className="text-center py-2 text-transparent">_</div>;
+                                    if (!date) return <div key={`e${idx}`} />
 
-                                    const dayNum = date.getDate();
-                                    const isPast = date.getTime() < new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate()).getTime();
-                                    const isToday = date.toDateString() === todayDate.toDateString();
-                                    const medicoAtende = medico.horarios_disponiveis.some(h => h.dia_semana === date.getDay());
-                                    const isDisabled = isPast || !medicoAtende;
+                                    const dayNum = date.getDate()
+                                    const today0 = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+                                    const isPast = date.getTime() < today0.getTime()
+                                    const isToday = date.toDateString() === todayDate.toDateString()
+                                    const atende = horariosLocal.some((h: any) => h.dia_semana === date.getDay())
+                                    const isUnavailable = !atende || isPast
 
                                     return (
-                                        <div key={dayNum} className="flex justify-center items-center">
+                                        <div key={dayNum} className="flex justify-center items-center py-0.5">
                                             <button
-                                                disabled={isDisabled}
+                                                disabled={isUnavailable}
                                                 onClick={() => {
-                                                    // Procure o target em nextDays, se não tiver tem que injetar.
-                                                    // Para fins práticos setamos hard set na selection se for válido
-                                                    const targetFormat = {
+                                                    const target: DayInfo = {
                                                         dia_semana: date.getDay(),
                                                         label: isToday ? 'Hoje' : nomesDias[date.getDay()],
-                                                        dateText: `${date.getDate()} ${nomesMeses[date.getMonth()]}`,
-                                                        fullDate: date
+                                                        dateText: `${dayNum} ${nomesMeses[date.getMonth()]}`,
+                                                        fullDate: date,
                                                     }
-                                                    setSelectedDay(targetFormat);
-                                                    setShowFullCalendar(false);
+                                                    setSelectedDay(target)
+                                                    setShowFullCalendar(false)
                                                 }}
-                                                className={`w-11 h-11 rounded-[14px] flex items-center justify-center text-[15px] transition-all relative ${isToday
-                                                    ? 'bg-[#2D5284] text-white shadow-md shadow-[#2D5284]/30 font-bold border-2 border-[#2D5284]'
-                                                    : isDisabled
-                                                        ? 'bg-slate-50 text-slate-400 cursor-not-allowed font-medium'
-                                                        : 'text-[#1A365D] font-bold hover:bg-blue-50 hover:text-[#2D5284] border border-transparent hover:border-blue-100 active:scale-95'
+                                                aria-label={isUnavailable ? `${dayNum} - indisponível` : `Selecionar ${dayNum}`}
+                                                className={`w-10 h-10 rounded-[12px] flex items-center justify-center text-[14px] transition-all relative overflow-hidden
+                                                    ${isToday
+                                                        ? 'bg-[#2D5284] text-white font-bold shadow-[0_4px_12px_rgba(45,82,132,0.40)]'
+                                                        : isUnavailable
+                                                            ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                                                            : 'text-[#1A365D] font-bold hover:bg-blue-50 hover:text-[#2D5284] active:scale-95'
                                                     }`}
                                             >
-                                                {isDisabled && !isPast && (
-                                                    <Slash className="w-full h-full text-slate-300 absolute inset-0 rotate-12 scale-[0.6] opacity-40 mix-blend-multiply" strokeWidth={1} />
+                                                {/* Risco diagonal VISÍVEL para dias indisponíveis */}
+                                                {isUnavailable && !isToday && (
+                                                    <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        {/* Linha diagonal nítida */}
+                                                        <svg viewBox="0 0 40 40" className="absolute inset-0 w-full h-full" aria-hidden="true">
+                                                            <line x1="8" y1="32" x2="32" y2="8" stroke={isPast ? "#9CA3AF" : "#D97706"} strokeWidth="1.5" strokeLinecap="round" />
+                                                        </svg>
+                                                    </span>
                                                 )}
-                                                <span className="z-10">{dayNum}</span>
+                                                <span className={`relative z-10 font-semibold text-[13px] ${isUnavailable && !isToday ? (isPast ? 'text-slate-300' : 'text-amber-400') : ''}`}>{dayNum}</span>
                                             </button>
                                         </div>
-                                    );
+                                    )
                                 })}
                             </div>
                         </div>
