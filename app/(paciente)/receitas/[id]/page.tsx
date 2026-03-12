@@ -1,0 +1,290 @@
+'use client'
+
+import { useState, use } from 'react'
+import { useRouter } from 'next/navigation'
+import { QRCodeSVG } from 'qrcode.react'
+import {
+    ArrowLeft, ShieldCheck, ShoppingCart, ChevronRight,
+    Download, Share2, Calendar, Clock, Leaf
+} from 'lucide-react'
+import { BottomNav } from '@/components/BottomNav'
+import { receitaMock, medicosMock } from '@/data/mockData'
+import { dateToDisplay } from '@/lib/utils/masks'
+import { generateReceitaCode, formatReceitaCode, generateQRData } from '@/lib/utils/receitaCode'
+
+// Base de genéricos por medicamento
+const genericosBase: Record<string, { nome: string; concentracao: string; forma: string; posologia: string; obs: string }[]> = {
+    'Dipirona Sódica 500mg': [
+        { nome: 'Dipirona Sódica', concentracao: '500mg', forma: 'Comprimido', posologia: '1 comprimido a cada 12 horas, em caso de dor ou febre', obs: 'Bioequivalente aprovado pela ANVISA · Mesmo princípio ativo' },
+    ],
+    'Amoxicilina 500mg': [
+        { nome: 'Amoxicilina', concentracao: '500mg', forma: 'Cápsula', posologia: '1 cápsula a cada 8 horas por 7 dias', obs: 'Bioequivalente aprovado pela ANVISA · Sem diferença terapêutica clínica' },
+    ],
+    'Omeprazol 20mg': [
+        { nome: 'Omeprazol', concentracao: '20mg', forma: 'Cápsula', posologia: '1 cápsula antes do café da manhã', obs: 'Bioequivalente aprovado pela ANVISA · Mesma eficácia clínica comprovada' },
+    ],
+}
+
+const glassCard = `bg-white/80 backdrop-blur-md border border-white/90 shadow-[0_8px_32px_rgba(31,62,109,0.10),0_2px_8px_rgba(31,62,109,0.05),inset_0_1px_2px_rgba(255,255,255,0.95)]`
+const goldCard = `bg-gradient-to-br from-[#F9F0D4] to-[#FBF6E4] border border-[#D4AF37]/30 shadow-[0_8px_32px_rgba(212,175,55,0.15),0_2px_8px_rgba(212,175,55,0.08),inset_0_1px_2px_rgba(255,255,255,0.95)]`
+
+// Tab styles
+const tabActive = `flex-1 py-2.5 font-bold text-[13px] text-[#1A365D] bg-white rounded-xl shadow-sm transition-all`
+const tabInactive = `flex-1 py-2.5 font-medium text-[13px] text-slate-400 transition-all`
+
+// Row de medicamento — receita original (estilo receita convencional)
+function MedRowOriginal({ med, index, isLast }: { med: typeof receitaMock.medicamentos[0]; index: number; isLast: boolean }) {
+    return (
+        <div className={`px-4 py-4 ${!isLast ? 'border-b border-slate-100' : ''}`}>
+            {/* Linha principal: número + nome + quantidade */}
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+                <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                    <span className="text-[13px] font-black text-[#2D5284] shrink-0 mt-[1px] tabular-nums">{index}.</span>
+                    <div className="flex-1 min-w-0">
+                        <p className="font-black text-[16px] text-[#1A365D] leading-tight">{med.nome}</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{med.principio_ativo} · {med.concentracao} · {med.forma_farmaceutica}</p>
+                    </div>
+                </div>
+                <span className="shrink-0 text-[11px] font-bold text-[#2D5284] bg-[#2D5284]/8 border border-[#2D5284]/12 px-2.5 py-1 rounded-full">
+                    {med.quantidade} un.
+                </span>
+            </div>
+
+            {/* Posologia em itálico, estilo receita */}
+            <div className="ml-[22px]">
+                <p className="italic text-[12.5px] text-slate-600 leading-relaxed border-l-2 border-[#2D5284]/25 pl-3">
+                    {med.posologia}
+                </p>
+                {med.uso_continuo && (
+                    <div className="flex items-center gap-1.5 pl-3 mt-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shrink-0" />
+                        <p className="text-[11px] text-[#B8860B] font-semibold">Uso contínuo</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+type GenericoItem = { nome: string; concentracao: string; forma: string; posologia: string; obs: string }
+
+// Row de medicamento — genérico
+function MedRowGenerico({ med, generico, index, isLast }: { med: typeof receitaMock.medicamentos[0]; generico: GenericoItem | undefined; index: number; isLast: boolean }) {
+    if (!generico) return null
+    return (
+        <div className={`px-4 py-4 ${!isLast ? 'border-b border-slate-100' : ''}`}>
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+                <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                    <span className="text-[13px] font-black text-[#2D5284] shrink-0 mt-[1px] tabular-nums">{index}.</span>
+                    <div className="flex-1 min-w-0">
+                        <p className="font-black text-[16px] text-[#1A365D] leading-tight">{generico.nome} <span className="text-[11px] font-semibold text-slate-400">· Genérico</span></p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">{generico.concentracao} · {generico.forma}</p>
+                    </div>
+                </div>
+                <span className="shrink-0 text-[11px] font-bold text-[#2D5284] bg-[#2D5284]/8 border border-[#2D5284]/12 px-2.5 py-1 rounded-full">
+                    {med.quantidade} un.
+                </span>
+            </div>
+            <div className="ml-[22px]">
+                <p className="italic text-[12.5px] text-slate-600 leading-relaxed border-l-2 border-[#2D5284]/25 pl-3">{generico.posologia}</p>
+                <div className="flex items-center gap-1.5 pl-3 mt-1.5">
+                    <ShieldCheck className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <p className="text-[10px] text-slate-500">{generico.obs}</p>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default function ReceitaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id: paramsId } = use(params)
+    const router = useRouter()
+    const [activeTab, setActiveTab] = useState<'original' | 'generico'>('original')
+
+    const receitaId = paramsId ?? receitaMock.id
+    const medico = medicosMock.find(m => m.id === receitaMock.medico_id) ?? medicosMock[0]
+
+    const receitaCode = generateReceitaCode(receitaId)
+    const receitaCodeFormatted = formatReceitaCode(receitaCode)
+    const qrData = generateQRData(receitaId, medico.id)
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-28 font-sans">
+
+            {/* HEADER */}
+            <header className="bg-[#2D5284] px-5 pt-4 pb-12 rounded-b-3xl shadow-[0_8px_24px_rgba(45,82,132,0.35)] relative z-20">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => router.back()} className="text-white hover:bg-white/10 p-2 -ml-2 rounded-full transition-colors active:scale-95" aria-label="Voltar">
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-white font-bold text-[18px]">Receita Digital</h1>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <button className="relative text-white" onClick={() => router.push('/notificacoes')} aria-label="Notificações">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
+                        </button>
+                        <div className="flex items-center">
+                            <span className="text-[18px] font-bold text-[#D4AF37]">Doc</span>
+                            <span className="text-[18px] font-bold text-white ml-[1px]">Match</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card de status overlapping */}
+                <div className="absolute left-5 right-5 -bottom-[28px] z-30">
+                    <div className={`${glassCard} rounded-2xl px-4 py-3 flex items-center justify-between`}>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                            <span className="text-emerald-700 font-bold text-[13px]">Receita Ativa</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[12px]">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>Válida até {dateToDisplay(receitaMock.validade)}</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div className="mt-12 px-5 space-y-4">
+
+                {/* Médico */}
+                <div className={`${glassCard} rounded-[22px] p-4 flex items-center gap-3`}>
+                    <img src={medico.foto_url} className="w-12 h-12 rounded-[14px] object-cover border-2 border-white shadow-[0_4px_12px_rgba(45,82,132,0.18)] shrink-0" alt={medico.nome} />
+                    <div className="flex-1 min-w-0">
+                        <p className="font-black text-[14px] text-[#1A365D] leading-tight truncate">{medico.nome}</p>
+                        <p className="text-[12px] text-[#2D5284] font-semibold">{medico.especialidade}</p>
+                        <p className="text-[10px] text-slate-400">{medico.crm}</p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100 shrink-0">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        <span className="text-emerald-700 text-[10px] font-bold whitespace-nowrap">CRM Verificado</span>
+                    </div>
+                </div>
+
+                {/* ── QRCode + Código (card branco, QR e código em dourado) ── */}
+                <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
+                    {/* Barra azul padrão */}
+                    <div className="bg-gradient-to-r from-[#1A365D] to-[#2D5284] px-4 py-2.5 flex items-center justify-between">
+                        <p className="text-white/80 text-[11px] font-semibold tracking-wider uppercase">Código de Validação — Farmácia</p>
+                        <div className="flex gap-3">
+                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Compartilhar"><Share2 className="w-4 h-4" /></button>
+                            <button className="text-white/60 hover:text-white transition-colors" aria-label="Baixar"><Download className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+
+                    {/* QRCode lado a lado com código */}
+                    <div className="p-5 flex items-center gap-5">
+                        {/* QRCode em dourado sobre fundo branco */}
+                        <div className="bg-white rounded-2xl p-3 shadow-[0_4px_16px_rgba(26,54,93,0.10)] border border-slate-100 shrink-0">
+                            <QRCodeSVG
+                                value={qrData}
+                                size={110}
+                                level="M"
+                                fgColor="#C9A227"
+                                bgColor="#FFFFFF"
+                                includeMargin={false}
+                            />
+                        </div>
+
+                        {/* Código alfanumérico dourado */}
+                        <div className="flex-1">
+                            <p className="text-[10px] text-slate-400 font-semibold tracking-[0.15em] uppercase mb-2">Código único</p>
+                            <div className="bg-[#D4AF37]/10 rounded-xl px-3 py-2.5 border border-[#D4AF37]/30 mb-2">
+                                <p className="text-[17px] font-black text-[#A07820] tracking-[0.12em] font-mono leading-none whitespace-nowrap">
+                                    {receitaCodeFormatted}
+                                </p>
+                            </div>
+                            <p className="text-[10px] text-slate-400 leading-snug">
+                                Apresente o QRCode<br />ou este código na farmácia
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Abas: Original / Genérico ── */}
+                <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
+                    {/* Seleção de abas */}
+                    <div className="px-3 pt-3 pb-0">
+                        <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
+                            <button onClick={() => setActiveTab('original')} className={activeTab === 'original' ? tabActive : tabInactive}>
+                                📋 Receita Original
+                            </button>
+                            <button onClick={() => setActiveTab('generico')} className={activeTab === 'generico' ? tabActive : tabInactive}>
+                                🌿 Opção Genérica
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Aba original */}
+                    {activeTab === 'original' && (
+                        <>
+                            <div className="px-4 pt-4 pb-2 flex items-center gap-2">
+                                <div className="w-1 h-5 rounded-full bg-[#2D5284]" />
+                                <p className="font-bold text-[#1A365D] text-[13px]">Exatamente como prescrito pelo médico</p>
+                            </div>
+                            <div className="divide-y divide-slate-100/80 pb-2">
+                                {receitaMock.medicamentos.map((med, i) => (
+                                    <MedRowOriginal key={i} med={med} index={i + 1} isLast={i === receitaMock.medicamentos.length - 1} />
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Aba genérico */}
+                    {activeTab === 'generico' && (
+                        <>
+                            <div className="px-4 pt-4 pb-2 flex items-center gap-2">
+                                <div className="w-1 h-5 rounded-full bg-[#2D5284]" />
+                                <p className="font-bold text-[#1A365D] text-[13px]">Equivalentes genéricos — mesma eficácia</p>
+                            </div>
+                            <div className="mx-4 mb-3 bg-amber-50 rounded-xl px-3 py-2 border border-amber-100">
+                                <p className="text-[11px] text-amber-700 leading-relaxed">
+                                    ⚠️ Os genéricos abaixo são equivalentes terapêuticos aprovados pela ANVISA. Sempre consulte seu farmacêutico antes de substituir. A decisão final é do paciente.
+                                </p>
+                            </div>
+                            <div className="divide-y divide-slate-100/80 pb-2">
+                                {receitaMock.medicamentos.map((med, i) => {
+                                    const key = med.nome
+                                    const gen = genericosBase[key]?.[0]
+                                    return (
+                                        <MedRowGenerico key={i} med={med} generico={gen} index={i + 1} isLast={i === receitaMock.medicamentos.length - 1} />
+                                    )
+                                })}
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* Observações do médico */}
+                {receitaMock.observacoes && (
+                    <div className={`${glassCard} rounded-[22px] overflow-hidden`}>
+                        <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+                            <Clock className="w-4 h-4 text-amber-500" />
+                            <p className="font-bold text-[#1A365D] text-[13px]">Observações do Médico</p>
+                        </div>
+                        <div className="px-4 pb-4">
+                            <div className="bg-amber-50/60 rounded-xl px-3 py-3 border border-amber-100/80">
+                                <p className="text-[13px] text-slate-700 leading-relaxed">{receitaMock.observacoes}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* CTA */}
+                <div className="flex justify-center pb-2">
+                    <button
+                        onClick={() => router.push('/comparar-precos')}
+                        className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] text-[#1A365D] font-black rounded-2xl px-5 py-3 text-[13px] shadow-[0_6px_20px_rgba(207,175,66,0.35)] hover:brightness-105 active:scale-[0.98] transition-all border border-[#E8C55E]/50"
+                    >
+                        <ShoppingCart className="w-4 h-4 shrink-0" />
+                        Comparar Preços nas Farmácias
+                        <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                    </button>
+                </div>
+            </div>
+            <BottomNav />
+        </div>
+    )
+}

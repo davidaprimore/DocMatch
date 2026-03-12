@@ -1,0 +1,23 @@
+{
+  "name": "DocMatch — Encontre o Médico Ideal",
+  "short_name": "DocMatch",
+  "description": "A plataforma de saúde mais completa do Brasil.",
+  "start_url": "/dashboard",
+  "display": "fullscreen",
+  "background_color": "#2D5284",
+  "theme_color": "#2D5284",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/avatar-joce.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/avatar-joce.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
