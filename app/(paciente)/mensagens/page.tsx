@@ -388,7 +388,7 @@ export default function MensagensPage() {
             {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
             <div className="relative z-10 pb-24 flex flex-col font-sans">
                 <div className="relative mb-4">
-                    <Header variant="page" title="DocZap" showNotifications userAvatar="/avatar-joce.png" userName="Joce Moreno" className="doczap" />
+                    <Header variant="page" title="DocZap" showNotifications userAvatar="/avatar-sophie.png" userName="Sophie" className="doczap" />
 
                     <div className="absolute left-5 right-5 -bottom-0 z-50">
                         <div className="relative">

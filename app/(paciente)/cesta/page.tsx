@@ -62,8 +62,8 @@ export default function CestaPage() {
                         title="Minha Cesta"
                         showBackButton
                         showNotifications
-                        userAvatar="/avatar-joce.png"
-                        userName="Joce Moreno"
+                        userAvatar="/avatar-sophie.png"
+                        userName="Sophie"
                     />
 
                     {/* Resumo Overlap Premium */}

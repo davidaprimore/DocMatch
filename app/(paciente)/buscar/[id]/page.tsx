@@ -94,8 +94,8 @@ export default function PerfilMedicoPage() {
                     title={medico.nome} 
                     showBackButton 
                     showNotifications 
-                    userAvatar="/avatar-joce.png" 
-                    userName="Joce Moreno"
+                    userAvatar="/avatar-sophie.png" 
+                    userName="Sophie"
                 />
 
             {/* CARD DO MÉDICO — Clean & Premium */}

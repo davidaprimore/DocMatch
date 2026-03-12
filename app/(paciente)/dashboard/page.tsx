@@ -29,17 +29,17 @@ export default function DashboardPage() {
             {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
             <div className="relative z-10 pb-20 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}
-                <div className="relative mb-8">
+                <div className="relative mb-2">
                     <Header
                         variant="dashboard"
-                        userAvatar="/avatar-joce.png"
-                        userName="Joce Moreno"
+                        userAvatar="/avatar-sophie.png"
+                        userName="Sophie"
                         showNotifications={true}
                         onAvatarClick={() => router.push('/menu')}
                     />
 
                     {/* BUSCA OVERLAPPING */}
-                    <div id="search-bar-tour" className="absolute left-5 right-5 -bottom-3 z-50">
+                    <div id="search-bar-tour" className="absolute left-5 right-5 -bottom-0 z-50">
                         <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
@@ -72,11 +72,11 @@ export default function DashboardPage() {
                         {[
                             {
                                 label: 'Agendar', desc: 'Consulta', href: '/buscar', icon: (
-                                    <div className="relative w-full h-full flex flex-col items-center justify-center pt-2">
+                                    <div className="relative w-full h-full flex flex-col items-center justify-center pt-1">
                                         <Image src="/icone-agenda.png.png" width={56} height={56} className="object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform -mt-2.5" alt="Agendar" />
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2.5">
-                                            <span className="text-[14px] font-black text-[#1A365D] leading-none drop-shadow-sm">{new Date().getDate()}</span>
-                                            <span className="text-[7.5px] font-bold text-[#1A365D] uppercase leading-none mt-[1px] tracking-widest">{new Date().toLocaleString('pt-BR', { month: 'short' }).replace('.', '')}</span>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+                                            <span className="text-[18px] font-black text-[#1A365D] leading-none drop-shadow-sm">{new Date().getDate()}</span>
+                                            <span className="text-[9px] font-bold text-[#1A365D] uppercase leading-none mt-[1px] tracking-widest">{new Date().toLocaleString('pt-BR', { month: 'short' }).replace('.', '')}</span>
                                         </div>
                                     </div>
                                 )
