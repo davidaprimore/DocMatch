@@ -52,16 +52,16 @@ export default function MenuPage() {
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000"></div>
                         <Avatar className="w-24 h-24 border-4 border-[#1A365D] relative shadow-2xl">
-                            <AvatarImage src="/avatar-joce.png" />
-                            <AvatarFallback>JM</AvatarFallback>
+                            <AvatarImage src="/images/avatar_sophia.png" />
+                            <AvatarFallback>S</AvatarFallback>
                         </Avatar>
                         <div className="absolute bottom-0 right-0 bg-[#D4AF37] text-[#1A365D] p-1.5 rounded-full border-2 border-[#1A365D] shadow-lg">
                             <Star className="w-4 h-4 fill-current" />
                         </div>
                     </div>
 
-                    <h1 className="text-white font-black text-2xl mt-4 leading-tight">Joce Moreno</h1>
-                    <p className="text-white/40 text-sm font-medium">joce.moreno@email.com</p>
+                    <h1 className="text-white font-black text-2xl mt-4 leading-tight">Sophia</h1>
+                    <p className="text-white/40 text-sm font-medium">sophia@email.com</p>
 
                     <div className="mt-6 flex gap-3">
                         <button

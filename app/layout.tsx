@@ -3,6 +3,7 @@ import './globals.css'
 import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from 'sonner'
 import { I18nProvider } from '@/components/I18nProvider'
+import { DynamicMistBackground } from '@/components/layout/DynamicMistBackground'
 
 export const metadata: Metadata = {
     title: {
@@ -38,6 +39,12 @@ export const viewport: Viewport = {
 }
 
 import { ScrollToTop } from '@/components/ScrollToTop'
+import { useNotifications } from '@/hooks/useNotifications'
+
+function AppProviders({ children }: { children: React.ReactNode }) {
+    useNotifications()
+    return <>{children}</>
+}
 
 export default function RootLayout({
     children,
@@ -58,10 +65,13 @@ export default function RootLayout({
                 <link rel="manifest" href="/manifest.json" />
             </head>
             <body className="antialiased" suppressHydrationWarning>
+                <DynamicMistBackground />
                 <ScrollToTop />
                 <I18nProvider>
                     <AuthProvider>
-                        {children}
+                        <AppProviders>
+                            {children}
+                        </AppProviders>
                         <Toaster position="bottom-center" richColors />
                         <script
                             dangerouslySetInnerHTML={{

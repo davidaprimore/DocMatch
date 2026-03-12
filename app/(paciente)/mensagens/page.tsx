@@ -386,7 +386,7 @@ export default function MensagensPage() {
     return (
         <div className="min-h-screen bg-white pb-24">
             <div className="relative mb-10">
-                <Header variant="page" title="DocZap" showNotifications userAvatar="/avatar-joce.png" userName="Joce Moreno" className="doczap" />
+                <Header variant="page" title="DocZap" showNotifications userAvatar="/images/avatar_sophia.png" userName="Sophia" className="doczap" />
 
                 <div className="absolute left-5 right-5 -bottom-6 z-20">
                     <div className="relative">

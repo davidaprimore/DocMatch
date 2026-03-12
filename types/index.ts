@@ -49,8 +49,10 @@ export interface Medico extends User {
     experiencia?: string
     sociais?: {
         instagram?: string
+        whatsapp?: string
         telegram?: string
         facebook?: string
+        youtube?: string
         site?: string
     }
 }

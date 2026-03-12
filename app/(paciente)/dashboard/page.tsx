@@ -11,12 +11,29 @@ import { medicosMock } from '@/data/mockData'
 import { useCart } from '@/hooks/useCart'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { supabase } from '@/lib/supabase'
 
 export default function DashboardPage() {
     const { t } = useTranslation()
     const router = useRouter()
     const { count } = useCart()
     const [scrolled, setScrolled] = useState(false)
+    const [economia, setEconomia] = useState('R$ 0,00')
+
+    useEffect(() => {
+        const fetchEconomy = async () => {
+            const { data, error } = await supabase
+                .from('dashboard_metrics')
+                .select('valor')
+                .eq('chave', 'economia_total')
+                .single()
+
+            if (data && !error) {
+                setEconomia(new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.valor))
+            }
+        }
+        fetchEconomy()
+    }, [])
 
     const medicosSugeridos = [
         { ...medicosMock[0], foto_url: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=150&auto=format&fit=crop', rating: 4.9, favorito: false },
@@ -33,8 +50,8 @@ export default function DashboardPage() {
                     variant="dashboard"
                     showNotifications
                     showBackButton={false}
-                    userAvatar="/avatar-joce.png"
-                    userName="Joce Moreno"
+                    userAvatar="/images/avatar_sophia.png"
+                    userName="Sophia"
                     onAvatarClick={() => router.push('/menu')}
                 />
 
@@ -64,7 +81,7 @@ export default function DashboardPage() {
                 {/* Banner Economia */}
                 <div id="economy-tour" className="w-full bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] rounded-full py-[11px] flex items-center justify-center shadow-[0_8px_20px_rgba(207,175,66,0.3),inset_0_-2px_6px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.4)] mb-4 px-4 border border-[#E8C55E]/50">
                     <span className="text-[13px] mr-2 filter drop-shadow-sm relative top-[0.5px]">💰</span>
-                    <span className="text-[11.5px] font-black text-[#1A365D] tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]">{t('economy_banner', { valor: 'R$ 450,00' })}</span>
+                    <span className="text-[11.5px] font-black text-[#1A365D] tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]">{t('economy_banner', { valor: economia })}</span>
                 </div>
 
                 {/* Quick Actions */}
