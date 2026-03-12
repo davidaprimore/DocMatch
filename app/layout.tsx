@@ -39,12 +39,7 @@ export const viewport: Viewport = {
 }
 
 import { ScrollToTop } from '@/components/ScrollToTop'
-import { useNotifications } from '@/hooks/useNotifications'
-
-function AppProviders({ children }: { children: React.ReactNode }) {
-    useNotifications()
-    return <>{children}</>
-}
+import { NotificationProvider } from '@/components/NotificationProvider'
 
 export default function RootLayout({
     children,
@@ -69,9 +64,9 @@ export default function RootLayout({
                 <ScrollToTop />
                 <I18nProvider>
                     <AuthProvider>
-                        <AppProviders>
+                        <NotificationProvider>
                             {children}
-                        </AppProviders>
+                        </NotificationProvider>
                         <Toaster position="bottom-center" richColors />
                         <script
                             dangerouslySetInnerHTML={{
