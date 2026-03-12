@@ -2,23 +2,25 @@
 
 import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export function DynamicMistBackground() {
     const pathname = usePathname()
+    
+    // Monitora se deve exibir a névoa baseado na rota
+    const shouldShowMist = (
+        pathname === '/dashboard' ||
+        pathname?.startsWith('/buscar') ||
+        pathname === '/cesta' ||
+        pathname?.startsWith('/consultas') ||
+        pathname === '/mensagens'
+    )
 
-    // Não exibir no DocZap (conversa ativa)
-    if (pathname?.includes('/doczap/')) return null
+    if (!shouldShowMist) return null
 
     return (
-        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#E7F0FD]">
-            {/* 
-                OTIMIZAÇÃO ANDROID (FIX FLICKERING):
-                - will-change: transform
-                - backface-visibility: hidden
-                - translateZ(0) via Framer Motion transformTemplate ou CSS direto
-            */}
-            
-            {/* Camada 1: Névoa Base Suave */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" style={{ background: '#E7F0FD' }}>
+            {/* Camada 1: Névoa Base Suave - Ultra Dinâmica v1.2 */}
             <motion.div
                 animate={{
                     x: [0, 250, -150, 0],
@@ -36,12 +38,11 @@ export function DynamicMistBackground() {
                     background: 'radial-gradient(circle, #CBD5E1 0%, transparent 70%)',
                     filter: 'blur(90px)',
                     willChange: 'transform',
-                    backfaceVisibility: 'hidden',
                     transform: 'translateZ(0)'
                 }}
             />
 
-            {/* Camada 2: Profundidade Azul DocMatch */}
+            {/* Camada 2: Profundidade Azul DocMatch - Movimento Agressivo */}
             <motion.div
                 animate={{
                     x: [0, -220, 180, 0],
@@ -59,7 +60,6 @@ export function DynamicMistBackground() {
                     background: 'radial-gradient(circle, #2D5284 0%, transparent 75%)',
                     filter: 'blur(100px)',
                     willChange: 'transform',
-                    backfaceVisibility: 'hidden',
                     transform: 'translateZ(0)'
                 }}
             />
@@ -81,7 +81,6 @@ export function DynamicMistBackground() {
                     background: 'radial-gradient(circle, #D4AF37 0%, transparent 60%)',
                     filter: 'blur(110px)',
                     willChange: 'transform',
-                    backfaceVisibility: 'hidden',
                     transform: 'translateZ(0)'
                 }}
             />

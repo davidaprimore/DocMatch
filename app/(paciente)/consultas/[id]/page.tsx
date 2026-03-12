@@ -40,7 +40,9 @@ export default function ConsultaDetalhesPage() {
     const StatusIcon = st.icon
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] pb-24">
+        <div className="relative min-h-screen overflow-x-hidden pt-1">
+            {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
+            <div className="relative z-10 pb-24 flex flex-col font-sans">
             {/* Header */}
             <header className="bg-[#2D5284] px-5 pt-5 pb-8 rounded-b-3xl shadow-md z-20 mb-6 relative">
                 <div className="flex items-center justify-between mb-2">
@@ -199,5 +201,6 @@ export default function ConsultaDetalhesPage() {
                 )}
             </div>
         </div>
-    )
+    </div>
+)
 }

@@ -2,9 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Bell, Menu, X, LogOut, User, Settings, HelpCircle, ChevronRight, LayoutDashboard, FileCheck, Shield, Phone, MessageSquare, Handshake, Info, Globe } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createPortal } from 'react-dom'
 
 interface HeaderProps {
     variant?: 'dashboard' | 'page'
@@ -35,14 +36,122 @@ export function Header({
 }: HeaderProps) {
     const router = useRouter()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Lógica para logos condicionais
     const isMessages = title === 'Mensagens' || title === 'DocZap' || className?.includes('doczap')
     const isDashboard = variant === 'dashboard'
 
+    // Menu component extracted for Portal usage
+    const SideMenu = (
+        <AnimatePresence>
+            {isMenuOpen && (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[9998]"
+                        onClick={() => setIsMenuOpen(false)}
+                    />
+
+                    <motion.div
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: 'spring', damping: 35, stiffness: 400, mass: 0.5 }}
+                        className="fixed right-4 top-2 bottom-8 w-[280px] bg-gradient-to-r from-[#F8FAFC] to-[#EFF6FF] z-[9999] shadow-[0_25px_60px_rgba(0,0,0,0.2)] rounded-[32px] overflow-hidden flex flex-col border border-white/50"
+                    >
+                        {/* Header Interno do Menu */}
+                        <div className="p-6 pb-4 flex justify-between items-center bg-slate-50/80 backdrop-blur-md">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2D5284] to-[#1A365D] flex items-center justify-center shadow-md">
+                                    <LayoutDashboard className="w-4 h-4 text-white" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[14px] font-black text-[#2D5284] leading-none tracking-tight">CENTRAL</span>
+                                    <span className="text-[10px] font-bold text-slate-400 leading-none mt-0.5 tracking-[0.1em]">DOCMATCH</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsMenuOpen(false)}
+                                className="p-2 hover:bg-slate-100 rounded-full transition-colors group"
+                            >
+                                <X className="w-4.5 h-4.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                            </button>
+                        </div>
+
+                        {/* Conteúdo com Scroll */}
+                        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 no-scrollbar">
+                            {/* Seção: Usuário */}
+                            <div>
+                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Conta</p>
+                                <div className="space-y-0.5">
+                                    {[
+                                        { icon: User, label: 'Meu Perfil', href: '/perfil' },
+                                        { icon: Bell, label: 'Notificações', href: '/notificacoes' },
+                                        { icon: Settings, label: 'Configurações', href: '/configuracoes' },
+                                    ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
+                                </div>
+                            </div>
+
+                            <div className="h-[1px] bg-slate-100 mx-4" /> {/* Divisor Suave */}
+
+                            {/* Seção: Comercial & Suporte */}
+                            <div>
+                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Comercial</p>
+                                <div className="space-y-0.5">
+                                    {[
+                                        { icon: Phone, label: 'Central de Vendas', href: '/comercial' },
+                                        { icon: Handshake, label: 'Seja um Parceiro', href: '/parcerias' },
+                                        { icon: MessageSquare, label: 'Ouvidoria', href: '/ouvidoria' },
+                                    ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
+                                </div>
+                            </div>
+
+                            <div className="h-[1px] bg-slate-100 mx-4" /> {/* Divisor Suave */}
+
+                            {/* Seção: Jurídico & Info */}
+                            <div>
+                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Jurídico</p>
+                                <div className="space-y-0.5">
+                                    {[
+                                        { icon: FileCheck, label: 'Termos de Uso', href: '/termos' },
+                                        { icon: Shield, label: 'Privacidade (LGPD)', href: '/privacidade' },
+                                        { icon: Info, label: 'Sobre o App', href: '/sobre' },
+                                        { icon: Globe, label: 'Idiomas', href: '/idiomas' },
+                                    ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer do Menu Premium */}
+                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
+                            <button
+                                onClick={() => { setIsMenuOpen(false); router.push('/'); }}
+                                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-[#FEE2E2] text-[#EF4444] hover:bg-[#FECACA] transition-all font-black text-[12px] uppercase tracking-wider shadow-sm"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                Encerrar Sessão
+                            </button>
+                            <div className="text-center opacity-40">
+                                <p className="text-[11px] font-black text-[#2D5284] tracking-tighter grayscale">DOCMATCH <span className="text-amber-600">PRO</span></p>
+                                <p className="text-[8px] font-bold text-slate-400 mt-1 tracking-[0.2em]">VERSION 1.6.0</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    )
+
     return (
         <header className={cn(
-            "bg-[#2D5284] px-3 pt-5 pb-8 rounded-b-[32px] shadow-lg relative mb-6 transition-all duration-300",
+            "bg-[#2D5284] px-3 pt-5 pb-8 rounded-b-[32px] shadow-lg relative mb-6 transition-all duration-300 z-50",
             className
         )}>
             <div className="flex justify-between items-center h-12">
@@ -134,106 +243,8 @@ export function Header({
                 </div>
             </div>
 
-            {/* Menu Lateral Expandido e Sofisticado (Z-INDEX DAVID: z-1000/1001 agora para cobrir tudo) */}
-            <AnimatePresence>
-                {isMenuOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[1000]"
-                            onClick={() => setIsMenuOpen(false)}
-                        />
-
-                        <motion.div
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 35, stiffness: 400, mass: 0.5 }}
-                            className="fixed right-4 top-4 bottom-4 w-[280px] bg-gradient-to-r from-[#F8FAFC] to-[#EFF6FF] z-[1001] shadow-[0_25px_60px_rgba(0,0,0,0.2)] rounded-[32px] overflow-hidden flex flex-col border border-white/50"
-                        >
-                            {/* Header Interno do Menu */}
-                            <div className="p-6 pb-4 flex justify-between items-center bg-slate-50/80 backdrop-blur-md">
-                                <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2D5284] to-[#1A365D] flex items-center justify-center shadow-md">
-                                        <LayoutDashboard className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[14px] font-black text-[#2D5284] leading-none tracking-tight">CENTRAL</span>
-                                        <span className="text-[10px] font-bold text-slate-400 leading-none mt-0.5 tracking-[0.1em]">DOCMATCH</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="p-2 hover:bg-slate-100 rounded-full transition-colors group"
-                                >
-                                    <X className="w-4.5 h-4.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
-                                </button>
-                            </div>
-
-                            {/* Conteúdo com Scroll */}
-                            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 no-scrollbar">
-                                {/* Seção: Usuário */}
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Conta</p>
-                                    <div className="space-y-0.5">
-                                        {[
-                                            { icon: User, label: 'Meu Perfil', href: '/perfil' },
-                                            { icon: Bell, label: 'Notificações', href: '/notificacoes' },
-                                            { icon: Settings, label: 'Configurações', href: '/configuracoes' },
-                                        ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
-                                    </div>
-                                </div>
-
-                                <div className="h-[1px] bg-slate-100 mx-4" /> {/* Divisor Suave */}
-
-                                {/* Seção: Comercial & Suporte */}
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Comercial</p>
-                                    <div className="space-y-0.5">
-                                        {[
-                                            { icon: Phone, label: 'Central de Vendas', href: '/comercial' },
-                                            { icon: Handshake, label: 'Seja um Parceiro', href: '/parcerias' },
-                                            { icon: MessageSquare, label: 'Ouvidoria', href: '/ouvidoria' },
-                                        ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
-                                    </div>
-                                </div>
-
-                                <div className="h-[1px] bg-slate-100 mx-4" /> {/* Divisor Suave */}
-
-                                {/* Seção: Jurídico & Info */}
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Jurídico</p>
-                                    <div className="space-y-0.5">
-                                        {[
-                                            { icon: FileCheck, label: 'Termos de Uso', href: '/termos' },
-                                            { icon: Shield, label: 'Privacidade (LGPD)', href: '/privacidade' },
-                                            { icon: Info, label: 'Sobre o App', href: '/sobre' },
-                                            { icon: Globe, label: 'Idiomas', href: '/idiomas' },
-                                        ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Footer do Menu Premium */}
-                            <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
-                                <button
-                                    onClick={() => { setIsMenuOpen(false); router.push('/'); }}
-                                    className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-[#FEE2E2] text-[#EF4444] hover:bg-[#FECACA] transition-all font-black text-[12px] uppercase tracking-wider shadow-sm"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    Encerrar Sessão
-                                </button>
-                                <div className="text-center opacity-40">
-                                    <p className="text-[11px] font-black text-[#2D5284] tracking-tighter grayscale">DOCMATCH <span className="text-amber-600">PRO</span></p>
-                                    <p className="text-[8px] font-bold text-slate-400 mt-1 tracking-[0.2em]">VERSION 1.6.0</p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            {/* Renderizar Menu via Portal no final do body */}
+            {mounted && createPortal(SideMenu, document.body)}
         </header>
     )
 }

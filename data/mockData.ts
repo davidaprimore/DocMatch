@@ -35,7 +35,7 @@ export const medicosMock: Medico[] = [
     crm: 'CRM-SP 678901',
     especialidade: 'Clínica Geral',
     bio: 'Médico de família com foco em prevenção e acompanhamento longitudinal.',
-    foto_url: 'https://i.pravatar.cc/400?u=med_006',
+    foto_url: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&h=400&fit=crop',
     endereco_consultorio: {
       cep: '01310-100',
       logradouro: 'Av. Paulista',
@@ -67,7 +67,7 @@ export const medicosMock: Medico[] = [
     crm: 'CRM-SP 789012',
     especialidade: 'Endocrinologia',
     bio: 'Especialista em diabetes e distúrbios metabólicos.',
-    foto_url: 'https://i.pravatar.cc/400?u=med_007',
+    foto_url: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop',
     endereco_consultorio: {
       cep: '04538-132',
       logradouro: 'Av. Brigadeiro Faria Lima',
@@ -104,12 +104,7 @@ export const medicosMock: Medico[] = [
       bairro: 'Centro',
       cep: '01011-000'
     },
-    foto_url: 'https://i.pravatar.cc/400?u=med_008',
-    sociais: {
-        instagram: 'https://instagram.com/drricardo',
-        whatsapp: '11999990008',
-        site: 'https://drricardosantos.com.br'
-    },
+    foto_url: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop',
     avaliacao: 4.8,
     total_avaliacoes: 124,
     crm: 'CRM-SP 890123',
@@ -141,12 +136,7 @@ export const medicosMock: Medico[] = [
       bairro: 'Centro',
       cep: '20040-003'
     },
-    foto_url: 'https://i.pravatar.cc/400?u=med_009',
-    sociais: {
-        instagram: 'https://instagram.com/drapatricia',
-        whatsapp: '21999990009',
-        facebook: 'https://facebook.com/drapatricia'
-    },
+    foto_url: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop',
     avaliacao: 4.8,
     total_avaliacoes: 145,
     crm: 'CRM-RJ 901234',
@@ -210,12 +200,7 @@ export const medicosMock: Medico[] = [
       bairro: 'Centro',
       cep: '80020-310'
     },
-    foto_url: 'https://i.pravatar.cc/400?u=med_011',
-    sociais: {
-        instagram: 'https://instagram.com/dracamila',
-        whatsapp: '41999990011',
-        telegram: 'https://t.me/dracamila'
-    },
+    foto_url: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop',
     avaliacao: 4.9,
     total_avaliacoes: 210,
     crm: 'CRM-PR 123456',

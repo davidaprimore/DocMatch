@@ -384,45 +384,48 @@ export default function MensagensPage() {
     }
 
     return (
-        <div className="min-h-screen bg-white pb-24">
-            <div className="relative mb-10">
-                <Header variant="page" title="DocZap" showNotifications userAvatar="/images/avatar_sophia.png" userName="Sophia" className="doczap" />
+        <div className="relative min-h-screen overflow-x-hidden pt-1">
+            {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
+            <div className="relative z-10 pb-24 flex flex-col font-sans">
+                <div className="relative mb-4">
+                    <Header variant="page" title="DocZap" showNotifications userAvatar="/avatar-joce.png" userName="Joce Moreno" className="doczap" />
 
-                <div className="absolute left-5 right-5 -bottom-6 z-20">
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Pesquisar..."
-                            className="w-full bg-white rounded-2xl py-3 pl-12 pr-4 shadow-md border-0 outline-none focus:ring-0 text-[14px] text-slate-600"
-                        />
+                    <div className="absolute left-5 right-5 -bottom-0 z-50">
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#D4AF37] w-5 h-5" />
+                            <input
+                                type="text"
+                                placeholder="Pesquisar..."
+                                className="w-full bg-white rounded-2xl py-3 pl-12 pr-4 shadow-md border-0 outline-none focus:ring-0 text-[14px] text-slate-600"
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <main className="pt-4 divide-y divide-slate-100">
-                {conversasMock.map((conversa) => (
-                    <button key={conversa.id} onClick={() => setViewChat(conversa.id)} className="w-full flex items-center px-4 py-4 hover:bg-slate-50 transition-colors">
-                        <div className="relative mr-4">
-                            <img src={conversa.foto} className="w-14 h-14 rounded-full object-cover shadow-sm" />
-                            {conversa.online && <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>}
-                        </div>
-                        <div className="flex-1 text-left">
-                            <div className="flex justify-between">
-                                <h3 className="font-bold text-[#1A365D]">{conversa.nome}</h3>
-                                <span className="text-xs text-slate-400">{conversa.horari}</span>
+                <main className="pt-0 divide-y divide-slate-100">
+                    {conversasMock.map((conversa) => (
+                        <button key={conversa.id} onClick={() => setViewChat(conversa.id)} className="w-full flex items-center px-4 py-3 hover:bg-slate-50 transition-colors">
+                            <div className="relative mr-4">
+                                <img src={conversa.foto} className="w-12 h-12 rounded-full object-cover shadow-sm" />
+                                {conversa.online && <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>}
                             </div>
-                            <p className="text-sm text-slate-500 truncate">{conversa.ultimaMsg}</p>
-                        </div>
-                        {conversa.naoLidas > 0 && (
-                            <div className="ml-2 bg-[#D4AF37] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                                {conversa.naoLidas}
+                            <div className="flex-1 text-left">
+                                <div className="flex justify-between">
+                                    <h3 className="font-bold text-[#1A365D] text-[15px]">{conversa.nome}</h3>
+                                    <span className="text-[10px] text-slate-400">{conversa.horari}</span>
+                                </div>
+                                <p className="text-[12px] text-slate-500 truncate">{conversa.ultimaMsg}</p>
                             </div>
-                        )}
-                    </button>
-                ))}
-            </main>
-            <BottomNav activeTab="mensagens" />
+                            {conversa.naoLidas > 0 && (
+                                <div className="ml-2 bg-[#D4AF37] text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                                    {conversa.naoLidas}
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                </main>
+                <BottomNav activeTab="mensagens" />
+            </div>
         </div>
     )
 }

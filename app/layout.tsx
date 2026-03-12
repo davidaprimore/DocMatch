@@ -39,7 +39,6 @@ export const viewport: Viewport = {
 }
 
 import { ScrollToTop } from '@/components/ScrollToTop'
-import { NotificationProvider } from '@/components/NotificationProvider'
 
 export default function RootLayout({
     children,
@@ -64,9 +63,7 @@ export default function RootLayout({
                 <ScrollToTop />
                 <I18nProvider>
                     <AuthProvider>
-                        <NotificationProvider>
-                            {children}
-                        </NotificationProvider>
+                        {children}
                         <Toaster position="bottom-center" richColors />
                         <script
                             dangerouslySetInnerHTML={{

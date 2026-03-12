@@ -92,12 +92,16 @@ export default function BuscarPage() {
         setFavoritos(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] pb-24">
-            <Header title="Buscar Profissionais" showBackButton showNotifications />
+        <div className="relative min-h-screen overflow-x-hidden pt-1">
+            {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
+            <div className="relative z-10 pb-24 flex flex-col font-sans">
+                {/* HEADER AZUL PREMIUM PADRONIZADO */}
+                <div className="relative mb-8">
+                    <Header title="Buscar Profissionais" showBackButton showNotifications />
 
-            {/* BARRA DE BUSCA E FILTRO */}
-            <div className="px-5 -mt-10 relative z-[60] flex flex-col gap-3 mb-6">
-                <div className="flex gap-2">
+                    {/* BARRA DE BUSCA E FILTRO OVERLAPPING */}
+                    <div className="absolute left-5 right-5 -bottom-3 z-50 flex flex-col gap-3 group">
+                        <div className="flex gap-2">
                     <div className="flex-1 relative">
                         <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -265,6 +269,8 @@ export default function BuscarPage() {
                 </div>
             </main>
             <BottomNav />
+            </div>
         </div>
-    )
+    </div>
+)
 }
