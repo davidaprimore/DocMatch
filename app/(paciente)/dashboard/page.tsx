@@ -25,7 +25,7 @@ export default function DashboardPage() {
     ]
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden pt-1">
+        <div className="relative min-h-screen overflow-x-hidden">
             {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
             <div className="relative z-10 pb-20 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}

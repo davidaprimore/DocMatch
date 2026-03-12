@@ -92,7 +92,7 @@ export default function BuscarPage() {
         setFavoritos(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden pt-1">
+        <div className="relative min-h-screen overflow-x-hidden">
             {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
             <div className="relative z-10 pb-24 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}

@@ -52,7 +52,7 @@ export default function CestaPage() {
     const thickGlass = "bg-white/60 backdrop-blur-[20px] border border-white/40 shadow-[0_20px_50px_rgba(31,62,109,0.15),inset_0_1px_1px_rgba(255,255,255,1)]"
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden pt-1">
+        <div className="relative min-h-screen overflow-x-hidden">
             {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
             <div className="relative z-10 pb-32 flex flex-col font-sans">
                 {/* HEADER COM RESUMO OVERLAPPING */}
