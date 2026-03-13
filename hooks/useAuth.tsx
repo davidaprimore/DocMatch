@@ -178,9 +178,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast.success('Conta criada com sucesso!')
         } catch (err: any) {
             console.error('Erro no registro:', err)
-            const message = err.message || 'Erro ao criar conta.'
-            toast.error(message === 'User already registered' ? 'E-mail já cadastrado.' : message)
-            throw err
+            let message = err.message || 'Erro ao criar conta.'
+            
+            // Tradução de erros comuns do Supabase Auth
+            if (message.includes('rate limit')) {
+                message = 'Muitas tentativas em pouco tempo. Por favor, aguarde alguns minutos e tente novamente.'
+            } else if (message.includes('User already registered') || message.includes('already exists')) {
+                message = 'Este e-mail já está cadastrado em nossa plataforma.'
+            } else if (message.includes('valid email')) {
+                message = 'Por favor, insira um e-mail válido.'
+            }
+
+            toast.error(message)
+            // Não re-lançamos para evitar que o Next.js mostre o overlay de erro em dev
         } finally {
             setIsLoading(false)
         }
