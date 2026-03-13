@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ChevronRight, Heart, Bell, Star, Menu as MenuIcon } from 'lucide-react'
+import { ChevronRight, Heart, Bell, Star, Menu as MenuIcon, Flame, BadgeCheck, Clock } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
 import { Header } from '@/components/Header'
-import { medicosMock } from '@/data/mockData'
 import { useCart } from '@/hooks/useCart'
+import { useAuth } from '@/hooks/useAuth'
+import { useMedicos } from '@/hooks/useMedicos'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 
@@ -16,24 +17,22 @@ export default function DashboardPage() {
     const { t } = useTranslation()
     const router = useRouter()
     const { count } = useCart()
-    const [scrolled, setScrolled] = useState(false)
+    const { user } = useAuth()
+    const { medicos, isLoading: isLoadingMedicos } = useMedicos()
 
-    const medicosSugeridos = [
-        { ...medicosMock[0], foto_url: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=150&auto=format&fit=crop', rating: 4.9, favorito: false },
-        { ...medicosMock[3], foto_url: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=150&auto=format&fit=crop', rating: 4.8, favorito: true },
-        { ...medicosMock[4], foto_url: 'https://images.unsplash.com/photo-1614608682850-e0d6ed316d47?q=80&w=150&auto=format&fit=crop', rating: 5.0, favorito: false },
-    ]
+    // Filtra médicos sugeridos/destaque do banco
+    const medicosSugeridos = medicos.slice(0, 5)
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden">
-            {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
+        <div className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC]">
+            {/* CONTEÚDO */}
             <div className="relative z-10 pb-20 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}
                 <div className="relative mb-2">
                     <Header
                         variant="dashboard"
-                        userAvatar="/avatar-sophie.png"
-                        userName="Sophie"
+                        userAvatar={user?.foto || "/avatar-sophie.png"}
+                        userName={user?.nome?.split(' ')[0] ?? "Sophie"}
                         showNotifications={true}
                         onAvatarClick={() => router.push('/menu')}
                     />
@@ -118,11 +117,11 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 pt-1 no-scrollbar snap-x snap-mandatory -mx-4 px-4">
                             {[
-                                { nome: 'Dr. Lucas Pereira', esp: 'Cardiologista', img: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=150&auto=format&fit=crop', data: 'Amanhã 10:00' },
-                                { nome: 'Dra. Ana Silva', esp: 'Pediatra', img: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=150&auto=format&fit=crop', data: 'Dia 12 15:30' }
+                                { nome: 'Dr. Lucas Pereira', esp: 'Cardiologista', img: '/images/medicos/medico_1.png', data: 'Amanhã 10:00' },
+                                { nome: 'Dra. Ana Silva', esp: 'Pediatra', img: '/images/medicos/medico_2.png', data: 'Dia 12 15:30' }
                             ].map((c, i) => (
                                 <div key={i} className="min-w-[80%] snap-center bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-4 flex items-center gap-4 shadow-[0_22px_44px_-12px_rgba(26,54,93,0.12),0_6px_16px_-4px_rgba(26,54,93,0.06),inset_0_2px_6px_rgba(255,255,255,0.9)] border border-white/60">
-                                    <img src={c.img} className="w-[68px] h-[68px] rounded-[22px] object-cover bg-slate-50 shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-slate-100/50" alt={c.nome} />
+                                    <img src={c.img} className="w-[68px] h-[68px] rounded-[22px] object-cover bg-slate-50 shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-slate-100/50" alt={c.nome} onError={(e) => (e.currentTarget.src = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=150&auto=format&fit=crop')} />
                                     <div className="flex-1">
                                         <h4 className="font-bold text-[14px] text-slate-800 leading-tight">{c.nome}</h4>
                                         <p className="text-[11px] text-slate-500 mt-[2px]">{c.esp}</p>
@@ -147,37 +146,45 @@ export default function DashboardPage() {
                         </button>
                     </div>
 
-                    {/* Médicos Sugeridos */}
+                    {/* Médicos Sugeridos (Reais do Supabase) */}
                     <section>
                         <div className="flex items-center justify-between mb-0 px-1">
-                            <h3 className="font-bold text-[#1A365D] text-[15px]">Médicos Sugeridos para Você</h3>
+                            <h3 className="font-extrabold text-[#1A365D] text-[15px] flex items-center gap-2">
+                                <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                                Médicos Sugeridos
+                            </h3>
                             <div className="flex gap-2">
-                                <button className="w-7 h-7 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100">
-                                    <ChevronRight className="w-4 h-4 text-slate-400 rotate-180" />
-                                </button>
-                                <button className="w-7 h-7 rounded-full bg-[#2D5284] shadow-md flex items-center justify-center">
-                                    <ChevronRight className="w-4 h-4 text-white" />
-                                </button>
+                                <button className="text-[11px] font-bold text-[#D4AF37] hover:underline" onClick={() => router.push('/buscar')}>VER TODOS</button>
                             </div>
                         </div>
                         <div className="flex gap-4 overflow-x-auto pb-10 pt-4 no-scrollbar -mx-4 px-5">
-                            {medicosSugeridos.map((medico, index) => (
+                            {isLoadingMedicos ? (
+                                [1, 2, 3, 4].map(i => (
+                                    <div key={i} className="flex-shrink-0 w-[140px] h-[200px] bg-white rounded-[28px] animate-pulse border border-slate-100" />
+                                ))
+                            ) : medicosSugeridos.map((medico, index) => (
                                 <div
-                                    key={index}
-                                    className="flex-shrink-0 w-[140px] bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-4 shadow-[0_32px_64px_-12px_rgba(26,54,93,0.28),0_16px_32px_-8px_rgba(26,54,93,0.18),inset_0_2px_4px_rgba(255,255,255,0.8)] border border-white/80 flex flex-col items-start relative transition-transform hover:-translate-y-2 cursor-pointer"
+                                    key={medico.id}
+                                    className="flex-shrink-0 w-[150px] bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-3 shadow-[0_32px_64px_-12px_rgba(26,54,93,0.15),0_16px_32px_-8px_rgba(26,54,93,0.1),inset_0_2px_4px_rgba(255,255,255,0.8)] border border-white/80 flex flex-col items-start relative transition-transform hover:-translate-y-1 cursor-pointer"
                                     onClick={() => router.push(`/buscar/${medico.id}`)}
                                 >
                                     <div className="relative mb-3 w-full">
-                                        <img src={medico.foto_url} className="w-full aspect-square rounded-[22px] object-cover shadow-[0_12px_24px_-6px_rgba(0,0,0,0.15)] border border-slate-100/50" alt={medico.nome} />
-                                        <button className={`absolute -top-2 -right-2 w-[34px] h-[34px] rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.8)] border border-white/60 ${medico.favorito ? 'bg-gradient-to-b from-[#FEF2F2] to-[#FEE2E2]' : 'bg-gradient-to-b from-white to-gray-50'}`}>
-                                            <Heart className={`w-[16px] h-[16px] transition-colors ${medico.favorito ? 'fill-[#EF4444] text-[#EF4444]' : 'text-slate-300'}`} />
+                                        <img src={medico.foto || '/avatar-medico-1.png'} className="w-full aspect-square rounded-[22px] object-cover shadow-sm border border-slate-100/50" alt={medico.nome} />
+                                        <button className="absolute -top-1.5 -right-1.5 w-[30px] h-[30px] rounded-full bg-white flex items-center justify-center shadow-md border border-slate-100">
+                                            <Heart className="w-[14px] h-[14px] text-slate-300" />
                                         </button>
                                     </div>
-                                    <p className="text-[13px] font-bold text-left text-[#1A365D] leading-tight w-full truncate">{medico.nome}</p>
-                                    <p className="text-[10px] text-slate-500 font-medium text-left mt-0.5 w-full truncate">{medico.especialidade}</p>
-                                    <div className="flex items-center justify-start gap-1 mt-1.5 w-full">
-                                        <Star className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
-                                        <span className="text-[12px] font-bold text-[#1A365D]">{medico.rating}</span>
+                                    <div className="flex items-center gap-1 mb-1">
+                                        <BadgeCheck className="w-3 h-3 text-[#4F46E5]" />
+                                        <span className="text-[9px] font-black text-[#D4AF37] uppercase tracking-wider">{medico.especialidade?.nome ?? 'Clínico'}</span>
+                                    </div>
+                                    <p className="text-[12px] font-black text-left text-[#1A365D] leading-tight w-full truncate">{medico.nome}</p>
+                                    <div className="flex items-center justify-between mt-2 w-full">
+                                        <div className="flex items-center gap-1">
+                                            <Star className="w-3 h-3 fill-[#D4AF37] text-[#D4AF37]" />
+                                            <span className="text-[11px] font-bold text-[#1A365D]">{medico.nota.toFixed(1)}</span>
+                                        </div>
+                                        <Clock className="w-3 h-3 text-slate-300" />
                                     </div>
                                 </div>
                             ))}

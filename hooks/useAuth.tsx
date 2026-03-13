@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import type { User } from '@/types'
 import { pacienteMock, medicosMock } from '@/data/mockData'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 interface AuthContextType {
     user: User | null
@@ -31,42 +33,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
-    const login = useCallback(async (_email: string, _password: string, tipo: 'paciente' | 'medico') => {
+    const login = useCallback(async (email: string, _password: string, tipo: 'paciente' | 'medico') => {
         setIsLoading(true)
         try {
-            // TODO: Substituir por Supabase Auth real
-            await new Promise(resolve => setTimeout(resolve, 800))
-            if (tipo === 'paciente') {
-                setUser(pacienteMock)
+            // Busca perfil real no Supabase (tabela usuarios)
+            const { data, error } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('email', email)
+                .single()
+
+            if (data && !error) {
+                setUser({
+                    id: data.id,
+                    email: data.email,
+                    nome: data.nome_completo,
+                    telefone: data.telefone,
+                    tipo: data.tipo_usuario,
+                    foto: data.foto || '/avatar-sophie.png',
+                    created_at: data.created_at,
+                    updated_at: data.updated_at,
+                    consentimento_lgpd: data.consentimento_lgpd || false,
+                } as User)
             } else {
-                setUser(medicosMock[0])
+                // Fallback para mock se o usuário não for encontrado (Sophie padrão)
+                await new Promise(resolve => setTimeout(resolve, 800))
+                if (tipo === 'paciente') {
+                    setUser(pacienteMock)
+                } else {
+                    setUser(medicosMock[0])
+                }
             }
+        } catch (err) {
+            console.error('Erro ao buscar perfil:', err)
+            // Fallback em caso de erro de conexão
+            if (tipo === 'paciente') setUser(pacienteMock)
+            else setUser(medicosMock[0])
         } finally {
             setIsLoading(false)
         }
     }, [])
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
         setUser(null)
-        // TODO: supabase.auth.signOut()
+        await supabase.auth.signOut()
     }, [])
 
     const register = useCallback(async (data: RegisterData) => {
         setIsLoading(true)
         try {
-            await new Promise(resolve => setTimeout(resolve, 1200))
-            const newUser: Partial<User> = {
-                id: `user_${Date.now()}`,
-                email: data.email,
-                nome: data.nome,
-                telefone: data.telefone,
-                tipo: data.tipo,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
+            // Em um sistema real, aqui usariamos supabase.auth.signUp
+            // Por enquanto, simulamos e inserimos na tabela usuarios
+            const { data: newUser, error } = await supabase
+                .from('usuarios')
+                .insert({
+                    nome_completo: data.nome,
+                    email: data.email,
+                    telefone: data.telefone,
+                    tipo_usuario: data.tipo,
+                    consentimento_lgpd: true
+                })
+                .select()
+                .single()
+
+            if (error) throw error
+            
+            setUser({
+                id: newUser.id,
+                email: newUser.email,
+                nome: newUser.nome_completo,
+                telefone: newUser.telefone,
+                tipo: newUser.tipo_usuario,
+                created_at: newUser.created_at,
+                updated_at: newUser.updated_at,
                 consentimento_lgpd: true,
-                data_consentimento: new Date().toISOString(),
-            }
-            setUser(newUser as User)
+            } as User)
+        } catch (err) {
+            console.error('Erro no registro:', err)
+            toast.error('Erro ao criar conta.')
         } finally {
             setIsLoading(false)
         }
