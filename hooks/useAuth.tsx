@@ -81,19 +81,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [fetchProfile])
 
-    // Escuta mudanças no estado de autenticação
+    // Escuta mudanças no estado de autenticação e dados em tempo real
     useEffect(() => {
+        let profileChannel: any = null
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 const profile = await fetchProfile(session.user.id)
                 setUser(profile)
+
+                // Configurar Sincronização em Tempo Real (WebSockets)
+                if (profileChannel) profileChannel.unsubscribe()
+                
+                profileChannel = supabase
+                    .channel(`profile_sync_${session.user.id}`)
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'usuarios',
+                            filter: `id=eq.${session.user.id}`
+                        },
+                        (payload) => {
+                            const updated = payload.new as any
+                            setUser(prev => prev ? {
+                                ...prev,
+                                nome: updated.nome_completo,
+                                email: updated.email,
+                                telefone: updated.telefone,
+                                foto: updated.foto,
+                                cpf: updated.cpf,
+                                updated_at: updated.updated_at
+                            } : null)
+                        }
+                    )
+                    .subscribe()
             } else {
                 setUser(null)
+                if (profileChannel) profileChannel.unsubscribe()
             }
             
-            if (event === 'SIGNED_IN') {
-                // Opcional: redirecionar
-            }
             if (event === 'SIGNED_OUT') {
                 router.push('/login')
             }
@@ -102,7 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Inicialização
         refreshUser().finally(() => setIsLoading(false))
 
-        return () => subscription.unsubscribe()
+        return () => {
+            subscription.unsubscribe()
+            if (profileChannel) profileChannel.unsubscribe()
+        }
     }, [fetchProfile, refreshUser, router])
 
     const login = useCallback(async (email: string, password: string, tipo: 'paciente' | 'medico') => {
