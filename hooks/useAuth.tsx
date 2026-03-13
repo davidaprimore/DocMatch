@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useCallback, useEffect, type React
 import type { User } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import { onlyDigits } from '@/lib/utils/masks'
 
 interface AuthContextType {
     user: User | null
@@ -13,6 +15,8 @@ interface AuthContextType {
     logout: () => void
     register: (data: RegisterData) => Promise<void>
     updateUser: (data: Partial<User>) => void
+    updateProfile: (data: Partial<User>) => Promise<void>
+    refreshUser: () => Promise<void>
 }
 
 interface RegisterData {
@@ -31,79 +35,125 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const router = useRouter()
 
-    // Recupera sessão ao montar
-    useEffect(() => {
-        async function getSession() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession()
-                if (session?.user) {
-                    const { data: profile } = await supabase
-                        .from('usuarios')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single()
-
-                    if (profile) {
-                        setUser({
-                            id: profile.id,
-                            email: profile.email,
-                            nome: profile.nome_completo,
-                            telefone: profile.telefone,
-                            tipo: profile.tipo_usuario,
-                            foto: profile.foto,
-                            cpf: profile.cpf,
-                            consentimento_lgpd: profile.consentimento_lgpd,
-                            created_at: session.user.created_at,
-                            updated_at: session.user.updated_at
-                        } as User)
-                    }
-                }
-            } catch (err) {
-                console.error('Erro ao recuperar sessão:', err)
-            } finally {
-                setIsLoading(false)
-            }
-        }
-        getSession()
-    }, [])
-
-    const login = useCallback(async (email: string, _password: string, tipo: 'paciente' | 'medico') => {
-        setIsLoading(true)
+    const fetchProfile = useCallback(async (userId: string) => {
         try {
-            // Busca perfil real no Supabase (tabela usuarios)
-            const { data, error } = await supabase
+            const { data: profile, error } = await supabase
                 .from('usuarios')
                 .select('*')
-                .eq('email', email)
+                .eq('id', userId)
                 .single()
 
-            if (data && !error) {
-                setUser({
-                    id: data.id,
-                    email: data.email,
-                    nome: data.nome_completo,
-                    telefone: data.telefone,
-                    tipo: data.tipo_usuario,
-                    foto: data.foto || null,
-                    created_at: data.created_at,
-                    updated_at: data.updated_at,
-                    consentimento_lgpd: data.consentimento_lgpd || false,
-                } as User)
-            } else {
-                throw new Error('Usuário não encontrado')
+            if (error) {
+                console.error('Erro ao buscar perfil:', error)
+                return null
             }
+
+            if (profile) {
+                return {
+                    id: profile.id,
+                    email: profile.email,
+                    nome: profile.nome_completo,
+                    telefone: profile.telefone,
+                    tipo: profile.tipo_usuario,
+                    foto: profile.foto,
+                    cpf: profile.cpf,
+                    consentimento_lgpd: profile.consentimento_lgpd,
+                    created_at: profile.created_at,
+                    updated_at: profile.updated_at
+                } as User
+            }
+            return null
         } catch (err) {
-            console.error('Erro ao buscar perfil:', err)
+            console.error('Erro na requisição de perfil:', err)
+            return null
+        }
+    }, [])
+
+    const refreshUser = useCallback(async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+            const profile = await fetchProfile(session.user.id)
+            setUser(profile)
+        } else {
+            setUser(null)
+        }
+    }, [fetchProfile])
+
+    // Escuta mudanças no estado de autenticação
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                const profile = await fetchProfile(session.user.id)
+                setUser(profile)
+            } else {
+                setUser(null)
+            }
+            
+            if (event === 'SIGNED_IN') {
+                // Opcional: redirecionar
+            }
+            if (event === 'SIGNED_OUT') {
+                router.push('/login')
+            }
+        })
+
+        // Inicialização
+        refreshUser().finally(() => setIsLoading(false))
+
+        return () => subscription.unsubscribe()
+    }, [fetchProfile, refreshUser, router])
+
+    const login = useCallback(async (email: string, password: string, tipo: 'paciente' | 'medico') => {
+        setIsLoading(true)
+        try {
+            // 1. Autenticação REAL no Supabase
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
+
+            if (authError) throw authError
+            if (!authData.user) throw new Error('Falha na autenticação')
+
+            // 2. Busca perfil
+            const profile = await fetchProfile(authData.user.id)
+            
+            if (!profile) {
+                throw new Error('Perfil de usuário não encontrado no banco de dados.')
+            }
+
+            // 3. Valida se o tipo bate (opcional, mas seguro)
+            if (profile.tipo !== tipo) {
+                // Apenas avisar ou bloquear? Vamos apenas avisar, mas deixar logar.
+                console.warn(`Tipo de usuário divergente. Esperado: ${tipo}, Encontrado: ${profile.tipo}`)
+            }
+
+            setUser(profile)
+        } catch (err: any) {
+            console.error('Erro no login:', err)
+            let message = 'E-mail ou senha incorretos'
+            if (err.message?.includes('Invalid login credentials')) {
+                message = 'E-mail ou senha incorretos.'
+            } else if (err.message) {
+                message = err.message
+            }
+            toast.error(message)
             throw err
         } finally {
             setIsLoading(false)
         }
-    }, [])
+    }, [fetchProfile])
 
     const logout = useCallback(async () => {
-        setUser(null)
-        await supabase.auth.signOut()
+        try {
+            await supabase.auth.signOut()
+            setUser(null)
+            toast.success('Sessão encerrada.')
+        } catch (err) {
+            console.error('Erro ao deslogar:', err)
+        }
     }, [])
 
     const register = useCallback(async (data: RegisterData) => {
@@ -124,84 +174,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (authError) throw authError
             if (!authData.user) throw new Error('Falha ao criar usuário Auth')
  
-            // 2. Inserção na tabela de perfis (usuarios)
-            const { data: newUser, error: profileError } = await supabase
+            // 2. Inserção na tabela principal (usuarios) - Usamos upsert pois o Trigger pode ter criado antes
+            const { error: profileError } = await supabase
                 .from('usuarios')
-                .insert({
+                .upsert({
                     id: authData.user.id,
                     nome_completo: data.nome,
                     email: data.email,
-                    telefone: data.telefone,
+                    telefone: onlyDigits(data.telefone),
                     tipo_usuario: data.tipo,
-                    cpf: data.cpf,
+                    cpf: onlyDigits(data.cpf || ''),
                     consentimento_lgpd: true,
-                    data_consentimento: new Date().toISOString()
+                    termos_aceitos_em: new Date().toISOString()
                 })
-                .select()
-                .single()
  
             if (profileError) {
-                // Se der erro no perfil, removemos o user do auth? 
-                // Geralmente deixamos ou tratamos, mas como é um teste, vamos apenas logar o erro
-                console.error('Erro ao salvar perfil:', profileError)
-                throw profileError
+                console.error('Erro ao salvar perfil em usuarios:', JSON.stringify(profileError, null, 2))
+                throw new Error(`Erro no perfil: ${profileError.message}`)
             }
             
             // 3. Pós-registro para médicos
-            if (data.tipo === 'medico' && data.crm) {
-                await supabase.from('medicos').insert({
+            if (data.tipo === 'medico') {
+                let especialidadeId = null
+                if (data.especialidade) {
+                    const { data: espData } = await supabase
+                        .from('especialidades')
+                        .select('id')
+                        .eq('nome', data.especialidade)
+                        .maybeSingle()
+                    especialidadeId = espData?.id
+                }
+
+                const { error: medicoError } = await supabase.from('medicos').upsert({
                     id: authData.user.id,
                     nome: data.nome,
-                    crm: data.crm,
-                    especialidade_id: data.especialidade // Assumindo que o select passa o ID
+                    crm: data.crm || 'N/A',
+                    especialidade_id: especialidadeId
                 })
+                if (medicoError) {
+                    console.error('Erro ao salvar medico:', medicoError)
+                    // Não vamos travar o processo se o perfil principal já foi criado, 
+                    // mas vamos avisar no console.
+                }
             } else if (data.tipo === 'paciente') {
-                await supabase.from('pacientes').insert({
+                const { error: pacienteError } = await supabase.from('pacientes').upsert({
                     id: authData.user.id,
                     nome: data.nome,
-                    cpf: data.cpf
+                    email: data.email,
+                    telefone: onlyDigits(data.telefone),
+                    cpf: onlyDigits(data.cpf || '')
                 })
+                if (pacienteError) console.error('Erro ao salvar paciente:', pacienteError)
             }
  
-            setUser({
-                id: authData.user.id,
-                email: data.email,
-                nome: data.nome,
-                telefone: data.telefone,
-                tipo: data.tipo,
-                cpf: data.cpf,
-                created_at: authData.user.created_at,
-                updated_at: authData.user.updated_at,
-                consentimento_lgpd: true,
-            } as User)
+            // 4. Atualiza estado local (só funciona se não houver confirmação de e-mail pendente)
+            if (authData.session) {
+                const finalProfile = await fetchProfile(authData.user.id)
+                setUser(finalProfile)
+            } else {
+                toast.info('Verifique seu e-mail para confirmar o cadastro.', { duration: 10000 })
+            }
  
             toast.success('Conta criada com sucesso!')
         } catch (err: any) {
-            console.error('Erro no registro:', err)
+            console.error('Erro completo no registro:', err)
             let message = err.message || 'Erro ao criar conta.'
             
-            // Tradução de erros comuns do Supabase Auth
             if (message.includes('rate limit')) {
-                message = 'Muitas tentativas em pouco tempo. Por favor, aguarde alguns minutos e tente novamente.'
+                message = 'Muitas tentativas. Aguarde um momento.'
             } else if (message.includes('User already registered') || message.includes('already exists')) {
-                message = 'Este e-mail já está cadastrado em nossa plataforma.'
-            } else if (message.includes('valid email')) {
-                message = 'Por favor, insira um e-mail válido.'
+                message = 'Este e-mail já está cadastrado.'
+            } else if (message.includes('violates check constraint')) {
+                message = 'Dados inválidos. Verifique o CPF e telefone.'
             }
 
             toast.error(message)
-            // Não re-lançamos para evitar que o Next.js mostre o overlay de erro em dev
+            throw err
         } finally {
             setIsLoading(false)
         }
-    }, [])
+    }, [fetchProfile])
 
     const updateUser = useCallback((data: Partial<User>) => {
         setUser(prev => prev ? { ...prev, ...data } : null)
     }, [])
 
+    const updateProfile = useCallback(async (data: Partial<User>) => {
+        if (!user) return
+ 
+        try {
+            const { error } = await supabase
+                .from('usuarios')
+                .update({
+                    nome_completo: data.nome,
+                    telefone: data.telefone,
+                    foto: data.foto,
+                    cpf: data.cpf,
+                    consentimento_lgpd: data.consentimento_lgpd
+                })
+                .eq('id', user.id)
+ 
+            if (error) throw error
+            setUser(prev => prev ? { ...prev, ...data } : null)
+        } catch (err) {
+            console.error('Erro ao atualizar perfil:', err)
+            throw err
+        }
+    }, [user])
+ 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, register, updateUser }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, register, updateUser, updateProfile, refreshUser }}>
             {children}
         </AuthContext.Provider>
     )

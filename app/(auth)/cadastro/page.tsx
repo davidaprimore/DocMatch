@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Eye, EyeOff, Stethoscope, User, Briefcase, CheckCircle2, Circle, XCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
-import { maskCPF, maskPhone, isValidCPF } from '@/lib/utils/masks'
+import { maskCPF, maskPhone, isValidCPF, onlyDigits } from '@/lib/utils/masks'
  
 export default function CadastroPage() {
     const router = useRouter()
@@ -64,8 +64,15 @@ export default function CadastroPage() {
         }
  
         try {
-            await register({ ...form, tipo })
-            router.push(tipo === 'medico' ? '/profissional/dashboard' : '/dashboard')
+            // Limpa máscaras para salvar apenas dígitos no banco
+            const cleanData = {
+                ...form,
+                tipo,
+                cpf: onlyDigits(form.cpf),
+                telefone: onlyDigits(form.telefone)
+            }
+            await register(cleanData)
+            router.push(tipo === 'medico' ? '/medico/dashboard' : '/dashboard')
         } catch (err: any) {
             // Toast já disparado no hook
         }
@@ -132,7 +139,16 @@ export default function CadastroPage() {
                                 </div>
                             </div>
  
-                            {/* Password Checklist */}
+                            <InputField label="Confirmar Senha" type="password" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Repita a senha" />
+                            
+                            {form.confirmPassword && form.password !== form.confirmPassword && (
+                                <div className="flex items-center gap-1.5 ml-1 mt-1">
+                                    <XCircle className="w-3 h-3 text-red-400" />
+                                    <span className="text-red-400 text-[10px] font-bold">As senhas não coincidem</span>
+                                </div>
+                            )}
+ 
+                            {/* Password Checklist - Movido para baixo */}
                             {form.password && (
                                 <div className="bg-black/20 rounded-2xl p-3.5 space-y-2 border border-white/5 animate-in fade-in zoom-in-95 duration-200">
                                     {passwordRequirements.map((req, i) => (
@@ -147,15 +163,6 @@ export default function CadastroPage() {
                                             </span>
                                         </div>
                                     ))}
-                                </div>
-                            )}
- 
-                            <InputField label="Confirmar Senha" type="password" value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Repita a senha" />
-                            
-                            {form.confirmPassword && form.password !== form.confirmPassword && (
-                                <div className="flex items-center gap-1.5 ml-1 mt-1">
-                                    <XCircle className="w-3 h-3 text-red-400" />
-                                    <span className="text-red-400 text-[10px] font-bold">As senhas não coincidem</span>
                                 </div>
                             )}
                         </div>

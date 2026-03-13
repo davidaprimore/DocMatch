@@ -1,39 +1,146 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Phone, Mail, MapPin, ShieldCheck, Download, Trash2, Eye, ChevronRight, Camera } from 'lucide-react'
+import { ArrowLeft, User, Phone, Mail, MapPin, ShieldCheck, Download, Trash2, Eye, ChevronRight, Camera, Loader2 } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { useAuth } from '@/hooks/useAuth'
 import { maskCPFPrivate, maskPhonePrivate } from '@/lib/utils/masks'
 import { toast } from 'sonner'
-
+import { useState, useRef } from 'react'
+import { ImageCropper } from '@/components/ImageCropper'
+ 
+import { supabase } from '@/lib/supabase'
+ 
 export default function PerfilPage() {
     const router = useRouter()
-    const { user, logout } = useAuth()
+    const { user, logout, updateProfile } = useAuth()
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [isCropping, setIsCropping] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
+    
+    const cameraInputRef = useRef<HTMLInputElement>(null)
+    const galleyInputRef = useRef<HTMLInputElement>(null)
  
     const handleExportar = () => toast.info('Preparando seus dados para exportação... (LGPD Art. 20)')
     const handleExcluir = () => toast.error('Funcionalidade de exclusão requer confirmação por e-mail.')
+ 
+    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const reader = new FileReader()
+            reader.addEventListener('load', () => {
+                setSelectedImage(reader.result as string)
+                setIsCropping(true)
+            })
+            reader.readAsDataURL(e.target.files[0])
+        }
+    }
+ 
+    const handleCroppedImage = async (blob: Blob) => {
+        if (!user) return
+        setIsCropping(false)
+        setIsUploading(true)
+        
+        try {
+            const fileExt = 'jpg'
+            const fileName = `${user.id}/${Date.now()}.${fileExt}`
+            const filePath = `${fileName}`
+ 
+            // 1. Upload para o Storage
+            const { error: uploadError } = await supabase.storage
+                .from('fotos_perfil')
+                .upload(filePath, blob, {
+                    contentType: 'image/jpeg',
+                    upsert: true
+                })
+ 
+            if (uploadError) throw uploadError
+ 
+            // 2. Pegar URL pública
+            const { data: { publicUrl } } = supabase.storage
+                .from('fotos_perfil')
+                .getPublicUrl(filePath)
+ 
+            // 3. Atualizar no Banco de Dados
+            await updateProfile({ foto: publicUrl })
+            
+            toast.success('Foto de perfil atualizada com sucesso!')
+        } catch (err: any) {
+            console.error('Erro no upload:', err)
+            toast.error('Erro ao salvar foto: ' + (err.message || 'Erro desconhecido'))
+        } finally {
+            setIsUploading(false)
+        }
+    }
  
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
             <Header title="Meu Perfil" showBackButton showNotifications />
  
-            <div className="flex flex-col items-center -mt-16 mb-6 relative z-30">
+            <div className="flex flex-col items-center -mt-16 mb-6 relative z-[60]">
                 <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
                     <div className="relative">
-                        <img 
-                            src={user?.foto || undefined} 
-                            className="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover bg-slate-100" 
-                            alt={user?.nome ?? ""} 
-                        />
-                        <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md border-2 border-white hover:scale-110 transition-transform">
+                        <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-100 relative">
+                            {user?.foto ? (
+                                <img 
+                                    src={user.foto} 
+                                    className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-40' : 'opacity-100'}`} 
+                                    alt={user?.nome ?? ""} 
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 font-bold text-2xl">
+                                    {user?.nome?.substring(0, 2).toUpperCase() || 'DM'}
+                                </div>
+                            )}
+                            
+                            {isUploading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+                                    <Loader2 className="w-6 h-6 text-[#2D5284] animate-spin" />
+                                </div>
+                            )}
+                        </div>
+                        <button 
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="absolute bottom-0 right-0 w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md border-2 border-white hover:scale-110 transition-transform cursor-pointer"
+                        >
                             <Camera className="w-4 h-4 text-[#1A365D]" />
                         </button>
                     </div>
                 </div>
+                
+                <button 
+                    onClick={() => galleyInputRef.current?.click()}
+                    className="mt-3 text-[#2D5284] text-[13px] font-black uppercase tracking-widest hover:opacity-70 transition-opacity"
+                >
+                    Alterar foto
+                </button>
+ 
+                {/* Inputs Escondidos */}
+                <input 
+                    type="file" 
+                    ref={cameraInputRef} 
+                    className="hidden" 
+                    accept="image/*" 
+                    capture="environment" 
+                    onChange={onFileChange} 
+                />
+                <input 
+                    type="file" 
+                    ref={galleyInputRef} 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={onFileChange} 
+                />
             </div>
+ 
+            {isCropping && selectedImage && (
+                <ImageCropper 
+                    image={selectedImage} 
+                    onCropComplete={handleCroppedImage} 
+                    onCancel={() => setIsCropping(false)} 
+                />
+            )}
  
             <div className="px-4 space-y-4">
                 <div className="text-center mb-2">

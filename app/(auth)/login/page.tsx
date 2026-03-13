@@ -21,7 +21,7 @@ export default function LoginPage() {
         try {
             await login(email, password, tipo)
             toast.success('Bem-vindo(a) ao DocMatch!')
-            router.push(tipo === 'medico' ? '/profissional/dashboard' : '/dashboard')
+            router.push(tipo === 'medico' ? '/medico/dashboard' : '/dashboard')
         } catch {
             toast.error('E-mail ou senha incorretos')
         }

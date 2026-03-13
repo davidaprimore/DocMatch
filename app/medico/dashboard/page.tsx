@@ -45,12 +45,18 @@ export default function DashboardMedicoPage() {
             <header className="px-5 pt-8 pb-10">
                 <div className="flex justify-between items-center mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl border-2 border-[#D4AF37] overflow-hidden shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop" alt="Doctor" className="w-full h-full object-cover" />
+                        <div className="w-14 h-14 rounded-2xl border-2 border-[#D4AF37] overflow-hidden shadow-2xl bg-white/10">
+                            {user?.foto ? (
+                                <img src={user.foto} alt={user.nome} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[#D4AF37] font-black text-[18px]">
+                                    {user?.nome?.substring(0, 2).toUpperCase() || 'DR'}
+                                </div>
+                            )}
                         </div>
                         <div>
                             <div className="flex items-center gap-1.5">
-                                <h1 className="text-white font-black text-xl leading-none">Olá, Dr. David</h1>
+                                <h1 className="text-white font-black text-xl leading-none">Olá, {user?.nome?.split(' ')[0] || 'Doutor'}</h1>
                                 {isPremium && <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />}
                             </div>
                             <p className="text-white/40 text-[12px] mt-1.5">Boa tarde! Você tem <span className="text-[#D4AF37] font-bold">8 consultas</span> hoje.</p>
