@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
+import { useAuth } from '@/hooks/useAuth'
 
 const menuSections = [
     {
@@ -40,6 +41,12 @@ const menuSections = [
 
 export default function MenuPage() {
     const router = useRouter()
+    const { user, logout } = useAuth()
+ 
+    const handleLogout = () => {
+        logout()
+        router.push('/login')
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 pb-32">
@@ -52,16 +59,16 @@ export default function MenuPage() {
                     <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000"></div>
                         <Avatar className="w-24 h-24 border-4 border-[#1A365D] relative shadow-2xl">
-                            <AvatarImage src="/avatar-sophie.png" />
-                            <AvatarFallback>SP</AvatarFallback>
+                            <AvatarImage src={user?.foto || undefined} />
+                            <AvatarFallback>{user?.nome?.substring(0, 2).toUpperCase() || 'DM'}</AvatarFallback>
                         </Avatar>
                         <div className="absolute bottom-0 right-0 bg-[#D4AF37] text-[#1A365D] p-1.5 rounded-full border-2 border-[#1A365D] shadow-lg">
                             <Star className="w-4 h-4 fill-current" />
                         </div>
                     </div>
 
-                    <h1 className="text-white font-black text-2xl mt-4 leading-tight">Sophie</h1>
-                    <p className="text-white/40 text-sm font-medium">sophie@email.com</p>
+                    <h1 className="text-white font-black text-2xl mt-4 leading-tight">{user?.nome || ''}</h1>
+                    <p className="text-white/40 text-sm font-medium">{user?.email || ''}</p>
 
                     <div className="mt-6 flex gap-3">
                         <button
@@ -108,7 +115,7 @@ export default function MenuPage() {
 
                 {/* Logout Button */}
                 <button
-                    onClick={() => router.push('/login')}
+                    onClick={handleLogout}
                     className="w-full bg-red-50 text-red-500 font-black p-5 rounded-[32px] border border-red-100 flex items-center justify-center gap-3 active:scale-95 transition-all shadow-sm hover:bg-red-100"
                 >
                     <LogOut className="w-5 h-5" />

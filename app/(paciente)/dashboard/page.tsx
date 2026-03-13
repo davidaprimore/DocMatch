@@ -9,6 +9,7 @@ import { BottomNav } from '@/components/BottomNav'
 import { Header } from '@/components/Header'
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
+import { useAgendamentos } from '@/hooks/useAgendamentos'
 import { useMedicos } from '@/hooks/useMedicos'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
@@ -19,6 +20,7 @@ export default function DashboardPage() {
     const { count } = useCart()
     const { user } = useAuth()
     const { medicos, isLoading: isLoadingMedicos } = useMedicos()
+    const { agendamentos, isLoading: isLoadingAgendas } = useAgendamentos()
 
     // Filtra médicos sugeridos/destaque do banco
     const medicosSugeridos = medicos.slice(0, 5)
@@ -31,8 +33,8 @@ export default function DashboardPage() {
                 <div className="relative mb-2">
                     <Header
                         variant="dashboard"
-                        userAvatar={user?.foto || "/avatar-sophie.png"}
-                        userName={user?.nome?.split(' ')[0] ?? "Sophie"}
+                        userAvatar={user?.foto || undefined}
+                        userName={user?.nome?.split(' ')[0] ?? t('welcome')}
                         showNotifications={true}
                         onAvatarClick={() => router.push('/menu')}
                     />
@@ -63,7 +65,7 @@ export default function DashboardPage() {
                     {/* Banner Economia */}
                     <div id="economy-tour" className="w-full bg-gradient-to-r from-[#CFAF42] via-[#E2C358] to-[#CFAF42] rounded-full py-[11px] flex items-center justify-center shadow-[0_8px_20px_rgba(207,175,66,0.3),inset_0_-2px_6px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.4)] mb-4 px-4 border border-[#E8C55E]/50">
                         <span className="text-[13px] mr-2 filter drop-shadow-sm relative top-[0.5px]">💰</span>
-                        <span className="text-[11.5px] font-black text-[#1A365D] tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]">{t('economy_banner', { valor: 'R$ 450,00' })}</span>
+                        <span className="text-[11.5px] font-black text-[#1A365D] tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.3)]">{t('economy_banner', { valor: 'R$ 0,00' })}</span>
                     </div>
 
                     {/* Quick Actions */}
@@ -116,20 +118,26 @@ export default function DashboardPage() {
                             <button className="text-[11px] font-bold text-[#2D5284] hover:underline" onClick={() => router.push('/consultas')}>Mostrar todos</button>
                         </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 pt-1 no-scrollbar snap-x snap-mandatory -mx-4 px-4">
-                            {[
-                                { nome: 'Dr. Lucas Pereira', esp: 'Cardiologista', img: '/images/medicos/medico_1.png', data: 'Amanhã 10:00' },
-                                { nome: 'Dra. Ana Silva', esp: 'Pediatra', img: '/images/medicos/medico_2.png', data: 'Dia 12 15:30' }
-                            ].map((c, i) => (
-                                <div key={i} className="min-w-[80%] snap-center bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-4 flex items-center gap-4 shadow-[0_22px_44px_-12px_rgba(26,54,93,0.12),0_6px_16px_-4px_rgba(26,54,93,0.06),inset_0_2px_6px_rgba(255,255,255,0.9)] border border-white/60">
-                                    <img src={c.img} className="w-[68px] h-[68px] rounded-[22px] object-cover bg-slate-50 shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-slate-100/50" alt={c.nome} onError={(e) => (e.currentTarget.src = 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=150&auto=format&fit=crop')} />
-                                    <div className="flex-1">
-                                        <h4 className="font-bold text-[14px] text-slate-800 leading-tight">{c.nome}</h4>
-                                        <p className="text-[11px] text-slate-500 mt-[2px]">{c.esp}</p>
-                                        <p className="text-[12px] font-bold text-[#1A365D] mt-1.5">{c.data}</p>
+                            {isLoadingAgendas ? (
+                                <div className="w-full h-24 bg-white/50 animate-pulse rounded-[28px]" />
+                            ) : agendamentos.length > 0 ? (
+                                agendamentos.map((c, i) => (
+                                    <div key={i} className="min-w-[80%] snap-center bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-4 flex items-center gap-4 shadow-[0_22px_44px_-12px_rgba(26,54,93,0.12),0_6px_16px_-4px_rgba(26,54,93,0.06),inset_0_2px_6px_rgba(255,255,255,0.9)] border border-white/60">
+                                        <img src={c.medicos?.foto || '/avatar-medico-1.png'} className="w-[68px] h-[68px] rounded-[22px] object-cover bg-slate-50 shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-slate-100/50" alt={c.medicos?.nome} />
+                                        <div className="flex-1">
+                                            <h4 className="font-bold text-[14px] text-slate-800 leading-tight">{c.medicos?.nome}</h4>
+                                            <p className="text-[11px] text-slate-500 mt-[2px]">{c.medicos?.especialidades?.nome}</p>
+                                            <p className="text-[12px] font-bold text-[#1A365D] mt-1.5">{new Date(c.data_horario).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300" />
                                     </div>
-                                    <ChevronRight className="w-5 h-5 text-slate-300" />
+                                ))
+                            ) : (
+                                <div className="w-full bg-white/40 rounded-[28px] p-6 text-center border border-dashed border-slate-300">
+                                    <p className="text-[12px] text-slate-500 font-medium">Nenhum agendamento pendente</p>
+                                    <button onClick={() => router.push('/buscar')} className="mt-2 text-[11px] font-bold text-[#1A365D] hover:underline">Agendar agora</button>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </section>
 

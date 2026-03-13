@@ -11,6 +11,8 @@ export interface User {
     updated_at: string
     // LGPD
     consentimento_lgpd: boolean
+    foto?: string | null
+    cpf?: string | null
     data_consentimento?: string
     plano_nome?: string // para usePlanAccess
 }

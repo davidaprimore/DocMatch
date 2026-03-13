@@ -24,9 +24,9 @@ export default function PerfilPage() {
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
                     <div className="relative">
                         <img 
-                            src={user?.foto || "/avatar-sophie.png"} 
-                            className="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover" 
-                            alt={user?.nome ?? "Sophie"} 
+                            src={user?.foto || undefined} 
+                            className="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover bg-slate-100" 
+                            alt={user?.nome ?? ""} 
                         />
                         <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shadow-md border-2 border-white hover:scale-110 transition-transform">
                             <Camera className="w-4 h-4 text-[#1A365D]" />
@@ -37,7 +37,7 @@ export default function PerfilPage() {
 
             <div className="px-4 space-y-4">
                 <div className="text-center mb-2">
-                    <h2 className="font-black text-[18px] text-[#1A365D] uppercase tracking-tight">{user?.nome ?? 'Sophie'}</h2>
+                    <h2 className="font-black text-[18px] text-[#1A365D] uppercase tracking-tight">{user?.nome ?? ''}</h2>
                     <p className="text-[12px] text-slate-400 font-bold">Paciente · Plano Gratuito</p>
                 </div>
 
@@ -48,10 +48,10 @@ export default function PerfilPage() {
                         <button className="text-[#2D5284] text-[12px] font-semibold">Editar</button>
                     </div>
                     {[
-                        { icon: User, label: 'Nome Completo', value: user?.nome ?? 'Sophie' },
-                        { icon: Mail, label: 'E-mail', value: user?.email ?? 'sophie@email.com' },
-                        { icon: Phone, label: 'Telefone', value: maskPhonePrivate(user?.telefone ?? '21999990000') },
-                        { icon: ShieldCheck, label: 'CPF', value: maskCPFPrivate('12345678900') },
+                        { icon: User, label: 'Nome Completo', value: user?.nome ?? '-' },
+                        { icon: Mail, label: 'E-mail', value: user?.email ?? '-' },
+                        { icon: Phone, label: 'Telefone', value: user?.telefone ? maskPhonePrivate(user.telefone) : '-' },
+                        { icon: ShieldCheck, label: 'CPF', value: user?.cpf ? maskCPFPrivate(user.cpf) : '-' },
                     ].map(({ icon: Icon, label, value }) => (
                         <div key={label} className="flex items-center gap-4 px-4 py-3.5 border-b border-slate-50 last:border-0">
                             <Icon className="w-4 h-4 text-slate-400 flex-shrink-0" />

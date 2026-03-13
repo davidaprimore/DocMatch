@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import type { User } from '@/types'
-import { pacienteMock, medicosMock } from '@/data/mockData'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -50,25 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     nome: data.nome_completo,
                     telefone: data.telefone,
                     tipo: data.tipo_usuario,
-                    foto: data.foto || '/avatar-sophie.png',
+                    foto: data.foto || null,
                     created_at: data.created_at,
                     updated_at: data.updated_at,
                     consentimento_lgpd: data.consentimento_lgpd || false,
                 } as User)
             } else {
-                // Fallback para mock se o usuário não for encontrado (Sophie padrão)
-                await new Promise(resolve => setTimeout(resolve, 800))
-                if (tipo === 'paciente') {
-                    setUser(pacienteMock)
-                } else {
-                    setUser(medicosMock[0])
-                }
+                throw new Error('Usuário não encontrado')
             }
         } catch (err) {
             console.error('Erro ao buscar perfil:', err)
-            // Fallback em caso de erro de conexão
-            if (tipo === 'paciente') setUser(pacienteMock)
-            else setUser(medicosMock[0])
+            throw err
         } finally {
             setIsLoading(false)
         }
