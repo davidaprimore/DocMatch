@@ -165,7 +165,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (err: any) {
             console.error('Erro no login:', err)
             let message = 'E-mail ou senha incorretos'
-            if (err.message?.includes('Invalid login credentials')) {
+            
+            // Diagnóstico para Vercel
+            if (process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder') || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+                message = 'Configuração do Supabase ausente na Vercel. Verifique as Variáveis de Ambiente.'
+            } else if (err.message?.includes('Invalid login credentials')) {
                 message = 'E-mail ou senha incorretos.'
             } else if (err.message) {
                 message = err.message
