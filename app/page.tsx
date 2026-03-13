@@ -32,7 +32,7 @@ export default function LandingPage() {
 
     const itemVariants = {
         hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "circOut" } }
+        visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
     }
 
     return (
@@ -71,7 +71,7 @@ export default function LandingPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link href="/login" className="hidden sm:block text-white/70 text-[14px] font-bold hover:text-white transition">Entrar</Link>
+                        <Link href="/login" className="block text-white/70 text-[14px] font-bold hover:text-white transition">Entrar</Link>
                         <Link href="/cadastro">
                             <Button className="bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black text-[13px] px-6 py-5 rounded-xl hover:scale-105 transition-transform shadow-[0_8px_20px_rgba(212,175,55,0.25)] border-0">
                                 COMEÇAR GRÁTIS

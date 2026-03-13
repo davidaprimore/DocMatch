@@ -298,15 +298,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!user) return
  
         try {
+            const updates: any = {}
+            if (data.nome !== undefined) updates.nome_completo = data.nome
+            if (data.telefone !== undefined) updates.telefone = data.telefone
+            if (data.foto !== undefined) updates.foto = data.foto
+            if (data.cpf !== undefined) updates.cpf = data.cpf
+            if (data.consentimento_lgpd !== undefined) updates.consentimento_lgpd = data.consentimento_lgpd
+
             const { error } = await supabase
                 .from('usuarios')
-                .update({
-                    nome_completo: data.nome,
-                    telefone: data.telefone,
-                    foto: data.foto,
-                    cpf: data.cpf,
-                    consentimento_lgpd: data.consentimento_lgpd
-                })
+                .update(updates)
                 .eq('id', user.id)
  
             if (error) throw error

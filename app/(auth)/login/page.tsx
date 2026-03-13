@@ -29,6 +29,10 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#1A365D] via-[#2D5284] to-[#1A365D] flex flex-col items-center justify-center p-6">
+            <Link href="/" className="absolute top-8 left-8 text-white/50 hover:text-white transition flex items-center gap-2 text-sm font-bold">
+                <ArrowRight className="w-4 h-4 rotate-180" /> Voltar para o Início
+            </Link>
+            
             {/* Logo */}
             <div className="mb-8 text-center">
                 <div className="w-16 h-16 bg-[#D4AF37] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_rgba(212,175,55,0.4)]">
