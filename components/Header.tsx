@@ -157,17 +157,23 @@ export function Header({
             <div className="flex justify-between items-center h-12">
                 {/* Lado Esquerdo: Identidade / Título / DocZap */}
                 <div className="flex items-center gap-3 overflow-hidden">
-                    {isDashboard && userAvatar ? (
+                    {isDashboard ? (
                         <div
                             className="flex items-center gap-2.5 cursor-pointer group hover:opacity-90 transition-all"
                             onClick={onAvatarClick}
                         >
-                            <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden shadow-sm">
-                                <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+                            <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden shadow-sm bg-white/10 flex items-center justify-center">
+                                {userAvatar ? (
+                                    <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-white text-[14px] font-black uppercase tracking-widest leading-none">
+                                        {userName?.substring(0, 2) || 'DM'}
+                                    </span>
+                                )}
                             </div>
                             <div className="flex flex-col overflow-hidden">
                                 <span className="text-white/60 text-[10px] font-medium leading-none">Olá,</span>
-                                <span className="text-white text-[16px] font-bold leading-tight capitalize truncate">{userName?.split(' ')[0]}</span>
+                                <span className="text-white text-[16px] font-bold leading-tight capitalize truncate">{userName || 'Bem-vindo'}</span>
                             </div>
                         </div>
                     ) : isMessages ? (

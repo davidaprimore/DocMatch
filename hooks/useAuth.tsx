@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import type { User } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -30,7 +30,43 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Recupera sessão ao montar
+    useEffect(() => {
+        async function getSession() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                if (session?.user) {
+                    const { data: profile } = await supabase
+                        .from('usuarios')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single()
+
+                    if (profile) {
+                        setUser({
+                            id: profile.id,
+                            email: profile.email,
+                            nome: profile.nome_completo,
+                            telefone: profile.telefone,
+                            tipo: profile.tipo_usuario,
+                            foto: profile.foto,
+                            cpf: profile.cpf,
+                            consentimento_lgpd: profile.consentimento_lgpd,
+                            created_at: session.user.created_at,
+                            updated_at: session.user.updated_at
+                        } as User)
+                    }
+                }
+            } catch (err) {
+                console.error('Erro ao recuperar sessão:', err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        getSession()
+    }, [])
 
     const login = useCallback(async (email: string, _password: string, tipo: 'paciente' | 'medico') => {
         setIsLoading(true)
@@ -73,35 +109,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const register = useCallback(async (data: RegisterData) => {
         setIsLoading(true)
         try {
-            // Em um sistema real, aqui usariamos supabase.auth.signUp
-            // Por enquanto, simulamos e inserimos na tabela usuarios
-            const { data: newUser, error } = await supabase
+            // 1. Registro no Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: data.email,
+                password: data.password,
+                options: {
+                    data: {
+                        nome_completo: data.nome,
+                        tipo_usuario: data.tipo
+                    }
+                }
+            })
+ 
+            if (authError) throw authError
+            if (!authData.user) throw new Error('Falha ao criar usuário Auth')
+ 
+            // 2. Inserção na tabela de perfis (usuarios)
+            const { data: newUser, error: profileError } = await supabase
                 .from('usuarios')
                 .insert({
+                    id: authData.user.id,
                     nome_completo: data.nome,
                     email: data.email,
                     telefone: data.telefone,
                     tipo_usuario: data.tipo,
-                    consentimento_lgpd: true
+                    cpf: data.cpf,
+                    consentimento_lgpd: true,
+                    data_consentimento: new Date().toISOString()
                 })
                 .select()
                 .single()
-
-            if (error) throw error
+ 
+            if (profileError) {
+                // Se der erro no perfil, removemos o user do auth? 
+                // Geralmente deixamos ou tratamos, mas como é um teste, vamos apenas logar o erro
+                console.error('Erro ao salvar perfil:', profileError)
+                throw profileError
+            }
             
+            // 3. Pós-registro para médicos
+            if (data.tipo === 'medico' && data.crm) {
+                await supabase.from('medicos').insert({
+                    id: authData.user.id,
+                    nome: data.nome,
+                    crm: data.crm,
+                    especialidade_id: data.especialidade // Assumindo que o select passa o ID
+                })
+            } else if (data.tipo === 'paciente') {
+                await supabase.from('pacientes').insert({
+                    id: authData.user.id,
+                    nome: data.nome,
+                    cpf: data.cpf
+                })
+            }
+ 
             setUser({
-                id: newUser.id,
-                email: newUser.email,
-                nome: newUser.nome_completo,
-                telefone: newUser.telefone,
-                tipo: newUser.tipo_usuario,
-                created_at: newUser.created_at,
-                updated_at: newUser.updated_at,
+                id: authData.user.id,
+                email: data.email,
+                nome: data.nome,
+                telefone: data.telefone,
+                tipo: data.tipo,
+                cpf: data.cpf,
+                created_at: authData.user.created_at,
+                updated_at: authData.user.updated_at,
                 consentimento_lgpd: true,
             } as User)
-        } catch (err) {
+ 
+            toast.success('Conta criada com sucesso!')
+        } catch (err: any) {
             console.error('Erro no registro:', err)
-            toast.error('Erro ao criar conta.')
+            const message = err.message || 'Erro ao criar conta.'
+            toast.error(message === 'User already registered' ? 'E-mail já cadastrado.' : message)
+            throw err
         } finally {
             setIsLoading(false)
         }

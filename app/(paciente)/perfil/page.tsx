@@ -10,15 +10,15 @@ import { toast } from 'sonner'
 
 export default function PerfilPage() {
     const router = useRouter()
-    const { user } = useAuth()
-
+    const { user, logout } = useAuth()
+ 
     const handleExportar = () => toast.info('Preparando seus dados para exportação... (LGPD Art. 20)')
     const handleExcluir = () => toast.error('Funcionalidade de exclusão requer confirmação por e-mail.')
-
+ 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-20">
             <Header title="Meu Perfil" showBackButton showNotifications />
-
+ 
             <div className="flex flex-col items-center -mt-16 mb-6 relative z-30">
                 <div className="relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
@@ -34,13 +34,13 @@ export default function PerfilPage() {
                     </div>
                 </div>
             </div>
-
+ 
             <div className="px-4 space-y-4">
                 <div className="text-center mb-2">
                     <h2 className="font-black text-[18px] text-[#1A365D] uppercase tracking-tight">{user?.nome ?? ''}</h2>
                     <p className="text-[12px] text-slate-400 font-bold">Paciente · Plano Gratuito</p>
                 </div>
-
+ 
                 {/* Dados pessoais */}
                 <div className="bg-white rounded-[20px] shadow-card border border-slate-100 overflow-hidden">
                     <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
@@ -63,14 +63,14 @@ export default function PerfilPage() {
                         </div>
                     ))}
                 </div>
-
+ 
                 {/* LGPD */}
                 <div className="bg-white rounded-[20px] shadow-card border border-slate-100 overflow-hidden">
                     <div className="px-4 py-3 border-b border-slate-100">
                         <h3 className="font-bold text-[13px] text-[#1A365D] uppercase tracking-widest">Privacidade & LGPD</h3>
                         <p className="text-[11px] text-slate-400 mt-0.5">Seus direitos conforme a Lei nº 13.709/2018</p>
                     </div>
-
+ 
                     {[
                         { icon: Eye, label: 'Ver meus dados', desc: 'Consulte tudo que armazenamos', action: () => toast.info('Abrindo relatório de dados...') },
                         { icon: Download, label: 'Exportar meus dados', desc: 'Baixar JSON com seus dados (Art. 20)', action: handleExportar },
@@ -86,8 +86,8 @@ export default function PerfilPage() {
                         </button>
                     ))}
                 </div>
-
-                <button onClick={() => { useAuth().logout; router.push('/login') }}
+ 
+                <button onClick={async () => { await logout(); router.push('/login') }}
                     className="w-full bg-red-50 text-red-600 font-bold rounded-2xl py-4 border border-red-100 text-[14px]">
                     Sair da Conta
                 </button>
