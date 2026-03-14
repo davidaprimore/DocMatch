@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
@@ -31,28 +33,36 @@ export function useMedicos() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
-        async function fetchMedicos() {
-            try {
-                const { data, error } = await supabase
-                    .from('medicos')
-                    .select(`
-                        *,
-                        especialidade:especialidades(*)
-                    `)
-                    .order('nota', { ascending: false })
+    const fetchMedicos = async (silent = false) => {
+        if (!silent) setIsLoading(true)
+        try {
+            const { data, error } = await supabase
+                .from('medicos')
+                .select(`
+                    *,
+                    especialidade:especialidades(*)
+                `)
+                .order('nota', { ascending: false })
 
-                if (error) throw error
-                setMedicos(data as Medico[])
-            } catch (err: any) {
-                setError(err.message)
-            } finally {
-                setIsLoading(false)
-            }
+            if (error) throw error
+            setMedicos(data as Medico[])
+            setError(null)
+        } catch (err: any) {
+            console.error('Erro ao buscar médicos:', err)
+            setError(err.message)
+        } finally {
+            setIsLoading(false)
         }
+    }
 
+    useEffect(() => {
         fetchMedicos()
+
+        // Revalidação automática ao voltar para a aba
+        const handleFocus = () => fetchMedicos(true)
+        window.addEventListener('focus', handleFocus)
+        return () => window.removeEventListener('focus', handleFocus)
     }, [])
 
-    return { medicos, isLoading, error }
+    return { medicos, isLoading, error, refetch: () => fetchMedicos() }
 }

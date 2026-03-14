@@ -11,6 +11,7 @@ import { Header } from '@/components/Header'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { cn } from '@/lib/utils'
+import { BottomNav } from '@/components/BottomNav'
 
 type SelectedSlotType = { time: string, price: string, isFast: boolean } | null;
 type DayInfo = { dia_semana: number; label: string; dateText: string; fullDate: Date; };
@@ -24,26 +25,70 @@ export default function AgendarPage() {
     const [medico, setMedico] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [originalAppointment, setOriginalAppointment] = useState<any>(null)
+    const [busySlots, setBusySlots] = useState<string[]>([])
+    const [selectedDay, setSelectedDay] = useState<DayInfo | null>(null)
 
     useEffect(() => {
-        async function fetchMedico() {
+        async function fetchData() {
             try {
-                const { data, error } = await supabase
+                // Busca Médico
+                const { data: medicoData, error: medicoError } = await supabase
                     .from('medicos')
                     .select('*, especialidade:especialidades(*)')
                     .eq('id', params?.id)
                     .single()
 
-                if (error) throw error
-                setMedico(data)
+                if (medicoError) throw medicoError
+                setMedico(medicoData)
+
+                // Busca Agendamento Original se for Remarcação
+                const rescheduleId = new URLSearchParams(window.location.search).get('rescheduleId')
+                if (rescheduleId) {
+                    const { data: agData } = await supabase
+                        .from('agendamentos')
+                        .select('*')
+                        .eq('id', rescheduleId)
+                        .single()
+                    if (agData) setOriginalAppointment(agData)
+                }
             } catch (err) {
-                console.error('Erro ao buscar médico:', err)
+                console.error('Erro ao buscar dados:', err)
             } finally {
                 setIsLoading(false)
             }
         }
-        if (params?.id) fetchMedico()
+        if (params?.id) fetchData()
     }, [params?.id])
+
+    // Busca horários ocupados quando o dia muda
+    useEffect(() => {
+        async function fetchBusySlots() {
+            if (!medico || !selectedDay) return
+
+            const startOfDay = new Date(selectedDay.fullDate)
+            startOfDay.setHours(0, 0, 0, 0)
+            const endOfDay = new Date(selectedDay.fullDate)
+            endOfDay.setHours(23, 59, 59, 999)
+
+            const { data, error } = await supabase
+                .from('agendamentos')
+                .select('data_horario')
+                .eq('medico_id', medico.id)
+                .neq('status', 'cancelada')
+                .gte('data_horario', startOfDay.toISOString())
+                .lte('data_horario', endOfDay.toISOString())
+
+            if (data) {
+                const times = data.map(a => {
+                    const d = new Date(a.data_horario)
+                    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+                })
+                setBusySlots(times)
+            }
+        }
+        fetchBusySlots()
+    }, [selectedDay, medico])
 
     const todayDate = useMemo(() => new Date(), [])
     const currentHourString = `${todayDate.getHours().toString().padStart(2, '0')}:${todayDate.getMinutes().toString().padStart(2, '0')}`
@@ -58,6 +103,7 @@ export default function AgendarPage() {
         const list = [
             {
                 id: 'clinic1',
+                tipo: 'presencial',
                 name: 'Consultório Principal',
                 address: medico.endereco?.logradouro ? `${medico.endereco.logradouro}, ${medico.endereco.numero}` : 'Endereço não informado',
                 icon: Building2,
@@ -68,25 +114,37 @@ export default function AgendarPage() {
                     { dia_semana: 4, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
                     { dia_semana: 5, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
                 ],
+            },
+            {
+                id: 'tele',
+                tipo: 'online',
+                name: 'Telemedicina',
+                address: 'Atendimento Online',
+                icon: Video,
+                horarios: [
+                    { dia_semana: 1, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 2, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 3, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 4, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 5, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                ],
             }
         ]
-        list.push({
-            id: 'tele',
-            name: 'Telemedicina',
-            address: 'Atendimento Online',
-            icon: Video,
-            horarios: [
-                { dia_semana: 1, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
-                { dia_semana: 2, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
-                { dia_semana: 3, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
-                { dia_semana: 4, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
-                { dia_semana: 5, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
-            ],
-        })
+
         return list
     }, [medico])
 
     const [selectedLocal, setSelectedLocal] = useState(locais[0])
+
+    // Pré-selecionar local original se for reagendamento
+    useEffect(() => {
+        if (originalAppointment && locais.length > 0) {
+            // Comparação case-insensitive e fallback para presencial se vazio
+            const originalTipo = (originalAppointment.tipo || 'presencial').toLowerCase()
+            const original = locais.find(l => l.tipo.toLowerCase() === originalTipo)
+            if (original) setSelectedLocal(original)
+        }
+    }, [originalAppointment, locais])
 
     // Ao trocar local, atualiza qual horarios usar
     const horariosLocal = selectedLocal?.horarios || []
@@ -114,8 +172,6 @@ export default function AgendarPage() {
         }
         return days;
     }, [horariosLocal, todayDate]);
-
-    const [selectedDay, setSelectedDay] = useState<DayInfo | null>(null)
 
     // Atualiza dia selecionado quando o local muda
     useEffect(() => {
@@ -157,9 +213,19 @@ export default function AgendarPage() {
 
     const availableSlots = useMemo(() => {
         if (!selectedDay) return []
-        if (selectedDay.label === 'Hoje') return allSlots.filter(s => s.time > currentHourString)
-        return allSlots
-    }, [selectedDay, currentHourString, allSlots])
+        
+        let filtered = allSlots
+
+        // Filtra horários do passado se for hoje
+        if (selectedDay.label === 'Hoje') {
+            filtered = filtered.filter(s => s.time > currentHourString)
+        }
+
+        // Filtra horários que já estão ocupados no banco
+        filtered = filtered.filter(s => !busySlots.includes(s.time))
+
+        return filtered
+    }, [selectedDay, currentHourString, allSlots, busySlots])
 
     const { trackEvent } = useAnalytics()
     const { fireCelebration } = useConfetti()
@@ -179,31 +245,51 @@ export default function AgendarPage() {
             const [hours, minutes] = selectedSlot.time.split(':')
             const appointmentDate = new Date(selectedDay.fullDate)
             appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+            const rescheduleId = new URLSearchParams(window.location.search).get('rescheduleId')
 
-            const { error } = await supabase
+            const { data: newAgendamento, error } = await supabase
                 .from('agendamentos')
                 .insert({
                     paciente_id: user?.id,
                     medico_id: medico.id,
                     data_horario: appointmentDate.toISOString(),
-                    status: 'pendente'
+                    status: 'pendente',
+                    tipo: selectedLocal.tipo,
+                    id_agendamento_anterior: rescheduleId,
+                    valor_pago_no_ato: parseFloat(selectedSlot.price.replace('R$ ', '').replace(',', '.'))
                 })
+                .select()
+                .single()
 
             if (error) throw error
+
+            // Se for uma remarcação, atualizar o agendamento anterior
+            if (rescheduleId) {
+                await supabase
+                    .from('agendamentos')
+                    .update({ 
+                        status: 'cancelada', // Ou 'remarcada' se preferir, mas 'cancelada' é comum com flag
+                        remarcado_at: new Date().toISOString()
+                    })
+                    .eq('id', rescheduleId)
+            }
 
             // Tracking de conversão
             trackEvent('complete_booking', {
                 medico_id: medico.id,
                 valor: selectedSlot.price,
-                modalidade: selectedLocal.name
+                modalidade: selectedLocal.name,
+                is_reschedule: !!rescheduleId
             })
 
             // Efeito Visual de Sucesso
             fireCelebration()
 
             showDialog({
-                title: 'Consulta Agendada!',
-                message: `Tudo certo! Seu atendimento com ${medico.nome} foi confirmado para ${selectedDay.dateText} às ${selectedSlot.time} (${selectedLocal.name}).`,
+                title: rescheduleId ? 'Consulta Remarcada!' : 'Consulta Agendada!',
+                message: rescheduleId 
+                    ? `Sua consulta com ${medico.nome} foi remarcada com sucesso para ${selectedDay.dateText} às ${selectedSlot.time}.`
+                    : `Tudo certo! Seu atendimento com ${medico.nome} foi confirmado para ${selectedDay.dateText} às ${selectedSlot.time} (${selectedLocal.name}).`,
                 type: 'success',
                 onConfirm: () => router.push('/consultas')
             })
@@ -270,14 +356,21 @@ export default function AgendarPage() {
                     {locais.map(local => {
                         const Icon = local.icon
                         const isSelected = selectedLocal?.id === local.id
+                        // Bloqueio absoluto para reagendamento: Só permite a mesma modalidade (Presencial/Online)
+                        const originalTipo = (originalAppointment?.tipo || 'presencial').toLowerCase()
+                        const isDisabled = originalAppointment && local.tipo.toLowerCase() !== originalTipo
+
                         return (
                             <button
                                 key={local.id}
-                                onClick={() => setSelectedLocal(local)}
+                                onClick={() => !isDisabled && setSelectedLocal(local)}
                                 aria-pressed={isSelected}
+                                disabled={isDisabled && !isSelected} // Nunca desabilita o que já está selecionado
                                 className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left ${isSelected
                                     ? `${glassCard} border-[#2D5284]/40 ring-2 ring-[#2D5284]/15 shadow-[0_8px_24px_rgba(45,82,132,0.15),inset_0_1px_2px_rgba(255,255,255,0.9)]`
-                                    : 'bg-white/50 border-white/60 backdrop-blur-sm hover:bg-white/70 shadow-[0_2px_8px_rgba(31,62,109,0.06)]'
+                                    : isDisabled
+                                        ? 'bg-slate-50 border-slate-200 opacity-40 cursor-not-allowed filter grayscale-[0.5]'
+                                        : 'bg-white/50 border-white/60 backdrop-blur-sm hover:bg-white/70 shadow-[0_2px_8px_rgba(31,62,109,0.06)]'
                                     }`}
                             >
                                 <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#2D5284] shadow-[0_4px_12px_rgba(45,82,132,0.4)]' : 'bg-slate-100'}`}>
@@ -561,6 +654,9 @@ export default function AgendarPage() {
                     </div>
                 </>
             )}
+            {/* FOOTER */}
+            <div className="h-24" />
+            <BottomNav />
         </div>
     )
 }

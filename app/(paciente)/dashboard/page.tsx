@@ -14,6 +14,7 @@ import { useMedicos } from '@/hooks/useMedicos'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
 import { OnboardingGuide } from './components/OnboardingGuide'
+import { useUI } from '@/providers/UIProvider'
 
 export default function DashboardPage() {
     const { t } = useTranslation()
@@ -22,12 +23,21 @@ export default function DashboardPage() {
     const { user } = useAuth()
     const { medicos, isLoading: isLoadingMedicos } = useMedicos()
     const { agendamentos, isLoading: isLoadingAgendas } = useAgendamentos()
+    const { triggerDemoLoading } = useUI()
 
     // Filtra médicos sugeridos/destaque do banco
     const medicosSugeridos = medicos.slice(0, 5)
 
     return (
         <div className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC]">
+            {/* BOTÃO DE DEMO PARA O USUÁRIO (REMOVER DEPOIS) */}
+            <button 
+                onClick={triggerDemoLoading}
+                className="fixed bottom-24 right-5 z-[60] bg-[#1A365D] text-white p-3 rounded-full shadow-2xl border border-white/20 active:scale-90 transition-all group"
+                title="Ver Simulação de Loading"
+            >
+                <Clock className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+            </button>
             {/* CONTEÚDO */}
             <div className="relative z-10 pb-20 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}
@@ -112,27 +122,34 @@ export default function DashboardPage() {
                         ))}
                     </div>
 
-                    {/* Agendamentos Pendentes */}
+                    {/* Próximas Consultas */}
                     <section className="mb-8">
                         <div className="flex justify-between items-baseline mb-1">
-                            <h3 className="font-bold text-[#1A365D] text-[15px]">Agendamentos Pendentes</h3>
+                            <h3 className="font-bold text-[#1A365D] text-[15px]">Próximas Consultas</h3>
                             <button className="text-[11px] font-bold text-[#2D5284] hover:underline" onClick={() => router.push('/consultas')}>Mostrar todos</button>
                         </div>
                         <div className="flex gap-4 overflow-x-auto pb-4 pt-1 no-scrollbar snap-x snap-mandatory -mx-4 px-4">
                             {isLoadingAgendas ? (
                                 <div className="w-full h-24 bg-white/50 animate-pulse rounded-[28px]" />
-                            ) : agendamentos.length > 0 ? (
-                                agendamentos.map((c, i) => (
-                                    <div key={i} className="min-w-[80%] snap-center bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-4 flex items-center gap-4 shadow-[0_22px_44px_-12px_rgba(26,54,93,0.12),0_6px_16px_-4px_rgba(26,54,93,0.06),inset_0_2px_6px_rgba(255,255,255,0.9)] border border-white/60">
-                                        <img src={c.medicos?.foto || '/avatar-medico-1.png'} className="w-[68px] h-[68px] rounded-[22px] object-cover bg-slate-50 shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-slate-100/50" alt={c.medicos?.nome} />
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-[14px] text-slate-800 leading-tight">{c.medicos?.nome}</h4>
-                                            <p className="text-[11px] text-slate-500 mt-[2px]">{c.medicos?.especialidades?.nome}</p>
-                                            <p className="text-[12px] font-bold text-[#1A365D] mt-1.5">{new Date(c.data_horario).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                            ) : agendamentos && agendamentos.filter((a: any) => ['agendada', 'confirmada', 'pendente'].includes(a.status)).length > 0 ? (
+                                agendamentos
+                                    .filter((a: any) => ['agendada', 'confirmada', 'pendente'].includes(a.status))
+                                    .sort((a, b) => new Date(a.data_horario).getTime() - new Date(b.data_horario).getTime())
+                                    .map((c, i) => (
+                                        <div 
+                                            key={i} 
+                                            onClick={() => router.push(`/consultas/${c.id}`)}
+                                            className="min-w-[80%] snap-center cursor-pointer active:scale-[0.98] transition-transform bg-gradient-to-b from-white to-[#F8FAFC] rounded-[28px] p-4 flex items-center gap-4 shadow-[0_22px_44px_-12px_rgba(26,54,93,0.12),0_6px_16px_-4px_rgba(26,54,93,0.06),inset_0_2px_6px_rgba(255,255,255,0.9)] border border-white/60"
+                                        >
+                                            <img src={c.medicos?.foto || '/avatar-medico-1.png'} className="w-[68px] h-[68px] rounded-[22px] object-cover bg-slate-50 shadow-[0_8px_16px_rgba(0,0,0,0.1)] border border-slate-100/50" alt={c.medicos?.nome} />
+                                            <div className="flex-1">
+                                                <h4 className="font-bold text-[14px] text-slate-800 leading-tight">{c.medicos?.nome}</h4>
+                                                <p className="text-[11px] text-slate-500 mt-[2px]">{c.medicos?.especialidades?.nome}</p>
+                                                <p className="text-[12px] font-bold text-[#1A365D] mt-1.5">{new Date(c.data_horario).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                                            </div>
+                                            <ChevronRight className="w-5 h-5 text-slate-300" />
                                         </div>
-                                        <ChevronRight className="w-5 h-5 text-slate-300" />
-                                    </div>
-                                ))
+                                    ))
                             ) : (
                                 <div className="w-full bg-white/40 rounded-[28px] p-6 text-center border border-dashed border-slate-300">
                                     <p className="text-[12px] text-slate-500 font-medium">Nenhum agendamento pendente</p>

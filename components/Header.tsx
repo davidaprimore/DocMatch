@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { useUI } from '@/providers/UIProvider'
 
 interface HeaderProps {
     variant?: 'dashboard' | 'page'
@@ -37,7 +38,7 @@ export function Header({
 }: HeaderProps) {
     const router = useRouter()
     const { user } = useAuth()
-    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { isMenuOpen, setIsMenuOpen } = useUI()
     const [mounted, setMounted] = useState(false)
     
     useEffect(() => {

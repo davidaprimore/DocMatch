@@ -39,6 +39,8 @@ export const viewport: Viewport = {
 }
 
 import { ScrollToTop } from '@/components/ScrollToTop'
+import { UIProvider } from '@/providers/UIProvider'
+import { ClientLayout } from './ClientLayout'
 
 export default function RootLayout({
     children,
@@ -58,28 +60,32 @@ export default function RootLayout({
                 <meta name="theme-color" content="#2D5284" />
                 <link rel="manifest" href="/manifest.json" />
             </head>
-            <body className="antialiased" suppressHydrationWarning>
+            <body className="antialiased font-sans" suppressHydrationWarning>
                 <DynamicMistBackground />
                 <ScrollToTop />
                 <I18nProvider>
-                    <DialogProvider>
-                        <AuthProvider>
-                            {children}
-                            <script
-                                dangerouslySetInnerHTML={{
-                                    __html: `
-                                        if ('serviceWorker' in navigator) {
-                                            window.addEventListener('load', function() {
-                                                navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                                                    console.log('Erro no ServiceWorker:', err);
+                    <UIProvider>
+                        <DialogProvider>
+                            <AuthProvider>
+                                <ClientLayout>
+                                    {children}
+                                </ClientLayout>
+                                <script
+                                    dangerouslySetInnerHTML={{
+                                        __html: `
+                                            if ('serviceWorker' in navigator) {
+                                                window.addEventListener('load', function() {
+                                                    navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                                                        console.log('Erro no ServiceWorker:', err);
+                                                    });
                                                 });
-                                            });
-                                        }
-                                    `,
-                                }}
-                            />
-                        </AuthProvider>
-                    </DialogProvider>
+                                            }
+                                        `,
+                                    }}
+                                />
+                            </AuthProvider>
+                        </DialogProvider>
+                    </UIProvider>
                 </I18nProvider>
             </body>
         </html>
