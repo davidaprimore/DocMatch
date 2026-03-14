@@ -6,7 +6,7 @@ import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { useAuth } from '@/hooks/useAuth'
 import { maskCPFPrivate, maskPhonePrivate } from '@/lib/utils/masks'
-import { toast } from 'sonner'
+import { useDialog } from '@/components/ui/CustomDialog'
 import { useState, useRef } from 'react'
 import { ImageCropper } from '@/components/ImageCropper'
  
@@ -22,8 +22,18 @@ export default function PerfilPage() {
     const cameraInputRef = useRef<HTMLInputElement>(null)
     const galleyInputRef = useRef<HTMLInputElement>(null)
  
-    const handleExportar = () => toast.info('Preparando seus dados para exportação... (LGPD Art. 20)')
-    const handleExcluir = () => toast.error('Funcionalidade de exclusão requer confirmação por e-mail.')
+    const { showDialog } = useDialog()
+
+    const handleExportar = () => showDialog({
+        title: 'LGPD Art. 20',
+        message: 'Preparando seus dados para exportação. Você receberá um link por e-mail em instantes.',
+        type: 'info'
+    })
+    const handleExcluir = () => showDialog({
+        title: 'Confirmação Necessária',
+        message: 'A funcionalidade de exclusão requer confirmação por e-mail para sua segurança.',
+        type: 'error'
+    })
  
     const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -64,10 +74,13 @@ export default function PerfilPage() {
             // 3. Atualizar no Banco de Dados
             await updateProfile({ foto: publicUrl })
             
-            toast.success('Foto de perfil atualizada com sucesso!')
         } catch (err: any) {
             console.error('Erro no upload:', err)
-            toast.error('Erro ao salvar foto: ' + (err.message || 'Erro desconhecido'))
+            showDialog({
+                title: 'Erro no Upload',
+                message: 'Não foi possível salvar sua foto: ' + (err.message || 'Erro desconhecido'),
+                type: 'error'
+            })
         } finally {
             setIsUploading(false)
         }
@@ -187,7 +200,7 @@ export default function PerfilPage() {
                     </div>
  
                     {[
-                        { icon: Eye, label: 'Ver meus dados', desc: 'Consulte tudo que armazenamos', action: () => toast.info('Abrindo relatório de dados...') },
+                        { icon: Eye, label: 'Ver meus dados', desc: 'Consulte tudo que armazenamos', action: () => showDialog({ title: 'LGPD', message: 'Abrindo relatório de dados detalhados conforme Lei 13.709/18.', type: 'info' }) },
                         { icon: Download, label: 'Exportar meus dados', desc: 'Baixar JSON com seus dados (Art. 20)', action: handleExportar },
                         { icon: Trash2, label: 'Excluir minha conta', desc: 'Anonimização irreversível dos dados', action: handleExcluir, danger: true },
                     ].map(({ icon: Icon, label, desc, action, danger }) => (
@@ -203,7 +216,7 @@ export default function PerfilPage() {
                 </div>
  
                 <button onClick={async () => { await logout(); router.push('/login') }}
-                    className="w-full bg-red-50 text-red-600 font-bold rounded-2xl py-4 border border-red-100 text-[14px]">
+                    className="w-full bg-red-50 text-red-600 font-bold rounded-2xl py-4 border border-red-100 text-[14px] mb-4">
                     Sair da Conta
                 </button>
             </div>

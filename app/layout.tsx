@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/hooks/useAuth'
-import { Toaster } from 'sonner'
 import { I18nProvider } from '@/components/I18nProvider'
 import { DynamicMistBackground } from '@/components/layout/DynamicMistBackground'
 import { DialogProvider } from '@/components/ui/CustomDialog'

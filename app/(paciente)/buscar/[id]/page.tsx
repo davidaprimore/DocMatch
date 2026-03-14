@@ -7,8 +7,11 @@ import {
     Star, Clock4, Stethoscope, GraduationCap, CheckCircle2,
     MessageCircle, Building2, Video, Send
 } from 'lucide-react'
-import { medicosMock } from '@/data/mockData'
 import { Header } from '@/components/Header'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 
 // Logos dos planos de saúde — usando texto estilizado com cores reais das marcas
 const PlanLogo = ({ operadora }: { operadora: string }) => {
@@ -42,38 +45,58 @@ const PlanLogo = ({ operadora }: { operadora: string }) => {
 export default function PerfilMedicoPage() {
     const router = useRouter()
     const params = useParams()
-    const medico = medicosMock.find(m => m.id === (params?.id as string)) ?? medicosMock[0]
-    const medicoAny = medico as any
+    const { user } = useAuth()
+    const [medico, setMedico] = useState<any>(null)
+    const [isLoading, setIsLoading] = useState(true)
     const [favorito, setFavorito] = useState(false)
     const [abaAtiva, setAbaAtiva] = useState<'sobre' | 'avaliacoes' | 'locais'>('sobre')
+
+    useEffect(() => {
+        async function fetchMedico() {
+            try {
+                const { data, error } = await supabase
+                    .from('medicos')
+                    .select('*, especialidade:especialidades(*)')
+                    .eq('id', params?.id)
+                    .single()
+
+                if (error) throw error
+                setMedico(data)
+            } catch (err) {
+                console.error('Erro ao buscar médico:', err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        if (params?.id) fetchMedico()
+    }, [params?.id])
+
+    if (isLoading) return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
+            <Loader2 className="w-10 h-10 text-[#2D5284] animate-spin" />
+            <p className="text-slate-400 text-[12px] mt-4 font-bold uppercase tracking-widest">Carregando doutor...</p>
+        </div>
+    )
+
+    if (!medico) return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-10 text-center">
+            <p className="text-slate-500 font-bold">Médico não encontrado.</p>
+            <button onClick={() => router.back()} className="text-[#2D5284] font-bold mt-4">Voltar</button>
+        </div>
+    )
 
     const glassCard = `bg-white/80 backdrop-blur-md border border-white/90 shadow-[0_8px_32px_rgba(31,62,109,0.10),0_2px_8px_rgba(31,62,109,0.05),inset_0_1px_2px_rgba(255,255,255,0.95)]`
     const glassCardAzul = `bg-[#2D5284]/5 backdrop-blur-sm border border-[#2D5284]/10 shadow-[0_4px_16px_rgba(45,82,132,0.08)]`
 
-    const reviews = [
-        { nome: 'Mariana Costa', nota: 5, texto: 'Profissional incrível! Me atendeu com muita atenção e resolveu meu problema rapidamente.', data: 'Mar 2026' },
-        { nome: 'Carlos Alves', nota: 5, texto: 'Excelente médica. Muito didática na explicação do tratamento. Super recomendo!', data: 'Fev 2026' },
-        { nome: 'Patrícia Lima', nota: 4, texto: 'Ótima consulta, consultório bem equipado e atendimento pontual.', data: 'Jan 2026' },
-    ]
-
-    // Locais com detalhes dourados
     const locais = [
         {
             icon: Building2,
             name: 'Consultório Principal',
-            sub: `${medico.endereco_consultorio.logradouro}, ${medico.endereco_consultorio.numero}`,
-            detail: `${medico.endereco_consultorio.bairro} — ${medico.endereco_consultorio.cidade}/${medico.endereco_consultorio.estado}`,
+            sub: medico.endereco?.logradouro ? `${medico.endereco.logradouro}, ${medico.endereco.numero}` : 'Endereço não informado',
+            detail: `${medico.endereco?.bairro || ''} — ${medico.endereco?.cidade || ''}/${medico.endereco?.estado || ''}`,
             days: 'Seg · Qua · Sex',
             cor: '#2D5284',
         },
-        ...(medicoAny.endereco_consultorio_2 ? [{
-            icon: Building2,
-            name: `Clínica ${medicoAny.endereco_consultorio_2.complemento?.split(' - ')[1] || medicoAny.endereco_consultorio_2.bairro}`,
-            sub: `${medicoAny.endereco_consultorio_2.logradouro}, ${medicoAny.endereco_consultorio_2.numero}`,
-            detail: `${medicoAny.endereco_consultorio_2.bairro} — ${medicoAny.endereco_consultorio_2.cidade}/${medicoAny.endereco_consultorio_2.estado}`,
-            days: 'Ter · Qui · Sáb',
-            cor: '#D4AF37',
-        }] : []),
         {
             icon: Video,
             name: 'Telemedicina',
@@ -94,8 +117,8 @@ export default function PerfilMedicoPage() {
                     title={medico.nome} 
                     showBackButton 
                     showNotifications 
-                    userAvatar="/avatar-sophie.png" 
-                    userName="Sophie"
+                    userAvatar={user?.foto || undefined} 
+                    userName={user?.nome?.split(' ')[0] || 'DocMatch'}
                 />
 
             {/* CARD DO MÉDICO — Clean & Premium */}
@@ -103,10 +126,10 @@ export default function PerfilMedicoPage() {
                 <div className={`${glassCard} rounded-[24px] p-5`}>
                     <div className="flex items-center gap-4 mb-4">
                         <div className="relative">
-                            <div className="w-[82px] h-[82px] rounded-[22px] overflow-hidden border-2 border-[#D4AF37]/20 shadow-lg">
-                                <img src={medico.foto_url} alt={`Foto de ${medico.nome}`} className="w-full h-full object-cover" />
+                            <div className="w-[82px] h-[82px] rounded-[22px] overflow-hidden border-2 border-[#D4AF37]/20 shadow-lg bg-slate-50">
+                                <img src={medico.foto || 'https://via.placeholder.com/150'} alt={`Foto de ${medico.nome}`} className="w-full h-full object-cover" />
                             </div>
-                            {medico.destaque && (
+                            {medico.nota >= 4.8 && (
                                 <div className="absolute -top-2 -left-2 bg-[#D4AF37] text-[#1A365D] text-[9px] font-black px-2 py-0.5 rounded-full shadow-md">
                                     ⭐ Top
                                 </div>
@@ -118,7 +141,7 @@ export default function PerfilMedicoPage() {
                                 <h2 className="text-[#1A365D] font-bold text-[17px] leading-tight truncate">{medico.nome}</h2>
                                 <ShieldCheck className="w-4.5 h-4.5 text-[#D4AF37] shrink-0" />
                             </div>
-                            <p className="text-slate-500 text-[13px] font-medium mb-2">{medico.especialidade}</p>
+                            <p className="text-slate-500 text-[13px] font-medium mb-2">{medico.especialidade?.nome || 'Médico'}</p>
                             <div className="bg-emerald-500/10 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-lg inline-flex items-center gap-1 border border-emerald-500/20">
                                 <ShieldCheck className="w-3 h-3" /> Verificado CRM
                             </div>
@@ -194,7 +217,7 @@ export default function PerfilMedicoPage() {
                                     <h2 className="text-[#1A365D] font-bold text-[14px]">Formação</h2>
                                 </div>
                                 <div className="space-y-2.5">
-                                    {(medico.formacao ?? []).map((f, i) => (
+                                    {(medico.formacao ?? []).map((f: string, i: number) => (
                                         <div key={i} className="flex items-start gap-2.5">
                                             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                                             <p className="text-[13px] text-slate-600">{f}</p>
@@ -221,12 +244,12 @@ export default function PerfilMedicoPage() {
                                 <h2 className="text-[#1A365D] font-bold text-[14px]">Convênios Aceitos</h2>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {medico.planos_saude_aceitos.map(p => (
-                                    <PlanLogo key={p.id} operadora={p.operadora} />
+                                {(medico.planos_aceitos || []).map((p: string, idx: number) => (
+                                    <PlanLogo key={idx} operadora={p} />
                                 ))}
                                 <div className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 border border-[#D4AF37]/40 bg-gradient-to-r from-[#FEFCE8] to-[#FFF9E6] shadow-sm">
                                     <div className="w-5 h-5 rounded-md bg-[#D4AF37] flex items-center justify-center text-[7px] font-black text-[#1A365D]">R$</div>
-                                    <span className="text-[12px] font-bold text-amber-700">Particular · R$ {medico.valor_consulta_particular}</span>
+                                    <span className="text-[12px] font-bold text-amber-700">Particular · R$ {medico.valor_consulta}</span>
                                 </div>
                             </div>
                         </div>
@@ -261,22 +284,10 @@ export default function PerfilMedicoPage() {
                             </div>
                         </div>
 
-                        {reviews.map((r, i) => (
-                            <div key={i} className={`${glassCard} rounded-[22px] p-4`}>
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <p className="font-bold text-[#1A365D] text-[13px]">{r.nome}</p>
-                                        <p className="text-slate-400 text-[11px]">{r.data}</p>
-                                    </div>
-                                    <div className="flex gap-0.5">
-                                        {[1, 2, 3, 4, 5].map(j => (
-                                            <Star key={j} className={`w-3 h-3 ${j <= r.nota ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`} />
-                                        ))}
-                                    </div>
-                                </div>
-                                <p className="text-[12px] text-slate-600 leading-relaxed">{r.texto}</p>
-                            </div>
-                        ))}
+                        {/* Lista de avaliações (Vazio por enquanto) */}
+                        <div className="text-center py-10">
+                            <p className="text-slate-400 text-[13px]">Ainda não há avaliações detalhadas para este profissional.</p>
+                        </div>
                     </>
                 )}
 

@@ -6,45 +6,16 @@ import { ArrowLeft, ShoppingCart, Trash2, Plus, Minus, MapPin, ExternalLink, Cre
 import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { useCart } from '@/hooks/useCart'
+import { useAuth } from '@/hooks/useAuth'
 import { formatCurrency, formatDistance } from '@/lib/utils/masks'
 import { cn } from '@/lib/utils'
 
 export default function CestaPage() {
     const router = useRouter()
+    const { user } = useAuth()
     const { porFarmacia, total, count, adicionar, atualizarQuantidade, remover, limpar } = useCart()
 
-    // Efeito para popular a cesta com mocks variados para visualização
-    useEffect(() => {
-        if (count === 0) {
-            adicionar({
-                id: 'med_001',
-                nome: 'Amoxicilina 500mg',
-                principio_ativo: 'Amoxicilina',
-                concentracao: '500mg',
-                farmacia_id: 'farm_001',
-                farmacia_nome: 'Droga Raia - Augusta',
-                preco_unitario: 24.90,
-                quantidade: 1,
-                distancia_km: 0.8,
-                whatsapp: '5511999999999',
-                priceVariation: 'down',
-                isCheapest: true
-            })
-            adicionar({
-                id: 'med_002',
-                nome: 'Dipirona Sódica 500mg',
-                principio_ativo: 'Dipirona',
-                concentracao: '500mg',
-                farmacia_id: 'farm_002',
-                farmacia_nome: 'Pague Menos - Paulista',
-                preco_unitario: 14.50,
-                quantidade: 2,
-                distancia_km: 1.2,
-                whatsapp: '5511999999999',
-                priceVariation: 'up'
-            })
-        }
-    }, [count, adicionar])
+    // Removido o efeito de população automática com mocks para garantir dados 100% reais
 
     const farmaciasIds = Object.keys(porFarmacia)
 
@@ -62,8 +33,8 @@ export default function CestaPage() {
                         title="Minha Cesta"
                         showBackButton
                         showNotifications
-                        userAvatar="/avatar-sophie.png"
-                        userName="Sophie"
+                        userAvatar={user?.foto || undefined}
+                        userName={user?.nome?.split(' ')[0] || 'Usuário'}
                     />
 
                     {/* Resumo Overlap Premium */}

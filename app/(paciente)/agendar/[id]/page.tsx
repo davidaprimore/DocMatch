@@ -1,14 +1,14 @@
-'use client'
-
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
+import { Loader2 } from 'lucide-react'
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Calendar as CalendarIcon, Clock, Zap, Star, ShieldCheck, Filter, Building2, Video, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
-import { medicosMock } from '@/data/mockData'
-import { useDialog } from '@/components/ui/CustomDialog'
+import { useDialog } from '@/hooks/useDialog'
+import { Building2, Video, Star, ShieldCheck, MapPin, Calendar as CalendarIcon, Filter, Clock, Zap, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Header } from '@/components/Header'
-import { cn } from '@/lib/utils'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useConfetti } from '@/hooks/useConfetti'
+import { cn } from '@/lib/utils'
 
 type SelectedSlotType = { time: string, price: string, isFast: boolean } | null;
 type DayInfo = { dia_semana: number; label: string; dateText: string; fullDate: Date; };
@@ -17,10 +17,31 @@ export default function AgendarPage() {
     const router = useRouter()
     const { showDialog } = useDialog()
     const params = useParams()
+    const { user } = useAuth()
+    
+    const [medico, setMedico] = useState<any>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [isSaving, setIsSaving] = useState(false)
 
-    const medicoId = params?.id as string || 'med_001'
-    const medico = medicosMock.find(m => m.id === medicoId) || medicosMock[0]
-    const medicoAny = medico as any
+    useEffect(() => {
+        async function fetchMedico() {
+            try {
+                const { data, error } = await supabase
+                    .from('medicos')
+                    .select('*, especialidade:especialidades(*)')
+                    .eq('id', params?.id)
+                    .single()
+
+                if (error) throw error
+                setMedico(data)
+            } catch (err) {
+                console.error('Erro ao buscar médico:', err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        if (params?.id) fetchMedico()
+    }, [params?.id])
 
     const todayDate = useMemo(() => new Date(), [])
     const currentHourString = `${todayDate.getHours().toString().padStart(2, '0')}:${todayDate.getMinutes().toString().padStart(2, '0')}`
@@ -31,38 +52,42 @@ export default function AgendarPage() {
 
     // Locais disponíveis — monta incluindo o segundo consultório, se existir
     const locais = useMemo(() => {
+        if (!medico) return []
         const list = [
             {
                 id: 'clinic1',
                 name: 'Consultório Principal',
-                address: `${medico.endereco_consultorio.logradouro}, ${medico.endereco_consultorio.numero} — ${medico.endereco_consultorio.bairro}, ${medico.endereco_consultorio.cidade}`,
+                address: medico.endereco?.logradouro ? `${medico.endereco.logradouro}, ${medico.endereco.numero}` : 'Endereço não informado',
                 icon: Building2,
-                horarios: medico.horarios_disponiveis,
+                horarios: [
+                    { dia_semana: 1, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 2, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 3, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 4, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                    { dia_semana: 5, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                ],
             }
         ]
-        if (medicoAny.endereco_consultorio_2) {
-            list.push({
-                id: 'clinic2',
-                name: `Clínica ${medicoAny.endereco_consultorio_2.complemento?.split(' - ')[1] || medicoAny.endereco_consultorio_2.bairro}`,
-                address: `${medicoAny.endereco_consultorio_2.logradouro}, ${medicoAny.endereco_consultorio_2.numero} — ${medicoAny.endereco_consultorio_2.bairro}`,
-                icon: Building2,
-                horarios: medicoAny.horarios_disponiveis_2,
-            })
-        }
         list.push({
             id: 'tele',
             name: 'Telemedicina',
             address: 'Atendimento Online',
             icon: Video,
-            horarios: medico.horarios_disponiveis, // tele usa o mesmo horário do principal
+            horarios: [
+                { dia_semana: 1, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                { dia_semana: 2, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                { dia_semana: 3, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                { dia_semana: 4, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+                { dia_semana: 5, slots: ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'] },
+            ],
         })
         return list
-    }, [medico, medicoAny])
+    }, [medico])
 
     const [selectedLocal, setSelectedLocal] = useState(locais[0])
 
     // Ao trocar local, atualiza qual horarios usar
-    const horariosLocal = selectedLocal.horarios
+    const horariosLocal = selectedLocal?.horarios || []
 
     // Gera 10 próximos dias disponíveis para o local selecionado
     const nextDays = useMemo((): DayInfo[] => {
@@ -94,11 +119,7 @@ export default function AgendarPage() {
     useEffect(() => {
         setSelectedDay(nextDays.length > 0 ? nextDays[0] : null)
         setSelectedSlot(null)
-    }, [selectedLocal])
-
-    useEffect(() => {
-        if (!selectedDay && nextDays.length > 0) setSelectedDay(nextDays[0])
-    }, [nextDays])
+    }, [selectedLocal, nextDays])
 
     const [selectedSlot, setSelectedSlot] = useState<SelectedSlotType>(null)
     const [showFullCalendar, setShowFullCalendar] = useState(false)
@@ -122,7 +143,7 @@ export default function AgendarPage() {
         return days
     }, [calendarMonthStart])
 
-    const allSlots = [
+    const allSlots = medico ? [
         { time: '08:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
         { time: '09:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
         { time: '10:30', price: `R$ ${medico.valor_consulta}`, isFast: false },
@@ -130,51 +151,89 @@ export default function AgendarPage() {
         { time: '16:30', price: `R$ ${medico.valor_consulta + 50}`, isFast: true },
         { time: '18:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
         { time: '19:00', price: `R$ ${medico.valor_consulta}`, isFast: false },
-    ]
+    ] : []
 
     const availableSlots = useMemo(() => {
         if (!selectedDay) return []
         if (selectedDay.label === 'Hoje') return allSlots.filter(s => s.time > currentHourString)
         return allSlots
-    }, [selectedDay, currentHourString, selectedLocal])
+    }, [selectedDay, currentHourString, allSlots])
 
     const { trackEvent } = useAnalytics()
     const { fireCelebration } = useConfetti()
 
     useEffect(() => {
-        trackEvent('view_doctor_profile', { medico_id: medico.id, medico_nome: medico.nome })
-    }, [medico.id, trackEvent])
+        if (medico) {
+            trackEvent('view_doctor_profile', { medico_id: medico.id, medico_nome: medico.nome })
+        }
+    }, [medico, trackEvent])
 
-    const handleConfirmar = () => {
-        if (!selectedSlot || !selectedDay) return
+    const handleConfirmar = async () => {
+        if (!selectedSlot || !selectedDay || !medico || isSaving) return
         
-        // Tracking de conversão
-        trackEvent('complete_booking', {
-            medico_id: medico.id,
-            valor: selectedSlot.price,
-            modalidade: selectedLocal.name
-        })
+        setIsSaving(true)
+        try {
+            // Prepara a data combinada
+            const [hours, minutes] = selectedSlot.time.split(':')
+            const appointmentDate = new Date(selectedDay.fullDate)
+            appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
 
-        // Efeito Visual de Sucesso (Reforço Positivo / Vendas)
-        fireCelebration()
+            const { error } = await supabase
+                .from('agendamentos')
+                .insert({
+                    paciente_id: user?.id,
+                    medico_id: medico.id,
+                    data_horario: appointmentDate.toISOString(),
+                    status: 'pendente'
+                })
 
-        showDialog({
-            title: 'Consulta Agendada!',
-            message: `Tudo certo! Seu atendimento com ${medico.nome} foi confirmado para ${selectedDay.dateText} às ${selectedSlot.time} (${selectedLocal.name}).`,
-            type: 'success',
-            onConfirm: () => router.push('/dashboard')
-        })
-        
-        setSelectedSlot(null)
+            if (error) throw error
+
+            // Tracking de conversão
+            trackEvent('complete_booking', {
+                medico_id: medico.id,
+                valor: selectedSlot.price,
+                modalidade: selectedLocal.name
+            })
+
+            // Efeito Visual de Sucesso
+            fireCelebration()
+
+            showDialog({
+                title: 'Consulta Agendada!',
+                message: `Tudo certo! Seu atendimento com ${medico.nome} foi confirmado para ${selectedDay.dateText} às ${selectedSlot.time} (${selectedLocal.name}).`,
+                type: 'success',
+                onConfirm: () => router.push('/consultas')
+            })
+            
+            setSelectedSlot(null)
+        } catch (err) {
+            console.error('Erro ao agendar:', err)
+            showDialog({
+                title: 'Erro ao Agendar',
+                message: 'Não foi possível confirmar seu agendamento. Por favor, tente novamente.',
+                type: 'error'
+            })
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     // Glass card class reutilizável
     const glassCard = `bg-white/70 backdrop-blur-md border border-white/80 shadow-[0_8px_32px_rgba(31,62,109,0.10),0_2px_8px_rgba(31,62,109,0.06),inset_0_1px_2px_rgba(255,255,255,0.9)]`
 
+    if (isLoading || !medico) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-[#2D5284] animate-spin" />
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] pb-20 font-sans">
             {/* HEADER PADRONIZADO */}
-            <Header showBackButton showNotifications userAvatar="/avatar-joce.png" userName="Joce Moreno">
+            <Header showBackButton showNotifications userAvatar={user?.foto || undefined} userName={user?.nome || 'DocMatch'}>
                 <h1 className="text-white font-bold text-[18px]">Agendar Consulta</h1>
             </Header>
 
@@ -182,21 +241,21 @@ export default function AgendarPage() {
             <div className="px-5 -mt-5 relative z-20 mb-5">
                 <div className={`${glassCard} rounded-[24px] p-4 flex items-center gap-4`}>
                     <div className="w-[68px] h-[68px] rounded-2xl border-2 border-[#D4AF37]/30 overflow-hidden shrink-0 shadow-md">
-                        <img src={medico.foto_url} alt={`Foto de perfil de ${medico.nome}`} className="w-full h-full object-cover" />
+                        <img src={medico.foto} alt={`Foto de perfil de ${medico.nome}`} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
                             <h2 className="text-[#1A365D] font-bold text-[15px] leading-tight truncate">{medico.nome}</h2>
                             <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0" aria-hidden="true" />
                         </div>
-                        <p className="text-slate-500 text-[12px] font-medium mb-1.5">{medico.especialidade}</p>
+                        <p className="text-slate-500 text-[12px] font-medium mb-1.5">{medico.especialidade?.nome}</p>
                         <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-lg">
                                 <Star className="w-3 h-3 text-amber-500 fill-amber-500" aria-hidden="true" />
-                                <span className="text-amber-700 text-[11px] font-bold">{medico.avaliacao}</span>
+                                <span className="text-amber-700 text-[11px] font-bold">{medico.avaliacao || '5.0'}</span>
                             </div>
                             <span className="text-slate-300 text-xs">•</span>
-                            <p className="text-slate-500 text-[11px]">{medico.total_avaliacoes} avaliações</p>
+                            <p className="text-slate-500 text-[11px]">{medico.total_avaliacoes || '0'} avaliações</p>
                         </div>
                     </div>
                 </div>
@@ -208,7 +267,7 @@ export default function AgendarPage() {
                 <div className="flex flex-col gap-2.5">
                     {locais.map(local => {
                         const Icon = local.icon
-                        const isSelected = selectedLocal.id === local.id
+                        const isSelected = selectedLocal?.id === local.id
                         return (
                             <button
                                 key={local.id}
@@ -325,7 +384,7 @@ export default function AgendarPage() {
                 )}
             </div>
 
-            {/* Redes Sociais - Inserido no final antes dos botões de ação final */}
+            {/* Redes Sociais & Contato */}
             <div className="px-5 mb-8">
                 <div className={`${glassCard} rounded-[24px] p-5`}>
                     <h3 className="text-[#1A365D] font-black text-[14px] mb-4 uppercase tracking-wider">Redes Sociais & Contato</h3>
@@ -335,7 +394,7 @@ export default function AgendarPage() {
                             { icon: 'telegram', url: medico.sociais?.telegram, label: 'Telegram', color: 'bg-[#229ED9]' },
                             { icon: 'facebook', url: medico.sociais?.facebook, label: 'Facebook', color: 'bg-[#1877F2]' },
                             { icon: 'x', url: '#', label: 'X (Twitter)', color: 'bg-black' },
-                        ].map((soc, i) => (
+                        ].map((soc, i: number) => (
                             <button 
                                 key={i}
                                 onClick={() => soc.url && soc.url !== '#' && window.open(soc.url, '_blank')}
@@ -357,43 +416,11 @@ export default function AgendarPage() {
                 </div>
             </div>
 
-            {/* Redes Sociais - Inserido antes dos botões finais */}
-            <div className="px-5 mb-8">
-                <div className={`${glassCard} rounded-[24px] p-5`}>
-                    <h3 className="text-[#1A365D] font-black text-[14px] mb-4 uppercase tracking-wider">Redes Sociais & Contato</h3>
-                    <div className="grid grid-cols-4 gap-4">
-                        {[
-                            { icon: 'instagram', url: medicoAny.sociais?.instagram, label: 'Instagram', color: 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]' },
-                            { icon: 'telegram', url: medicoAny.sociais?.telegram, label: 'Telegram', color: 'bg-[#229ED9]' },
-                            { icon: 'facebook', url: medicoAny.sociais?.facebook, label: 'Facebook', color: 'bg-[#1877F2]' },
-                            { icon: 'x', url: '#', label: 'X (Twitter)', color: 'bg-black' },
-                        ].map((soc, i) => (
-                            <button 
-                                key={i}
-                                onClick={() => soc.url && soc.url !== '#' && window.open(soc.url, '_blank')}
-                                className="flex flex-col items-center gap-2 group"
-                            >
-                                <div className={cn(
-                                    "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-active:scale-90",
-                                    soc.color
-                                )}>
-                                    {soc.icon === 'instagram' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>}
-                                    {soc.icon === 'telegram' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>}
-                                    {soc.icon === 'facebook' && <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>}
-                                    {soc.icon === 'x' && <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z"/></svg>}
-                                </div>
-                                <span className="text-[10px] font-bold text-[#1A365D]/60 uppercase tracking-tight">{soc.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
             {/* CONFIRMAÇÃO BOTTOM SHEET */}
             {selectedSlot && selectedDay && (
                 <>
                     <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40" onClick={() => setSelectedSlot(null)} />
-                    <div className="fixed bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.12)] z-50 p-6 pt-4 animate-in slide-in-from-bottom-[100%] duration-300">
+                    <div className="fixed bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-[0_-16px_48_rgba(0,0,0,0.12)] z-50 p-6 pt-4 animate-in slide-in-from-bottom-[100%] duration-300">
                         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5" />
                         <h3 className="text-[#1A365D] font-black text-xl mb-5 text-center">Confirmar Agendamento</h3>
 
@@ -404,10 +431,10 @@ export default function AgendarPage() {
                                 </div>
                             )}
                             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-200/60">
-                                <img src={medico.foto_url} alt={medico.nome} className="w-11 h-11 rounded-full object-cover border border-slate-200 shrink-0" />
+                                <img src={medico.foto} alt={medico.nome} className="w-11 h-11 rounded-full object-cover border border-slate-200 shrink-0" />
                                 <div>
                                     <h4 className="text-[#1A365D] font-bold text-[14px]">{medico.nome}</h4>
-                                    <p className="text-slate-500 text-[12px]">{medico.especialidade}</p>
+                                    <p className="text-slate-500 text-[12px]">{medico.especialidade?.nome}</p>
                                 </div>
                             </div>
                             <div className="space-y-2">
@@ -446,14 +473,7 @@ export default function AgendarPage() {
                 <>
                     <div className="fixed inset-0 bg-[#0F2240]/40 backdrop-blur-sm z-40" onClick={() => setShowFullCalendar(false)} />
                     <div
-                        className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl rounded-t-[32px] shadow-[0_-16px_48px_rgba(0,0,0,0.12)] z-50 p-5 pt-4 animate-in slide-in-from-bottom-[100%] duration-300 h-[85vh] flex flex-col"
-                        onTouchStart={(e) => { (e.currentTarget as any)._touchX = e.touches[0].clientX }}
-                        onTouchEnd={(e) => {
-                            const start = (e.currentTarget as any)._touchX ?? 0
-                            const dx = e.changedTouches[0].clientX - start
-                            if (dx > 55) prevMonth()
-                            else if (dx < -55) nextMonth()
-                        }}
+                        className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl rounded-t-[32px] shadow-[0_-16px_48_rgba(0,0,0,0.12)] z-50 p-5 pt-4 animate-in slide-in-from-bottom-[100%] duration-300 h-[85vh] flex flex-col"
                     >
                         <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-5 shrink-0" />
 
@@ -482,23 +502,7 @@ export default function AgendarPage() {
                             </button>
                         </div>
 
-                        {/* Legenda */}
-                        <div className="flex items-center gap-4 mb-4 shrink-0 px-1">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-[#2D5284]" />
-                                <span className="text-[11px] text-slate-500 font-medium">Disponível</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded bg-slate-200 relative flex items-center justify-center">
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-full h-[1.5px] bg-slate-400 rotate-[135deg]" />
-                                    </div>
-                                </div>
-                                <span className="text-[11px] text-slate-500 font-medium">Indisponível</span>
-                            </div>
-                        </div>
-
-                        {/* Grid Calendário */}
+                        {/* grid dias */}
                         <div className="flex-1 overflow-y-auto no-scrollbar">
                             <div className="grid grid-cols-7 gap-y-2 gap-x-0 mb-1">
                                 {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
@@ -512,7 +516,7 @@ export default function AgendarPage() {
                                     const today0 = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
                                     const isPast = date.getTime() < today0.getTime()
                                     const isToday = date.toDateString() === todayDate.toDateString()
-                                    const atende = horariosLocal.some((h: any) => h.dia_semana === date.getDay())
+                                    const atende = (horariosLocal as any[]).some((h: any) => h.dia_semana === date.getDay())
                                     const isUnavailable = !atende || isPast
 
                                     return (
@@ -538,7 +542,6 @@ export default function AgendarPage() {
                                                             : 'text-[#1A365D] font-bold hover:bg-blue-50 hover:text-[#2D5284] active:scale-95'
                                                     }`}
                                             >
-                                                {/* Risco diagonal VISÍVEL para dias indisponíveis */}
                                                 {isUnavailable && !isToday && (
                                                     <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                         <svg viewBox="0 0 40 40" className="absolute inset-0 w-full h-full" aria-hidden="true">

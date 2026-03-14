@@ -10,39 +10,39 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { BottomNav } from '@/components/BottomNav'
 import { useAuth } from '@/hooks/useAuth'
 
-const menuSections = [
-    {
-        title: 'Minha Conta',
-        items: [
-            { id: 'perfil', label: 'Editar Perfil', icon: User, href: '/perfil', color: 'text-blue-500' },
-            { id: 'planos', label: 'Meu Plano & Assinatura', icon: CreditCard, href: '/planos', color: 'text-amber-500', badge: 'PRIME' },
-            { id: 'notificacoes', label: 'Notificações', icon: Bell, href: '/notificacoes', color: 'text-rose-500' },
-            { id: 'favoritos', label: 'Médicos Favoritos', icon: Heart, href: '/favoritos', color: 'text-red-500' },
-        ]
-    },
-    {
-        title: 'Segurança & Suporte',
-        items: [
-            { id: 'lgpd', label: 'Privacidade (LGPD)', icon: ShieldCheck, href: '/perfil/lgpd', color: 'text-emerald-500' },
-            { id: 'config', label: 'Configurações', icon: Settings, href: '/configuracoes', color: 'text-slate-500' },
-            { id: 'ajuda', label: 'Central de Ajuda', icon: HelpCircle, href: '/ajuda', color: 'text-indigo-500' },
-            { id: 'termos', label: 'Termos de Uso', icon: FileText, href: '/termos', color: 'text-slate-400' },
-        ]
-    },
-    {
-        title: 'DocMatch',
-        items: [
-            { id: 'sobre', label: 'Sobre o App', icon: Info, href: '/sobre', color: 'text-blue-400' },
-            { id: 'avaliar', label: 'Avaliar na App Store', icon: Star, href: '#', color: 'text-yellow-500' },
-            { id: 'indicar', label: 'Indicar para um Amigo', icon: Share2, href: '#', color: 'text-purple-500' },
-        ]
-    }
-]
-
 export default function MenuPage() {
     const router = useRouter()
     const { user, logout } = useAuth()
  
+    const menuSections = [
+        {
+            title: 'Minha Conta',
+            items: [
+                { id: 'perfil', label: 'Editar Perfil', icon: User, href: '/perfil', color: 'text-blue-500' },
+                { id: 'planos', label: 'Meu Plano & Assinatura', icon: CreditCard, href: '/planos', color: 'text-amber-500', badge: user?.plano_nome || 'Free' },
+                { id: 'notificacoes', label: 'Notificações', icon: Bell, href: '/notificacoes', color: 'text-rose-500' },
+                { id: 'favoritos', label: 'Médicos Favoritos', icon: Heart, href: '/favoritos', color: 'text-red-500' },
+            ]
+        },
+        {
+            title: 'Segurança & Suporte',
+            items: [
+                { id: 'lgpd', label: 'Privacidade (LGPD)', icon: ShieldCheck, href: '/perfil/lgpd', color: 'text-emerald-500' },
+                { id: 'config', label: 'Configurações', icon: Settings, href: '/configuracoes', color: 'text-slate-500' },
+                { id: 'ajuda', label: 'Central de Ajuda', icon: HelpCircle, href: '/ajuda', color: 'text-indigo-500' },
+                { id: 'termos', label: 'Termos de Uso', icon: FileText, href: '/termos', color: 'text-slate-400' },
+            ]
+        },
+        {
+            title: 'DocMatch',
+            items: [
+                { id: 'sobre', label: 'Sobre o App', icon: Info, href: '/sobre', color: 'text-blue-400' },
+                { id: 'avaliar', label: 'Avaliar na App Store', icon: Star, href: '#', color: 'text-yellow-500' },
+                { id: 'indicar', label: 'Indicar para um Amigo', icon: Share2, href: '#', color: 'text-purple-500' },
+            ]
+        }
+    ]
+
     const handleLogout = () => {
         logout()
         router.push('/login')
@@ -73,9 +73,9 @@ export default function MenuPage() {
                     <div className="mt-6 flex gap-3">
                         <button
                             onClick={() => router.push('/planos')}
-                            className="bg-[#D4AF37] text-[#1A365D] font-black px-6 py-2 rounded-full text-[12px] shadow-lg shadow-[#D4AF37]/20 active:scale-95 transition-all"
+                            className="bg-[#D4AF37] text-[#1A365D] font-black px-6 py-2 rounded-full text-[12px] shadow-lg shadow-[#D4AF37]/20 active:scale-95 transition-all uppercase"
                         >
-                            DOCMATCH PRIME
+                            DOCMATCH {user?.plano_nome || 'Free'}
                         </button>
                     </div>
                 </div>

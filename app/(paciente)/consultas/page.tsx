@@ -4,10 +4,11 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Calendar, Clock, MapPin, Video, ChevronRight, CheckCircle2, XCircle, AlertCircle, Plus } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
-import { consultasMock, medicosMock } from '@/data/mockData'
+import { useAgendamentos } from '@/hooks/useAgendamentos'
 import { dateToDisplay } from '@/lib/utils/masks'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
 
 const statusConfig = {
     agendada: { label: 'Agendada', bg: 'bg-blue-50', text: 'text-[#2D5284]', icon: Clock },
@@ -19,7 +20,7 @@ const statusConfig = {
 
 export default function ConsultasPage() {
     const router = useRouter()
-    const medicoMap = Object.fromEntries(medicosMock.map(m => [m.id, m]))
+    const { agendamentos, isLoading } = useAgendamentos()
 
     return (
         <div className="relative min-h-screen overflow-x-hidden">
@@ -42,33 +43,18 @@ export default function ConsultasPage() {
                     </button>
                 </div>
 
-                {/* Filtros em Carrossel Glass */}
-                <div className="px-3 mb-10 overflow-x-auto no-scrollbar relative z-10">
-                    <div className="flex gap-3 min-w-max py-2">
-                        {['Todas', 'Agendadas', 'Confirmadas', 'Realizadas', 'Canceladas'].map((f, i) => (
-                            <button
-                                key={f}
-                                className={cn(
-                                    "px-6 py-2.5 rounded-xl text-[12px] font-black transition-all duration-300 border shadow-lg backdrop-blur-md",
-                                    i === 0
-                                        ? "bg-[#2D5284] text-white border-[#2D5284] shadow-[#2D5284]/30 scale-105"
-                                        : "bg-white/50 text-[#2D5284] border-white/70 hover:bg-white/80"
-                                )}
-                            >
-                                {f}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
                 <main className="px-2.5 space-y-14 relative z-10 pt-4">
-                    {consultasMock.length > 0 ? (
-                        consultasMock.map((consulta, index) => {
-                            const medico = medicoMap[consulta.medico_id]
-                            const st = statusConfig[consulta.status] || statusConfig.agendada
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-24">
+                            <Loader2 className="w-10 h-10 text-[#2D5284] animate-spin" />
+                            <p className="text-slate-400 text-[12px] mt-4 font-bold uppercase tracking-widest">Carregando consultas...</p>
+                        </div>
+                    ) : agendamentos.length > 0 ? (
+                        agendamentos.map((consulta, index) => {
+                            const medico = consulta.medicos
+                            const st = statusConfig[consulta.status as keyof typeof statusConfig] || statusConfig.agendada
                             const StatusIcon = st.icon
                             const isFirst = index === 0 && (consulta.status === 'agendada' || consulta.status === 'confirmada')
-                            const needsRating = consulta.status === 'realizada' && !consulta.receita_id
 
                             return (
                                 <div
@@ -86,7 +72,7 @@ export default function ConsultasPage() {
                                             style={{ width: '96px', height: '96px', minWidth: '96px', minHeight: '96px' }}
                                         >
                                             <img
-                                                src={medico?.foto_url || 'https://via.placeholder.com/150'}
+                                                src={medico?.foto || 'https://via.placeholder.com/150'}
                                                 className="block"
                                                 style={{ width: '96px', height: '96px', objectFit: 'cover' }}
                                                 alt={medico?.nome || 'Médico'}
@@ -128,12 +114,12 @@ export default function ConsultasPage() {
 
                                             <div className="flex items-center gap-3 mt-1">
                                                 <p className="text-[11px] font-black text-[#D4AF37] uppercase tracking-[0.1em] truncate">
-                                                    {medico?.especialidade || 'Clínica Geral'}
+                                                    {medico?.especialidades?.nome || 'Clínica Geral'}
                                                 </p>
                                                 <div className="flex items-center gap-1 bg-[#D4AF37]/10 px-2 py-0.5 rounded-lg border border-[#D4AF37]/20">
                                                     <span className="text-[#D4AF37] text-[10px]">★</span>
                                                     <span className="text-[11px] font-black text-[#1A365D]">
-                                                        {(medico?.avaliacao || 5.0).toFixed(1)}
+                                                        {(medico?.nota || 5.0).toFixed(1)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -145,11 +131,11 @@ export default function ConsultasPage() {
                                             <div className="flex gap-3 mt-1">
                                                 <div className="flex items-center gap-2 text-[12px] text-[#2D5284] font-black bg-[#2D5284]/5 px-4 py-1.5 rounded-full border border-[#2D5284]/10 shadow-sm">
                                                     <Calendar className="w-4 h-4" />
-                                                    {dateToDisplay(consulta.data)}
+                                                    {dateToDisplay(consulta.data_horario.split('T')[0])}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-[12px] text-[#2D5284] font-black bg-[#2D5284]/5 px-4 py-1.5 rounded-full border border-[#2D5284]/10 shadow-sm">
                                                     <Clock className="w-4 h-4" />
-                                                    {consulta.horario}
+                                                    {new Date(consulta.data_horario).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
 
@@ -163,25 +149,12 @@ export default function ConsultasPage() {
                                                     <span className="text-[14px] text-[#1A365D] font-bold truncate">
                                                         {consulta.tipo === 'online'
                                                             ? 'Sala Virtual DocMatch - Vídeo Chamada'
-                                                            : (medico?.endereco_consultorio
-                                                                ? `${medico.endereco_consultorio.logradouro}, ${medico.endereco_consultorio.numero}`
+                                                            : (medico?.endereco?.logradouro
+                                                                ? `${medico.endereco.logradouro}, ${medico.endereco.numero}`
                                                                 : 'Consultório Particular Presencial')}
                                                     </span>
                                                 </div>
                                             </div>
-
-                                            {/* CTA: Avaliar Consulta */}
-                                            {needsRating && (
-                                                <div
-                                                    className="mt-4 animate-in fade-in slide-in-from-bottom-3 duration-1000"
-                                                    onClick={(e) => { e.stopPropagation(); router.push(`/consultas/${consulta.id}/avaliar`); }}
-                                                >
-                                                    <button className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D] font-black text-[11px] rounded-[18px] uppercase tracking-[0.1em] shadow-lg shadow-[#D4AF37]/20 border border-white/40 flex items-center justify-center gap-2 group/btn hover:brightness-110 active:scale-[0.98] transition-all">
-                                                        Avaliar Consulta
-                                                        <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -193,9 +166,16 @@ export default function ConsultasPage() {
                                 <Calendar className="w-10 h-10 text-slate-300" />
                             </div>
                             <p className="text-slate-500 font-black text-[16px] tracking-tight">Nenhuma consulta encontrada.</p>
-                            <p className="text-slate-400 text-[12px] mt-2">Agende seu primeiro atendimento agora!</p>
+                            <p className="text-slate-400 text-[12px] mt-2 font-medium">Agende seu primeiro atendimento agora e tenha o melhor cuidado na palma da mão.</p>
                         </div>
                     )}
+                </main>
+
+                <BottomNav />
+            </div>
+        </div>
+    )
+}
                 </main>
 
                 <BottomNav />
