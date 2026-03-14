@@ -51,8 +51,8 @@ export default function CadastroPage() {
             // 1. Upload da foto se existir
             let fotoUrl = ''
             if (form.foto_blob) {
-                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
-                const filePath = `perfil/${fileName}`
+                const fileName = `public/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
+                const filePath = fileName // Ajustado para ser o próprio nome se incluir o prefixo
 
                 const { error: uploadError } = await supabase.storage
                     .from('fotos_perfil')
