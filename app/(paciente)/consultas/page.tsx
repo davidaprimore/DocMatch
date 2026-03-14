@@ -176,10 +176,3 @@ export default function ConsultasPage() {
         </div>
     )
 }
-                </main>
-
-                <BottomNav />
-            </div>
-        </div>
-    )
-}
