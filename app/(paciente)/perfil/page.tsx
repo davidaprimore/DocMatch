@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Phone, Mail, MapPin, ShieldCheck, Download, Trash2, Eye, ChevronRight, Camera, Loader2 } from 'lucide-react'
+import { ArrowLeft, User, Phone, Mail, MapPin, ShieldCheck, Download, Trash2, Eye, ChevronRight, Camera, Loader2, Star } from 'lucide-react'
 import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { useAuth } from '@/hooks/useAuth'
@@ -145,7 +145,15 @@ export default function PerfilPage() {
             <div className="px-4 space-y-4">
                 <div className="text-center mb-2">
                     <h2 className="font-black text-[18px] text-[#1A365D] uppercase tracking-tight">{user?.nome ?? ''}</h2>
-                    <p className="text-[12px] text-slate-400 font-bold">Paciente · Plano Gratuito</p>
+                    <div className="flex flex-col items-center gap-1 mt-1">
+                        <p className="text-[12px] text-slate-400 font-bold">
+                            Paciente · Plano {user?.plano_nome || 'Free'}
+                        </p>
+                        <div className="flex items-center gap-1.5 bg-white shadow-sm border border-slate-100 px-3 py-1 rounded-full">
+                            <Star className="w-3 h-3 fill-[#D4AF37] text-[#D4AF37]" />
+                            <span className="text-[12px] font-black text-[#1A365D]">{user?.nota?.toFixed(2) || '5.00'}</span>
+                        </div>
+                    </div>
                 </div>
  
                 {/* Dados pessoais */}

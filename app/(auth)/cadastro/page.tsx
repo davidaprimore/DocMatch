@@ -5,16 +5,17 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Stethoscope, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { toast } from 'sonner'
 import { Step1Identidade } from './components/Step1Identidade'
 import { Step2Localizacao } from './components/Step2Localizacao'
 import { Step3FotoAfetiva } from './components/Step3FotoAfetiva'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
+import { useDialog } from '@/components/ui/CustomDialog'
 
 export default function CadastroPage() {
     const router = useRouter()
     const { register, isLoading } = useAuth()
+    const { showDialog } = useDialog()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [step, setStep] = useState(1)
     const [form, setForm] = useState({ 
@@ -91,7 +92,11 @@ export default function CadastroPage() {
 
         } catch (err: any) {
             console.error('Erro no cadastro final:', err)
-            toast.error(err.message || 'Erro ao finalizar cadastro. Tente novamente.')
+            showDialog({
+                title: 'Ops! Algo deu errado',
+                message: err.message || 'Não conseguimos finalizar seu cadastro agora. Por favor, tente novamente.',
+                type: 'error'
+            })
         } finally {
             setIsSubmitting(false)
         }

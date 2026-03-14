@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { onlyDigits } from '@/lib/utils/masks'
+import { useDialog } from '@/components/ui/CustomDialog'
 
 interface AuthContextType {
     user: User | null
@@ -49,12 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
+    const { showDialog } = useDialog()
 
     const fetchProfile = useCallback(async (userId: string) => {
         try {
             const { data: profile, error } = await supabase
                 .from('usuarios')
-                .select('*')
+                .select('*, planos(nome)')
                 .eq('id', userId)
                 .single()
 
@@ -74,7 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     cpf: profile.cpf,
                     consentimento_lgpd: profile.consentimento_lgpd,
                     created_at: profile.created_at,
-                    updated_at: profile.updated_at
+                    updated_at: profile.updated_at,
+                    plano_nome: profile.planos?.nome || 'Free',
+                    nota: profile.nota || 5.0,
+                    total_avaliacoes: profile.total_avaliacoes || 0
                 } as User
             }
             return null
@@ -117,16 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                             filter: `id=eq.${session.user.id}`
                         },
                         (payload) => {
-                            const updated = payload.new as any
-                            setUser(prev => prev ? {
-                                ...prev,
-                                nome: updated.nome_completo,
-                                email: updated.email,
-                                telefone: updated.telefone,
-                                foto: updated.foto,
-                                cpf: updated.cpf,
-                                updated_at: updated.updated_at
-                            } : null)
+                            // Ao atualizar via websocket, recarregamos o perfil completo para garantir o join dos planos
+                            fetchProfile(session.user.id).then(refreshed => {
+                                if (refreshed) setUser(refreshed)
+                            })
                         }
                     )
                     .subscribe()
@@ -179,15 +178,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error('Erro no login:', err)
             let message = 'E-mail ou senha incorretos'
             
-            // Diagnóstico para Vercel
-            if (process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder') || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-                message = 'Configuração do Supabase ausente na Vercel. Verifique as Variáveis de Ambiente.'
-            } else if (err.message?.includes('Invalid login credentials')) {
+            if (err.message?.includes('Invalid login credentials')) {
                 message = 'E-mail ou senha incorretos.'
             } else if (err.message) {
                 message = err.message
             }
-            toast.error(message)
+
+            showDialog({
+                title: 'Ops! Algo deu errado',
+                message: message,
+                type: 'error'
+            })
             throw err
         } finally {
             setIsLoading(false)
@@ -198,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await supabase.auth.signOut()
             setUser(null)
-            toast.success('Sessão encerrada.')
+            // Removido toast de sucesso conforme solicitado
         } catch (err) {
             console.error('Erro ao deslogar:', err)
         }
@@ -292,11 +293,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (authData.session) {
                 const finalProfile = await fetchProfile(authData.user.id)
                 setUser(finalProfile)
-            } else {
-                toast.info('Verifique seu e-mail para confirmar o cadastro.', { duration: 10000 })
             }
- 
-            toast.success('Conta criada com sucesso!')
+            // Removido toasts de sucesso e informativos conforme solicitado
         } catch (err: any) {
             console.error('Erro completo no registro:', err)
             let message = err.message || 'Erro ao criar conta.'
@@ -309,7 +307,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 message = 'Dados inválidos. Verifique o CPF e telefone.'
             }
 
-            toast.error(message)
+            showDialog({
+                title: 'Erro no Cadastro',
+                message: message,
+                type: 'error'
+            })
             throw err
         } finally {
             setIsLoading(false)

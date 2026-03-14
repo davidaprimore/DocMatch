@@ -1,11 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell, Menu, X, LogOut, User, Settings, HelpCircle, ChevronRight, LayoutDashboard, FileCheck, Shield, Phone, MessageSquare, Handshake, Info, Globe } from 'lucide-react'
+import { ArrowLeft, Bell, Menu, X, LogOut, User, Settings, HelpCircle, ChevronRight, LayoutDashboard, FileCheck, Shield, Phone, MessageSquare, Handshake, Info, Globe, Star, BadgeCheck } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import { useAuth } from '@/hooks/useAuth'
 
 interface HeaderProps {
     variant?: 'dashboard' | 'page'
@@ -35,6 +36,7 @@ export function Header({
     rightAction
 }: HeaderProps) {
     const router = useRouter()
+    const { user } = useAuth()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     
@@ -66,23 +68,37 @@ export function Header({
                         transition={{ type: 'spring', damping: 35, stiffness: 400, mass: 0.5 }}
                         className="fixed right-4 top-2 bottom-8 w-[280px] bg-gradient-to-r from-[#F8FAFC] to-[#EFF6FF] z-[9999] shadow-[0_25px_60px_rgba(0,0,0,0.2)] rounded-[32px] overflow-hidden flex flex-col border border-white/50"
                     >
-                        {/* Header Interno do Menu */}
-                        <div className="p-6 pb-4 flex justify-between items-center bg-slate-50/80 backdrop-blur-md">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2D5284] to-[#1A365D] flex items-center justify-center shadow-md">
-                                    <LayoutDashboard className="w-4 h-4 text-white" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[14px] font-black text-[#2D5284] leading-none tracking-tight">CENTRAL</span>
-                                    <span className="text-[10px] font-bold text-slate-400 leading-none mt-0.5 tracking-[0.1em]">DOCMATCH</span>
-                                </div>
-                            </div>
+                        {/* Card de Perfil no Menu */}
+                        <div className="mx-4 mt-6 mb-4 p-4 rounded-[24px] bg-white shadow-sm border border-slate-100 flex items-center gap-3 relative">
                             <button
                                 onClick={() => setIsMenuOpen(false)}
-                                className="p-2 hover:bg-slate-100 rounded-full transition-colors group"
+                                className="absolute -top-2 -right-2 p-2 bg-white shadow-md rounded-full border border-slate-100 text-slate-400 hover:text-slate-600 z-10"
                             >
-                                <X className="w-4.5 h-4.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                                <X className="w-4 h-4" />
                             </button>
+
+                            <div className="w-12 h-12 rounded-full border-2 border-[#D4AF37]/30 p-0.5">
+                                <div className="w-full h-full rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+                                    {user?.foto ? (
+                                        <img src={user.foto} className="w-full h-full object-cover" alt={user.nome} />
+                                    ) : (
+                                        <span className="text-[#1A365D] font-black text-xs">{user?.nome?.substring(0, 2).toUpperCase() || 'DM'}</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <h4 className="text-[14px] font-black text-[#1A365D] truncate leading-none mb-1">{user?.nome || 'Usuário'}</h4>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 bg-[#F1F5F9] px-2 py-0.5 rounded-full">
+                                        <BadgeCheck className="w-2.5 h-2.5 text-[#2D5284]" />
+                                        <span className="text-[9px] font-bold text-[#2D5284] uppercase tracking-tighter">Plano {user?.plano_nome || 'Free'}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Star className="w-2.5 h-2.5 fill-[#D4AF37] text-[#D4AF37]" />
+                                        <span className="text-[10px] font-black text-[#1A365D]">{user?.nota?.toFixed(1) || '5.0'}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Conteúdo com Scroll */}

@@ -4,6 +4,7 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from 'sonner'
 import { I18nProvider } from '@/components/I18nProvider'
 import { DynamicMistBackground } from '@/components/layout/DynamicMistBackground'
+import { DialogProvider } from '@/components/ui/CustomDialog'
 
 export const metadata: Metadata = {
     title: {
@@ -62,23 +63,25 @@ export default function RootLayout({
                 <DynamicMistBackground />
                 <ScrollToTop />
                 <I18nProvider>
-                    <AuthProvider>
-                        {children}
-                        <Toaster position="bottom-center" richColors />
-                        <script
-                            dangerouslySetInnerHTML={{
-                                __html: `
-                                    if ('serviceWorker' in navigator) {
-                                        window.addEventListener('load', function() {
-                                            navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                                                console.log('Erro no ServiceWorker:', err);
+                    <DialogProvider>
+                        <AuthProvider>
+                            {children}
+                            <Toaster position="bottom-center" richColors />
+                            <script
+                                dangerouslySetInnerHTML={{
+                                    __html: `
+                                        if ('serviceWorker' in navigator) {
+                                            window.addEventListener('load', function() {
+                                                navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                                                    console.log('Erro no ServiceWorker:', err);
+                                                });
                                             });
-                                        });
-                                    }
-                                `,
-                            }}
-                        />
-                    </AuthProvider>
+                                        }
+                                    `,
+                                }}
+                            />
+                        </AuthProvider>
+                    </DialogProvider>
                 </I18nProvider>
             </body>
         </html>

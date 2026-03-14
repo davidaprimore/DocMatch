@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Calendar as CalendarIcon, Clock, Zap, Star, ShieldCheck, Filter, Building2, Video, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 import { medicosMock } from '@/data/mockData'
-import { toast } from 'sonner'
+import { useDialog } from '@/components/ui/CustomDialog'
 import { Header } from '@/components/Header'
 import { cn } from '@/lib/utils'
 import { useAnalytics } from '@/hooks/useAnalytics'
@@ -15,6 +15,7 @@ type DayInfo = { dia_semana: number; label: string; dateText: string; fullDate: 
 
 export default function AgendarPage() {
     const router = useRouter()
+    const { showDialog } = useDialog()
     const params = useParams()
 
     const medicoId = params?.id as string || 'med_001'
@@ -157,9 +158,14 @@ export default function AgendarPage() {
         // Efeito Visual de Sucesso (Reforço Positivo / Vendas)
         fireCelebration()
 
-        toast.success(`Agendado com ${medico.nome} p/ ${selectedDay.dateText} às ${selectedSlot.time} (${selectedLocal.name})!`)
+        showDialog({
+            title: 'Consulta Agendada!',
+            message: `Tudo certo! Seu atendimento com ${medico.nome} foi confirmado para ${selectedDay.dateText} às ${selectedSlot.time} (${selectedLocal.name}).`,
+            type: 'success',
+            onConfirm: () => router.push('/dashboard')
+        })
+        
         setSelectedSlot(null)
-        setTimeout(() => router.push('/dashboard'), 2000)
     }
 
     // Glass card class reutilizável

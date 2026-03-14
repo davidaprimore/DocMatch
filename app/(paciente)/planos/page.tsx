@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Check, Zap, Star, ShieldCheck, CreditCard } from 'lucide-react'
-import { toast } from 'sonner'
+import { useDialog } from '@/components/ui/CustomDialog'
 
 const planosPaciente = [
     {
@@ -42,13 +42,18 @@ const planosPaciente = [
 
 export default function PlanosPacientePage() {
     const router = useRouter()
+    const { showDialog } = useDialog()
     const [loading, setLoading] = useState<string | null>(null)
 
     const handleAssinar = (id: string) => {
         setLoading(id)
         setTimeout(() => {
             setLoading(null)
-            toast.success('Assinatura processada com sucesso!')
+            showDialog({
+                title: 'Assinatura Confirmada!',
+                message: 'Parabéns! Seu plano foi atualizado com sucesso. Aproveite todos os benefícios do DocMatch PRO.',
+                type: 'success'
+            })
         }, 1500)
     }
 

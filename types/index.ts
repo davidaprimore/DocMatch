@@ -15,6 +15,8 @@ export interface User {
     cpf?: string | null
     data_consentimento?: string
     plano_nome?: string // para usePlanAccess
+    nota?: number
+    total_avaliacoes?: number
 }
 
 export interface Paciente extends User {
