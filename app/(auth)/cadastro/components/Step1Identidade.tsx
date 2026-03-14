@@ -128,6 +128,8 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ cpf: maskCPF(e.target.value) })}
                 placeholder="000.000.000-00"
                 maxLength={14}
+                inputMode="numeric"
+                pattern="[0-9]*"
             />
 
             <InputField 
@@ -138,6 +140,8 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ telefone: maskPhone(e.target.value) })}
                 placeholder="(00) 00000-0000"
                 maxLength={15}
+                inputMode="numeric"
+                pattern="[0-9]*"
             />
 
             <div className="space-y-1.5">
@@ -148,6 +152,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                         value={data.password}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ password: e.target.value })}
                         placeholder="Crie uma senha forte"
+                        autoComplete="new-password"
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 pr-12 text-white/90 placeholder:text-white/20 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition"
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60">
@@ -163,6 +168,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                     value={data.confirmPassword}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ confirmPassword: e.target.value })}
                     placeholder="Repita a senha"
+                    autoComplete="new-password"
                     className={`w-full bg-white/5 border rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none transition ${data.confirmPassword && data.password !== data.confirmPassword ? 'border-red-500/50' : 'border-white/10 focus:border-[#D4AF37]'}`}
                 />
             </div>
