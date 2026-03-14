@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Stethoscope, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { toast } from 'sonner'
+import { useDialog } from '@/components/ui/CustomDialog'
 
 export default function LoginPage() {
     const router = useRouter()
     const { login, isLoading } = useAuth()
+    const { showDialog } = useDialog()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -17,13 +18,19 @@ export default function LoginPage() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!email || !password) { toast.error('Preencha todos os campos'); return }
+        if (!email || !password) {
+            showDialog({
+                title: 'Campos Vazios',
+                message: 'Por favor, preencha seu e-mail e senha para continuar.',
+                type: 'info'
+            })
+            return 
+        }
         try {
             await login(email, password, tipo)
-            toast.success('Bem-vindo(a) ao DocMatch!')
             router.push(tipo === 'medico' ? '/medico/dashboard' : '/dashboard')
         } catch {
-            toast.error('E-mail ou senha incorretos')
+            // O erro de login já é disparado via showDialog dentro do login() do useAuth
         }
     }
 

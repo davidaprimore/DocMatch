@@ -66,7 +66,6 @@ export default function RootLayout({
                     <DialogProvider>
                         <AuthProvider>
                             {children}
-                            <Toaster position="bottom-center" richColors />
                             <script
                                 dangerouslySetInnerHTML={{
                                     __html: `

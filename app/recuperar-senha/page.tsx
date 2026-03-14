@@ -4,18 +4,26 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Mail, Stethoscope } from 'lucide-react'
-import { toast } from 'sonner'
+import { useDialog } from '@/components/ui/CustomDialog'
 
 export default function RecuperarSenhaPage() {
     const router = useRouter()
     const [email, setEmail] = useState('')
     const [enviado, setEnviado] = useState(false)
 
+    const { showDialog } = useDialog()
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!email) { toast.error('Informe seu e-mail'); return }
+        if (!email) {
+            showDialog({
+                title: 'E-mail necessário',
+                message: 'Por favor, informe seu e-mail para receber o link de recuperação.',
+                type: 'info'
+            })
+            return 
+        }
         setEnviado(true)
-        toast.success('E-mail enviado! Verifique sua caixa de entrada.')
     }
 
     return (

@@ -60,28 +60,27 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-sm bg-gradient-to-b from-[#1A365D] to-[#0A1A2F] rounded-[40px] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] overflow-hidden"
+                            className="relative w-full max-w-sm bg-slate-50/60 backdrop-blur-3xl rounded-[40px] border-2 border-[#D4AF37] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] overflow-hidden"
                         >
                             <div className="p-8 text-center space-y-6">
                                 {/* Icon Section */}
-                                <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg relative overflow-hidden">
-                                    <div className={`absolute inset-0 opacity-20 ${
+                                <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm relative overflow-hidden">
+                                    <div className={`absolute inset-0 opacity-10 ${
                                         dialog.type === 'error' ? 'bg-red-500' : 
-                                        dialog.type === 'success' ? 'bg-[#D4AF37]' : 'bg-[#2D5284]'
+                                        dialog.type === 'success' ? 'bg-[#2D5284]' : 'bg-[#2D5284]'
                                     }`} />
                                     {dialog.type === 'error' && <XCircle className="w-8 h-8 text-red-500" />}
-                                    {dialog.type === 'success' && <CheckCircle2 className="w-8 h-8 text-[#D4AF37]" />}
+                                    {dialog.type === 'success' && <CheckCircle2 className="w-8 h-8 text-[#2D5284]" />}
                                     {(dialog.type === 'info' || dialog.type === 'confirm') && <AlertCircle className="w-8 h-8 text-[#2D5284]" />}
                                 </div>
 
                                 <div className="space-y-2">
                                     <h3 className={`text-xl font-black ${
-                                        dialog.type === 'error' ? 'text-white' : 
-                                        dialog.type === 'success' ? 'text-[#D4AF37]' : 'text-white'
+                                        dialog.type === 'error' ? 'text-red-600' : 'text-[#1A365D]'
                                     }`}>
                                         {dialog.title}
                                     </h3>
-                                    <p className="text-white/60 text-sm leading-relaxed px-2">
+                                    <p className="text-[#1A365D]/70 text-sm leading-relaxed px-2 font-medium">
                                         {dialog.message}
                                     </p>
                                 </div>
@@ -91,7 +90,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                                         onClick={handleConfirm}
                                         className={`w-full font-black rounded-2xl py-4 uppercase tracking-widest text-[11px] shadow-lg active:scale-[0.98] transition ${
                                             dialog.type === 'error' ? 'bg-red-500 text-white' : 
-                                            'bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#1A365D]'
+                                            'bg-[#2D5284] text-white'
                                         }`}
                                     >
                                         {dialog.confirmText || (dialog.type === 'confirm' ? 'Sim' : 'Entendi')}
@@ -100,7 +99,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                                     {dialog.type === 'confirm' && (
                                         <button 
                                             onClick={handleCancel}
-                                            className="w-full bg-white/5 border border-white/10 text-white/40 font-bold rounded-2xl py-4 hover:bg-white/10 transition text-[11px] uppercase tracking-widest"
+                                            className="w-full bg-[#1A365D]/5 border border-[#1A365D]/10 text-[#1A365D]/60 font-bold rounded-2xl py-4 hover:bg-[#1A365D]/10 transition text-[11px] uppercase tracking-widest"
                                         >
                                             {dialog.cancelText || 'Agora não'}
                                         </button>
@@ -111,7 +110,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                             {/* Close Button X (optional) */}
                             <button 
                                 onClick={handleCancel}
-                                className="absolute top-6 right-6 p-2 text-white/20 hover:text-white/60 transition-colors"
+                                className="absolute top-6 right-6 p-2 text-[#2D5284]/40 hover:text-[#2D5284] transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>

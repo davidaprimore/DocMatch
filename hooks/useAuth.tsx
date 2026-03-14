@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import type { User } from '@/types'
 import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { onlyDigits } from '@/lib/utils/masks'
 import { useDialog } from '@/components/ui/CustomDialog'
