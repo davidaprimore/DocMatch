@@ -54,110 +54,74 @@ export function Header({
         <AnimatePresence>
             {isMenuOpen && (
                 <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] z-[9998]"
+                    {/* Overlay invisível apenas para capturar cliques de fechamento (o fundo real está no ClientLayout) */}
+                    <div
+                        className="fixed inset-0 z-[9998]"
                         onClick={() => setIsMenuOpen(false)}
                     />
 
                     <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 35, stiffness: 400, mass: 0.5 }}
-                        className="fixed right-4 top-2 bottom-8 w-[280px] bg-gradient-to-r from-[#F8FAFC] to-[#EFF6FF] z-[9999] shadow-[0_25px_60px_rgba(0,0,0,0.2)] rounded-[32px] overflow-hidden flex flex-col border border-white/50"
+                        initial={{ x: '-100%', opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: '-100%', opacity: 0 }}
+                        transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.6 }}
+                        className="fixed left-0 top-0 bottom-0 w-[70vw] z-[9999] flex flex-col pt-16 pb-8 px-6 overflow-hidden"
                     >
-                        {/* Card de Perfil no Menu */}
-                        <div className="mx-4 mt-6 mb-4 p-4 rounded-[24px] bg-white shadow-sm border border-slate-100 flex items-center gap-3 relative">
-                            <button
-                                onClick={() => setIsMenuOpen(false)}
-                                className="absolute -top-2 -right-2 p-2 bg-white shadow-md rounded-full border border-slate-100 text-slate-400 hover:text-slate-600 z-10"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-
-                            <div className="w-12 h-12 rounded-full border-2 border-[#D4AF37]/30 p-0.5">
-                                <div className="w-full h-full rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+                        {/* Header do Menu Integrado */}
+                        <div className="flex items-center gap-4 mb-10 px-2">
+                            <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] p-1 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                                <div className="w-full h-full rounded-full bg-slate-200/20 overflow-hidden flex items-center justify-center backdrop-blur-sm">
                                     {user?.foto ? (
                                         <img src={user.foto} className="w-full h-full object-cover" alt={user.nome} />
                                     ) : (
-                                        <span className="text-[#1A365D] font-black text-xs">{user?.nome?.substring(0, 2).toUpperCase() || 'DM'}</span>
+                                        <span className="text-white font-black text-xl">{user?.nome?.substring(0, 2).toUpperCase() || 'DM'}</span>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex-1 overflow-hidden">
-                                <h4 className="text-[14px] font-black text-[#1A365D] truncate leading-none mb-1">{user?.nome || 'Usuário'}</h4>
+                            <div className="flex-1">
+                                <h4 className="text-[18px] font-black text-white leading-tight mb-1">{user?.nome || 'Usuário'}</h4>
                                 <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 bg-[#F1F5F9] px-2 py-0.5 rounded-full">
-                                        <BadgeCheck className="w-2.5 h-2.5 text-[#2D5284]" />
-                                        <span className="text-[9px] font-bold text-[#2D5284] uppercase tracking-tighter">Plano {user?.plano_nome || 'Free'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <Star className="w-2.5 h-2.5 fill-[#D4AF37] text-[#D4AF37]" />
-                                        <span className="text-[10px] font-black text-[#1A365D]">{user?.nota?.toFixed(1) || '5.0'}</span>
-                                    </div>
+                                    <span className="text-[10px] font-bold text-[#D4AF37] border border-[#D4AF37]/40 px-2 py-0.5 rounded-full uppercase tracking-widest bg-[#D4AF37]/10">
+                                        PRO {user?.plano_nome || 'Max'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Conteúdo com Scroll */}
-                        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 no-scrollbar">
-                            {/* Seção: Usuário */}
-                            <div>
-                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Conta</p>
-                                <div className="space-y-0.5">
-                                    {[
-                                        { icon: User, label: 'Meu Perfil', href: '/perfil' },
-                                        { icon: Bell, label: 'Notificações', href: '/notificacoes' },
-                                        { icon: Settings, label: 'Configurações', href: '/configuracoes' },
-                                    ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
+                        {/* Links Estilo Minimalista Gelo/Dourado */}
+                        <div className="flex-1 overflow-y-auto no-scrollbar space-y-8">
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-black text-[#D4AF37]/60 uppercase tracking-[0.3em] ml-2">Principal</p>
+                                <div className="grid gap-1">
+                                    <MinimalLink icon={User} label="Meu Perfil" href="/perfil" onClick={() => setIsMenuOpen(false)} />
+                                    <MinimalLink icon={Bell} label="Notificações" href="/notificacoes" onClick={() => setIsMenuOpen(false)} />
+                                    <MinimalLink icon={FileCheck} label="Consultas" href="/consultas" onClick={() => setIsMenuOpen(false)} />
+                                    <MinimalLink icon={Settings} label="Ajustes" href="/configuracoes" onClick={() => setIsMenuOpen(false)} />
                                 </div>
                             </div>
 
-                            <div className="h-[1px] bg-slate-100 mx-4" /> {/* Divisor Suave */}
-
-                            {/* Seção: Comercial & Suporte */}
-                            <div>
-                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Comercial</p>
-                                <div className="space-y-0.5">
-                                    {[
-                                        { icon: Phone, label: 'Central de Vendas', href: '/comercial' },
-                                        { icon: Handshake, label: 'Seja um Parceiro', href: '/parcerias' },
-                                        { icon: MessageSquare, label: 'Ouvidoria', href: '/ouvidoria' },
-                                    ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
-                                </div>
-                            </div>
-
-                            <div className="h-[1px] bg-slate-100 mx-4" /> {/* Divisor Suave */}
-
-                            {/* Seção: Jurídico & Info */}
-                            <div>
-                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-4 mb-2">Jurídico</p>
-                                <div className="space-y-0.5">
-                                    {[
-                                        { icon: FileCheck, label: 'Termos de Uso', href: '/termos' },
-                                        { icon: Shield, label: 'Privacidade (LGPD)', href: '/privacidade' },
-                                        { icon: Info, label: 'Sobre o App', href: '/sobre' },
-                                        { icon: Globe, label: 'Idiomas', href: '/idiomas' },
-                                    ].map((item, i) => <MenuLink key={i} {...item} onClick={() => setIsMenuOpen(false)} />)}
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-black text-[#D4AF37]/60 uppercase tracking-[0.3em] ml-2">Suporte</p>
+                                <div className="grid gap-1">
+                                    <MinimalLink icon={Phone} label="Central DocMatch" href="/contato" onClick={() => setIsMenuOpen(false)} />
+                                    <MinimalLink icon={Shield} label="Segurança & LGPD" href="/privacidade" onClick={() => setIsMenuOpen(false)} />
+                                    <MinimalLink icon={Info} label="Institucional" href="/sobre" onClick={() => setIsMenuOpen(false)} />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Footer do Menu Premium */}
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-col gap-4">
+                        {/* Footer Minimalista */}
+                        <div className="mt-auto space-y-6 pt-6 border-t border-white/5">
                             <button
                                 onClick={() => { setIsMenuOpen(false); router.push('/'); }}
-                                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-[#FEE2E2] text-[#EF4444] hover:bg-[#FECACA] transition-all font-black text-[12px] uppercase tracking-wider shadow-sm"
+                                className="flex items-center gap-3 text-[#F8FAFC]/50 hover:text-white transition-colors px-2 font-bold text-[14px]"
                             >
-                                <LogOut className="w-4 h-4" />
+                                <LogOut className="w-5 h-5" />
                                 Encerrar Sessão
                             </button>
-                            <div className="text-center opacity-40">
-                                <p className="text-[11px] font-black text-[#2D5284] tracking-tighter grayscale">DOCMATCH <span className="text-amber-600">PRO</span></p>
-                                <p className="text-[8px] font-bold text-slate-400 mt-1 tracking-[0.2em]">VERSION 1.6.0</p>
+                            
+                            <div className="opacity-30 px-2">
+                                <p className="text-[10px] font-black text-white tracking-[0.2em]">DOCMATCH v1.6.0</p>
                             </div>
                         </div>
                     </motion.div>
@@ -272,18 +236,18 @@ export function Header({
     )
 }
 
-function MenuLink({ icon: Icon, label, href, onClick }: any) {
+function MinimalLink({ icon: Icon, label, href, onClick }: any) {
     const router = useRouter()
     return (
         <button
             onClick={() => { onClick(); router.push(href); }}
-            className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-[#2D5284]/5 transition-all group text-left"
+            className="w-full flex items-center gap-4 px-2 py-3 rounded-2xl hover:bg-white/5 transition-all group text-left"
         >
-            <div className="w-8.5 h-8.5 rounded-xl bg-slate-50 flex items-center justify-center shadow-sm border border-slate-100 group-hover:bg-[#2D5284] transition-all group-hover:shadow-blue-900/10">
-                <Icon className="w-4.5 h-4.5 text-slate-400 group-hover:text-white transition-colors" />
+            <div className="w-10 h-10 flex items-center justify-center transition-all">
+                <Icon className="w-5.5 h-5.5 text-[#F8FAFC]/50 group-hover:text-[#D4AF37] transition-colors" />
             </div>
-            <span className="text-[14px] font-bold text-slate-600 group-hover:text-[#2D5284] leading-none transition-colors">{label}</span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-200 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
+            <span className="text-[15px] font-bold text-[#F8FAFC]/80 group-hover:text-white leading-none transition-colors">{label}</span>
+            <ChevronRight className="w-4 h-4 text-[#F8FAFC]/10 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0 group-hover:text-[#D4AF37]" />
         </button>
     )
 }
