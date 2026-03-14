@@ -34,25 +34,24 @@ export function LoadingOverlay() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#1A365D]/40 backdrop-blur-xl"
+                    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#1A365D]/30 backdrop-blur-md"
                 >
-                    <div className="relative flex flex-col items-center gap-12 scale-110">
+                    <div className="relative flex flex-col items-center gap-14 scale-110">
                         {/* Imagem do Coração 3D com Pulsação */}
-                        <div className="relative w-48 h-48 flex items-center justify-center">
+                        <div className="relative w-56 h-56 flex items-center justify-center">
                             <motion.div
                                 animate={{ 
-                                    scale: [1, 1.15, 1],
-                                    filter: ["drop-shadow(0 0 10px rgba(212,175,55,0.3))", "drop-shadow(0 0 30px rgba(212,175,55,0.6))", "drop-shadow(0 0 10px rgba(212,175,55,0.3))"]
+                                    scale: [1, 1.1, 1],
+                                    filter: ["drop-shadow(0 0 10px rgba(212,175,55,0.2))", "drop-shadow(0 0 25px rgba(212,175,55,0.5))", "drop-shadow(0 0 10px rgba(212,175,55,0.2))"]
                                 }}
-                                transition={{ repeat: Infinity, duration: 0.8, ease: "easeInOut" }}
+                                transition={{ repeat: Infinity, duration: 0.9, ease: "easeInOut" }}
                                 className="relative z-10"
                             >
                                 <img 
                                     src="/medical_loading_pulse.png" 
-                                    className="w-32 h-32 object-contain" 
+                                    className="w-44 h-44 object-contain" 
                                     alt="Carregando..." 
                                     onError={(e) => {
-                                        // Fallback se a imagem demorar a processar
                                         e.currentTarget.style.display = 'none';
                                     }}
                                 />
@@ -62,10 +61,10 @@ export function LoadingOverlay() {
                             {[1, 2, 3].map((i) => (
                                 <motion.div
                                     key={i}
-                                    initial={{ scale: 0.8, opacity: 0.5 }}
-                                    animate={{ scale: 2, opacity: 0 }}
-                                    transition={{ repeat: Infinity, duration: 2, delay: i * 0.6, ease: "easeOut" }}
-                                    className="absolute border-2 border-[#D4AF37]/30 rounded-full w-24 h-24"
+                                    initial={{ scale: 0.8, opacity: 0.4 }}
+                                    animate={{ scale: 2.2, opacity: 0 }}
+                                    transition={{ repeat: Infinity, duration: 2.2, delay: i * 0.7, ease: "easeOut" }}
+                                    className="absolute border-2 border-[#D4AF37]/20 rounded-full w-32 h-32"
                                 />
                             ))}
                         </div>

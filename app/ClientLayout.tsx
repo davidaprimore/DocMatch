@@ -17,8 +17,8 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
             <motion.div
                 animate={{
                     scale: isMenuOpen ? 0.85 : 1,
-                    x: isMenuOpen ? '75%' : '0%', // Desliza para a direita para mostrar o menu à esquerda
-                    rotateY: isMenuOpen ? -15 : 0,
+                    x: isMenuOpen ? '-75%' : '0%', // Desliza para a esquerda para mostrar o menu à direita
+                    rotateY: isMenuOpen ? 15 : 0,
                     borderRadius: isMenuOpen ? '44px' : '0px',
                 }}
                 transition={{
@@ -30,7 +30,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                 style={{ originX: 0.5, originY: 0.5, perspective: 2000 }}
                 className={cn(
                     "min-h-screen bg-white relative z-10 transition-shadow",
-                    isMenuOpen && "shadow-[-20px_0_60px_rgba(0,0,0,0.4)] overflow-hidden pointer-events-none"
+                    isMenuOpen && "shadow-[20px_0_60px_rgba(0,0,0,0.4)] overflow-hidden pointer-events-none"
                 )}
             >
                 {children}
