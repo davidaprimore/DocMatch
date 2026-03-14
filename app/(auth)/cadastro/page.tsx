@@ -15,6 +15,7 @@ import { supabase } from '@/lib/supabase'
 export default function CadastroPage() {
     const router = useRouter()
     const { register, isLoading } = useAuth()
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [step, setStep] = useState(1)
     const [form, setForm] = useState({ 
         nome: '', 
@@ -43,19 +44,28 @@ export default function CadastroPage() {
     }
 
     const handleFinalSubmit = async () => {
+        if (isSubmitting) return
+        setIsSubmitting(true)
+
         try {
             // 1. Upload da foto se existir
             let fotoUrl = ''
             if (form.foto_blob) {
-                const fileExt = 'jpg'
-                const fileName = `${Math.random()}.${fileExt}`
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`
                 const filePath = `perfil/${fileName}`
 
                 const { error: uploadError } = await supabase.storage
                     .from('fotos_perfil')
-                    .upload(filePath, form.foto_blob, { contentType: 'image/jpeg', upsert: true })
+                    .upload(filePath, form.foto_blob, { 
+                        contentType: 'image/jpeg', 
+                        cacheControl: '3600',
+                        upsert: false 
+                    })
 
-                if (uploadError) throw uploadError
+                if (uploadError) {
+                    console.error('Erro no upload:', uploadError)
+                    throw new Error('Falha ao enviar sua foto. Tente novamente ou pule esta etapa.')
+                }
 
                 const { data: { publicUrl } } = supabase.storage
                     .from('fotos_perfil')
@@ -68,21 +78,22 @@ export default function CadastroPage() {
             const registrationData = {
                 ...form,
                 tipo: 'paciente' as const,
-                foto: fotoUrl,
-                // Garantir que campos de localização vão para o backend
-                metadata: {
-                    cep: form.cep,
-                    endereco: `${form.logradouro}, ${form.numero}${form.complemento ? ' - ' + form.complemento : ''}`,
-                    bairro: form.bairro,
-                    cidade: form.cidade,
-                    uf: form.uf
-                }
+                foto: fotoUrl
             }
 
             await register(registrationData)
-            router.push('/dashboard')
+            
+            // Sucesso! Redirecionamento é tratado pelo register ou manualmente
+            // O timer garante que o toast de sucesso do register seja visto antes do push
+            setTimeout(() => {
+                router.push('/dashboard')
+            }, 500)
+
         } catch (err: any) {
             console.error('Erro no cadastro final:', err)
+            toast.error(err.message || 'Erro ao finalizar cadastro. Tente novamente.')
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -174,8 +185,8 @@ export default function CadastroPage() {
                         )}
                     </AnimatePresence>
 
-                    {isLoading && (
-                        <div className="absolute inset-0 bg-[#1A365D]/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-[40px] p-8 text-center">
+                    {(isLoading || isSubmitting) && (
+                        <div className="absolute inset-0 bg-[#1A365D]/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-[40px] p-8 text-center animate-in fade-in duration-300">
                             <div className="w-12 h-12 border-4 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin mb-4" />
                             <p className="text-white font-black text-sm uppercase tracking-widest">Iniciando sua jornada...</p>
                             <p className="text-white/40 text-[10px] mt-2">Estamos preparando seu espaço seguro no DocMatch</p>
