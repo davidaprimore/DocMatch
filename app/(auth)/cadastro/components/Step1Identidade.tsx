@@ -64,6 +64,8 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
         availability.cpf === 'available' &&
         isValidCPF(data.cpf) &&
         availability.telefone === 'available' &&
+        data.data_nascimento &&
+        data.genero &&
         data.password.length >= 8 &&
         data.password === data.confirmPassword
 
@@ -73,10 +75,36 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Nome completo</label>
                <input 
                     value={data.nome}
-                    onChange={e => updateData({ nome: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ nome: e.target.value })}
                     placeholder="Como deseja ser chamado"
                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition"
                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                    <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Nascimento</label>
+                    <input 
+                        type="date"
+                        value={data.data_nascimento}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ data_nascimento: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition [color-scheme:dark]"
+                    />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Gênero</label>
+                    <select 
+                        value={data.genero}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateData({ genero: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition appearance-none"
+                    >
+                        <option value="" className="bg-[#1A365D]">Selecionar</option>
+                        <option value="Feminino" className="bg-[#1A365D]">Feminino</option>
+                        <option value="Masculino" className="bg-[#1A365D]">Masculino</option>
+                        <option value="Não-binário" className="bg-[#1A365D]">Não-binário</option>
+                        <option value="Prefiro não informar" className="bg-[#1A365D]">Outros / Prefiro não informar</option>
+                    </select>
+                </div>
             </div>
 
             <InputField 
@@ -85,7 +113,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 value={data.email}
                 status={availability.email}
                 errorMsg="E-mail já cadastrado"
-                onChange={e => updateData({ email: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ email: e.target.value })}
                 placeholder="seu@email.com"
             />
 
@@ -93,8 +121,9 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 label="CPF"
                 value={data.cpf}
                 status={availability.cpf}
-                errorMsg="CPF já cadastrado"
-                onChange={e => updateData({ cpf: maskCPF(e.target.value) })}
+                errorMsg={data.cpf && !isValidCPF(data.cpf) ? "Digite um CPF válido" : "CPF já cadastrado"}
+                isInvalid={data.cpf && !isValidCPF(data.cpf)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ cpf: maskCPF(e.target.value) })}
                 placeholder="000.000.000-00"
                 maxLength={14}
             />
@@ -104,7 +133,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 value={data.telefone}
                 status={availability.telefone}
                 errorMsg="Telefone já cadastrado"
-                onChange={e => updateData({ telefone: maskPhone(e.target.value) })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ telefone: maskPhone(e.target.value) })}
                 placeholder="(00) 00000-0000"
                 maxLength={15}
             />
@@ -115,7 +144,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                     <input 
                         type={showPassword ? 'text' : 'password'} 
                         value={data.password}
-                        onChange={e => updateData({ password: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ password: e.target.value })}
                         placeholder="Crie uma senha forte"
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 pr-12 text-white/90 placeholder:text-white/20 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition"
                     />
@@ -130,7 +159,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 <input 
                     type="password"
                     value={data.confirmPassword}
-                    onChange={e => updateData({ confirmPassword: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData({ confirmPassword: e.target.value })}
                     placeholder="Repita a senha"
                     className={`w-full bg-white/5 border rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none transition ${data.confirmPassword && data.password !== data.confirmPassword ? 'border-red-500/50' : 'border-white/10 focus:border-[#D4AF37]'}`}
                 />

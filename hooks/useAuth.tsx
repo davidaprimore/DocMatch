@@ -39,6 +39,8 @@ interface RegisterData {
     latitude?: number
     longitude?: number
     foto?: string
+    genero?: string
+    data_nascimento?: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -241,6 +243,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     complemento: data.complemento,
                     latitude: data.latitude,
                     longitude: data.longitude,
+                    genero: data.genero,
+                    data_nascimento: data.data_nascimento,
                     consentimento_lgpd: true,
                     termos_aceitos_em: new Date().toISOString()
                 })

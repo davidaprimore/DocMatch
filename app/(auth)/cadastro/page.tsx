@@ -23,6 +23,8 @@ export default function CadastroPage() {
         cpf: '',
         password: '', 
         confirmPassword: '', 
+        data_nascimento: '',
+        genero: '',
         // Localização
         cep: '',
         logradouro: '',
