@@ -101,6 +101,8 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                         <option value="" className="bg-[#1A365D]">Selecionar</option>
                         <option value="Feminino" className="bg-[#1A365D]">Feminino</option>
                         <option value="Masculino" className="bg-[#1A365D]">Masculino</option>
+                        <option value="Mulher Trans" className="bg-[#1A365D]">Mulher Trans</option>
+                        <option value="Homem Trans" className="bg-[#1A365D]">Homem Trans</option>
                         <option value="Não-binário" className="bg-[#1A365D]">Não-binário</option>
                         <option value="Prefiro não informar" className="bg-[#1A365D]">Outros / Prefiro não informar</option>
                     </select>
