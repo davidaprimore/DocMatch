@@ -1,3 +1,5 @@
+"use client"
+
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
