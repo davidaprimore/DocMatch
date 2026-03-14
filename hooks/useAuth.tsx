@@ -28,6 +28,17 @@ interface RegisterData {
     cpf?: string
     crm?: string
     especialidade?: string
+    // Novos campos de endereço e foto
+    cep?: string
+    logradouro?: string
+    numero?: string
+    bairro?: string
+    cidade?: string
+    uf?: string
+    complemento?: string
+    latitude?: number
+    longitude?: number
+    foto?: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -219,6 +230,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     telefone: onlyDigits(data.telefone),
                     tipo_usuario: data.tipo,
                     cpf: onlyDigits(data.cpf || ''),
+                    foto: data.foto,
+                    // Endereço e Geolocalização
+                    cep: data.cep,
+                    logradouro: data.logradouro,
+                    numero: data.numero,
+                    bairro: data.bairro,
+                    cidade: data.cidade,
+                    uf: data.uf,
+                    complemento: data.complemento,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
                     consentimento_lgpd: true,
                     termos_aceitos_em: new Date().toISOString()
                 })
