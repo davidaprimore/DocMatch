@@ -59,6 +59,8 @@ export function Step2Localizacao({ data, updateData, onNext, onBack }: Step2Prop
                         onChange={e => handleCEP(e.target.value)}
                         placeholder="00000-000"
                         maxLength={9}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition"
                     />
                     <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />

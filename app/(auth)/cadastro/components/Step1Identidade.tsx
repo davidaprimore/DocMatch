@@ -171,7 +171,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                 </div>
 
                 {/* Password Checklist */}
-                {data.password && (
+                {data.password && !isPasswordValid && (
                     <div className="bg-black/20 rounded-2xl p-3.5 space-y-2 border border-white/5 animate-in fade-in zoom-in-95 duration-200 mt-2">
                         {passwordRequirements.map((req, i) => (
                             <div key={i} className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                                 ) : (
                                     <div className="w-3.5 h-3.5 border border-white/10 rounded-full" />
                                 )}
-                                <span className={`text-[10.5px] font-bold ${req.met ? 'text-emerald-400/80' : 'text-white/30'}`}>
+                                <span className={`text-[11.5px] font-bold ${req.met ? 'text-emerald-400/80' : 'text-white/30'}`}>
                                     {req.label}
                                 </span>
                             </div>
@@ -229,7 +229,7 @@ function InputField({ label, status, errorMsg, isInvalid, ...props }: any) {
                 className={`w-full bg-white/5 border rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none transition ${showError ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#D4AF37]'}`}
             />
             {showError && (
-                <p className="text-red-500 text-[10px] font-bold ml-1 animate-in fade-in slide-in-from-top-1">{errorMsg}</p>
+                <p className="text-red-500 text-xs font-bold ml-1 animate-in fade-in slide-in-from-top-1">{errorMsg}</p>
             )}
         </div>
     )

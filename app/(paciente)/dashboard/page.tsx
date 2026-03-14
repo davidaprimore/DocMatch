@@ -13,6 +13,7 @@ import { useAgendamentos } from '@/hooks/useAgendamentos'
 import { useMedicos } from '@/hooks/useMedicos'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
+import { OnboardingGuide } from './components/OnboardingGuide'
 
 export default function DashboardPage() {
     const { t } = useTranslation()
@@ -202,6 +203,7 @@ export default function DashboardPage() {
 
                 <BottomNav />
             </div>
+            <OnboardingGuide />
         </div>
     )
 }
