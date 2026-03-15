@@ -65,11 +65,11 @@ export function Header({
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
                         transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.6 }}
-                        className="fixed right-0 top-0 bottom-0 w-[70vw] z-[9999] flex flex-col pt-16 pb-8 px-6 overflow-hidden text-right items-end"
+                        className="fixed right-0 top-0 bottom-0 w-[75vw] z-[9999] flex flex-col pt-16 pb-8 px-8 overflow-hidden text-left items-start"
                     >
-                        {/* Header do Menu Integrado */}
-                        <div className="flex flex-row-reverse items-center gap-4 mb-10 px-2">
-                            <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] p-1 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                        {/* Header do Menu Integrado - Avatar à Esquerda */}
+                        <div className="flex items-center gap-4 mb-10 px-2 w-full">
+                            <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] p-1 shadow-[0_0_15px_rgba(212,175,55,0.3)] flex-shrink-0">
                                 <div className="w-full h-full rounded-full bg-white/5 overflow-hidden flex items-center justify-center backdrop-blur-sm">
                                     {user?.foto ? (
                                         <img src={user.foto} className="w-full h-full object-cover" alt={user.nome} />
@@ -78,9 +78,9 @@ export function Header({
                                     )}
                                 </div>
                             </div>
-                            <div className="flex-1 text-right">
+                            <div className="flex-1 text-left">
                                 <h4 className="text-[18px] font-black text-[#F8FAFC] shadow-slate-900/20 drop-shadow-sm leading-tight mb-1">{user?.nome || 'Usuário'}</h4>
-                                <div className="flex items-center justify-end gap-2">
+                                <div className="flex items-center justify-start gap-2">
                                     <span className="text-[10px] font-bold text-[#D4AF37] border border-[#D4AF37]/40 px-2 py-0.5 rounded-full uppercase tracking-widest bg-[#D4AF37]/10">
                                         PRO {user?.plano_nome || 'Max'}
                                     </span>
@@ -114,13 +114,13 @@ export function Header({
                         <div className="mt-auto space-y-6 pt-6 border-t border-white/5 w-full">
                             <button
                                 onClick={() => { setIsMenuOpen(false); router.push('/'); }}
-                                className="flex flex-row-reverse items-center gap-3 text-[#F8FAFC]/50 hover:text-white transition-colors px-2 font-bold text-[14px] ml-auto"
+                                className="flex items-center gap-3 text-[#F8FAFC]/50 hover:text-white transition-colors px-2 font-bold text-[14px]"
                             >
                                 <LogOut className="w-5 h-5" />
                                 Encerrar Sessão
                             </button>
                             
-                            <div className="opacity-30 px-2 text-right">
+                            <div className="opacity-30 px-2 text-left">
                                 <p className="text-[10px] font-black text-white tracking-[0.2em]">DOCMATCH v1.6.0</p>
                             </div>
                         </div>
@@ -241,13 +241,13 @@ function MinimalLink({ icon: Icon, label, href, onClick }: any) {
     return (
         <button
             onClick={() => { onClick(); router.push(href); }}
-            className="w-full flex flex-row-reverse items-center gap-4 px-2 py-3 rounded-2xl hover:bg-white/5 transition-all group text-right"
+            className="w-full flex items-center gap-4 px-2 py-3 rounded-2xl hover:bg-white/5 transition-all group text-left"
         >
             <div className="w-10 h-10 flex items-center justify-center transition-all">
-                <Icon className="w-5.5 h-5.5 text-[#F8FAFC]/50 group-hover:text-[#D4AF37] transition-colors" />
+                <Icon className="w-6 h-6 text-[#F8FAFC]/50 group-hover:text-[#D4AF37] transition-colors" />
             </div>
             <span className="text-[16px] font-bold text-[#F8FAFC]/90 drop-shadow-[0_2px_4px_rgba(30,41,59,0.5)] group-hover:text-white leading-none transition-colors">{label}</span>
-            <ChevronRight className="w-4 h-4 text-[#F8FAFC]/10 mr-auto opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0 group-hover:text-[#D4AF37] rotate-180" />
+            <ChevronRight className="w-4 h-4 text-[#F8FAFC]/10 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0 group-hover:text-[#D4AF37]" />
         </button>
     )
 }

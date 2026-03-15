@@ -14,8 +14,8 @@ export function LoadingOverlay() {
         let timer4: NodeJS.Timeout
 
         if (isLoadingGlobal) {
-            timer05 = setTimeout(() => setShowOverlay(true), 500)
-            timer4 = setTimeout(() => setMessage('Só mais um pouco'), 4000)
+            timer05 = setTimeout(() => setShowOverlay(true), 3000)
+            timer4 = setTimeout(() => setMessage('Só mais um pouco'), 7000)
         } else {
             setShowOverlay(false)
             setMessage('Carregando')
