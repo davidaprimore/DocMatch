@@ -114,13 +114,13 @@ export function Header({
                         <div className="mt-auto space-y-6 pt-6 border-t border-white/5 w-full">
                             <button
                                 onClick={() => { setIsMenuOpen(false); router.push('/'); }}
-                                className="flex items-center gap-3 text-[#F8FAFC]/50 hover:text-white transition-colors px-2 font-bold text-[14px]"
+                                className="flex flex-row-reverse items-center gap-3 text-[#F8FAFC]/50 hover:text-white transition-colors px-2 font-bold text-[14px] ml-auto"
                             >
                                 <LogOut className="w-5 h-5" />
                                 Encerrar Sessão
                             </button>
                             
-                            <div className="opacity-30 px-2 text-left">
+                            <div className="opacity-30 px-2 text-right">
                                 <p className="text-[10px] font-black text-white tracking-[0.2em]">DOCMATCH v1.6.0</p>
                             </div>
                         </div>
@@ -241,13 +241,13 @@ function MinimalLink({ icon: Icon, label, href, onClick }: any) {
     return (
         <button
             onClick={() => { onClick(); router.push(href); }}
-            className="w-full flex items-center gap-4 px-2 py-3 rounded-2xl hover:bg-white/5 transition-all group text-left"
+            className="w-full flex flex-row-reverse items-center gap-4 px-2 py-3 rounded-2xl hover:bg-white/5 transition-all group text-right"
         >
             <div className="w-10 h-10 flex items-center justify-center transition-all">
                 <Icon className="w-6 h-6 text-[#F8FAFC]/50 group-hover:text-[#D4AF37] transition-colors" />
             </div>
             <span className="text-[16px] font-bold text-[#F8FAFC]/90 drop-shadow-[0_2px_4px_rgba(30,41,59,0.5)] group-hover:text-white leading-none transition-colors">{label}</span>
-            <ChevronRight className="w-4 h-4 text-[#F8FAFC]/10 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0 group-hover:text-[#D4AF37]" />
+            <ChevronRight className="w-4 h-4 text-[#F8FAFC]/10 mr-auto opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0 group-hover:text-[#D4AF37] rotate-180" />
         </button>
     )
 }

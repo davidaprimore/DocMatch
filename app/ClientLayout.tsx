@@ -16,16 +16,16 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
             {/* Wrapper Principal que anima a tela para trás quando o menu abre */}
             <motion.div
                 drag={isMenuOpen ? "x" : false}
-                dragConstraints={{ left: 0, right: 300 }}
+                dragConstraints={{ right: 0, left: -400 }}
                 dragElastic={0.05}
                 onDragEnd={(_, info) => {
-                    if (info.offset.x > 100 || info.velocity.x > 500) {
+                    if (info.offset.x > 80 || info.velocity.x > 400) {
                         setIsMenuOpen(false)
                     }
                 }}
                 animate={{
                     scale: isMenuOpen ? 0.85 : 1,
-                    x: isMenuOpen ? '-75%' : '0%', // Desliza para a esquerda para mostrar o menu à direita
+                    x: isMenuOpen ? '-75vw' : '0vw',
                     rotateY: isMenuOpen ? 15 : 0,
                     borderRadius: isMenuOpen ? '44px' : '0px',
                 }}
@@ -35,10 +35,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                     stiffness: 180,
                     mass: 0.8
                 }}
-                style={{ originX: 0.5, originY: 0.5, perspective: 2000 }}
+                style={{ originX: 0.5, originY: 0.5 }}
                 className={cn(
-                    "min-h-screen bg-white relative z-10 transition-shadow touch-pan-y",
-                    isMenuOpen && "shadow-[20px_0_60px_rgba(0,0,0,0.4)] overflow-hidden cursor-grab active:cursor-grabbing"
+                    "h-screen w-full bg-white relative z-10 transition-shadow overflow-y-auto overflow-x-hidden",
+                    isMenuOpen ? "shadow-[20px_0_60px_rgba(0,0,0,0.4)] cursor-grab active:cursor-grabbing" : "touch-pan-y"
                 )}
             >
                 {children}

@@ -23,21 +23,11 @@ export default function DashboardPage() {
     const { user } = useAuth()
     const { medicos, isLoading: isLoadingMedicos } = useMedicos()
     const { agendamentos, isLoading: isLoadingAgendas } = useAgendamentos()
-    const { triggerDemoLoading } = useUI()
-
     // Filtra médicos sugeridos/destaque do banco
     const medicosSugeridos = medicos.slice(0, 5)
 
     return (
         <div className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC]">
-            {/* BOTÃO DE DEMO PARA O USUÁRIO (REMOVER DEPOIS) */}
-            <button 
-                onClick={triggerDemoLoading}
-                className="fixed bottom-24 right-5 z-[60] bg-[#1A365D] text-white p-3 rounded-full shadow-2xl border border-white/20 active:scale-90 transition-all group"
-                title="Ver Simulação de Loading"
-            >
-                <Clock className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-            </button>
             {/* CONTEÚDO */}
             <div className="relative z-10 pb-20 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}

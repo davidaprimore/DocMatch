@@ -96,30 +96,30 @@ export default function BuscarPage() {
             {/* CONTEÚDO (relative z-10 para ficar sobre a névoa global) */}
             <div className="relative z-10 pb-24 flex flex-col font-sans">
                 {/* HEADER AZUL PREMIUM PADRONIZADO */}
-                <div className="relative mb-8">
-                    <Header title="Buscar Profissionais" showBackButton showNotifications />
+                <div className="relative mb-12">
+                    <Header title="Buscar Profissionais" showBackButton showNotifications className="mb-0" />
 
                     {/* BARRA DE BUSCA E FILTRO OVERLAPPING */}
-                    <div className="absolute left-5 right-5 -bottom-3 z-50 flex flex-col gap-3 group">
+                    <div className="absolute left-5 right-5 -bottom-6 z-50 flex flex-col gap-3 group">
                         <div className="flex gap-2">
-                    <div className="flex-1 relative">
-                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input
-                            type="text" value={displayBusca} onChange={e => handleBuscaChange(e.target.value)}
-                            placeholder="Especialidade, nome ou sintoma..."
-                            className="w-full bg-white rounded-[16px] py-[14px] pr-4 shadow-[0_8px_20px_rgba(0,0,0,0.12)] text-[13px] font-medium text-slate-600 outline-none placeholder:text-slate-400"
-                            style={{ paddingLeft: '3rem' }}
-                        />
-                    </div>
-                    <button 
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={`w-12 h-12 rounded-[16px] flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition-all ${showFilters ? 'bg-[#2D5284] text-white' : 'bg-white text-[#2D5284]'}`}
-                    >
-                        <SlidersHorizontal className="w-5 h-5" />
-                    </button>
-                </div>
+                            <div className="flex-1 relative">
+                                <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    type="text" value={displayBusca} onChange={e => handleBuscaChange(e.target.value)}
+                                    placeholder="Especialidade, nome ou sintoma..."
+                                    className="w-full bg-white rounded-[16px] py-[14px] pr-4 shadow-[0_8px_20px_rgba(0,0,0,0.15)] text-[13px] font-medium text-slate-600 outline-none placeholder:text-slate-400"
+                                    style={{ paddingLeft: '3rem' }}
+                                />
+                            </div>
+                            <button 
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`w-12 h-12 rounded-[16px] flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-all ${showFilters ? 'bg-[#2D5284] text-white' : 'bg-white text-[#2D5284]'}`}
+                            >
+                                <SlidersHorizontal className="w-5 h-5" />
+                            </button>
+                        </div>
 
                 {/* PAINEL DE FILTRO DE RAIO (ESTILO TINDER) */}
                 {showFilters && (
@@ -171,7 +171,7 @@ export default function BuscarPage() {
             </div>
 
             {/* CHIPS DE ESPECIALIDADES */}
-            <div className="px-4 pb-3">
+            <div className="px-4 pb-3 mt-4">
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     <button onClick={() => setFiltroEsp('')} className={`flex-shrink-0 px-4 py-2 rounded-full text-[12px] font-bold border transition-all ${!filtroEsp ? 'bg-[#2D5284] text-white border-[#2D5284]' : 'bg-white text-slate-500 border-slate-200 shadow-sm'}`}>
                         🚀 Todos
