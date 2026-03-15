@@ -65,7 +65,7 @@ export function Header({
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
                         transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.6 }}
-                        className="fixed right-0 top-0 bottom-0 w-[70vw] z-[9999] flex flex-col pt-16 pb-8 px-6 overflow-hidden text-right items-end bg-[#1A365D]"
+                        className="fixed right-0 top-0 bottom-0 w-[70vw] z-[9999] flex flex-col pt-16 pb-8 px-6 overflow-hidden text-right items-end"
                     >
                         {/* Header do Menu Integrado */}
                         <div className="flex flex-row-reverse items-center gap-4 mb-10 px-2">

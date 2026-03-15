@@ -34,22 +34,22 @@ export function LoadingOverlay() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#1A365D]/30 backdrop-blur-md"
+                    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#1A365D]/25 backdrop-blur-[4px]"
                 >
                     <div className="relative flex flex-col items-center gap-14 scale-110">
                         {/* Imagem do Coração 3D com Pulsação */}
                         <div className="relative w-64 h-64 flex items-center justify-center">
                             <motion.div
                                 animate={{ 
-                                    scale: [1, 1.1, 1],
-                                    filter: ["drop-shadow(0 0 10px rgba(212,175,55,0.2))", "drop-shadow(0 0 25px rgba(212,175,55,0.5))", "drop-shadow(0 0 10px rgba(212,175,55,0.2))"]
+                                    scale: [1, 1.15, 1],
+                                    filter: ["drop-shadow(0 0 15px rgba(212,175,55,0.3))", "drop-shadow(0 0 40px rgba(212,175,55,0.7))", "drop-shadow(0 0 15px rgba(212,175,55,0.3))"]
                                 }}
-                                transition={{ repeat: Infinity, duration: 0.9, ease: "easeInOut" }}
+                                transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
                                 className="relative z-10"
                             >
                                 <img 
                                     src="/medical_loading_pulse.png" 
-                                    className="w-52 h-52 object-contain" 
+                                    className="w-56 h-56 object-contain" 
                                     alt="Carregando..." 
                                     onError={(e) => {
                                         e.currentTarget.style.display = 'none';
@@ -57,29 +57,31 @@ export function LoadingOverlay() {
                                 />
                             </motion.div>
 
-                            {/* Círculos de pulso em volta */}
+                            {/* Círculos de pulso em volta - Intensificados */}
                             {[1, 2, 3].map((i) => (
                                 <motion.div
                                     key={i}
-                                    initial={{ scale: 0.8, opacity: 0.4 }}
+                                    initial={{ scale: 0.8, opacity: 0.6 }}
                                     animate={{ scale: 2.2, opacity: 0 }}
                                     transition={{ repeat: Infinity, duration: 2.2, delay: i * 0.7, ease: "easeOut" }}
-                                    className="absolute border-2 border-[#D4AF37]/20 rounded-full w-32 h-32"
+                                    className="absolute border-4 border-[#D4AF37]/50 rounded-full w-32 h-32"
                                 />
                             ))}
                         </div>
 
-                        {/* Linha de ECG Animada (SVG) */}
-                        <div className="absolute top-[60%] w-64 h-20 opacity-40">
-                            <svg viewBox="0 0 100 20" className="w-full h-full">
+                        {/* Linha de ECG Animada (SVG) - Muito mais visível */}
+                        <div className="absolute top-[60%] w-64 h-24 opacity-80">
+                            <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
                                 <motion.path
                                     d="M 0 10 L 10 10 L 15 2 L 20 18 L 25 10 L 40 10 L 45 2 L 50 18 L 55 10 L 75 10 L 80 2 L 85 18 L 90 10 L 100 10"
                                     fill="none"
                                     stroke="#D4AF37"
-                                    strokeWidth="0.5"
-                                    initial={{ pathLength: 0, opacity: 0 }}
-                                    animate={{ pathLength: 1, opacity: [0, 1, 0] }}
-                                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    initial={{ pathLength: 0, opacity: 0.2 }}
+                                    animate={{ pathLength: 1, opacity: [0.3, 1, 0.3] }}
+                                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
                                 />
                             </svg>
                         </div>
