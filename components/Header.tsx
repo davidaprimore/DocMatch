@@ -65,12 +65,12 @@ export function Header({
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
                         transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.6 }}
-                        className="fixed right-0 top-0 bottom-0 w-[70vw] z-[9999] flex flex-col pt-16 pb-8 px-6 overflow-hidden text-right items-end"
+                        className="fixed right-0 top-0 bottom-0 w-[70vw] z-[9999] flex flex-col pt-16 pb-8 px-6 overflow-hidden text-right items-end bg-[#1A365D]"
                     >
                         {/* Header do Menu Integrado */}
                         <div className="flex flex-row-reverse items-center gap-4 mb-10 px-2">
                             <div className="w-16 h-16 rounded-full border-2 border-[#D4AF37] p-1 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-                                <div className="w-full h-full rounded-full bg-slate-200/10 overflow-hidden flex items-center justify-center backdrop-blur-sm">
+                                <div className="w-full h-full rounded-full bg-white/5 overflow-hidden flex items-center justify-center backdrop-blur-sm">
                                     {user?.foto ? (
                                         <img src={user.foto} className="w-full h-full object-cover" alt={user.nome} />
                                     ) : (

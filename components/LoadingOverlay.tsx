@@ -38,7 +38,7 @@ export function LoadingOverlay() {
                 >
                     <div className="relative flex flex-col items-center gap-14 scale-110">
                         {/* Imagem do Coração 3D com Pulsação */}
-                        <div className="relative w-56 h-56 flex items-center justify-center">
+                        <div className="relative w-64 h-64 flex items-center justify-center">
                             <motion.div
                                 animate={{ 
                                     scale: [1, 1.1, 1],
@@ -49,7 +49,7 @@ export function LoadingOverlay() {
                             >
                                 <img 
                                     src="/medical_loading_pulse.png" 
-                                    className="w-44 h-44 object-contain" 
+                                    className="w-52 h-52 object-contain" 
                                     alt="Carregando..." 
                                     onError={(e) => {
                                         e.currentTarget.style.display = 'none';
