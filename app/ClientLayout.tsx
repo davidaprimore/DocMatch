@@ -36,9 +36,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                 {children}
             </motion.div>
 
-            {/* Background fixo que serve de base para o menu */}
+            {/* Background fixo que serve de base para o menu - Elevado z-index para cobrir o MistBackground */}
             <div className={cn(
-                "fixed inset-0 bg-[#1A365D] -z-10 transition-opacity duration-500",
+                "fixed inset-0 bg-[#1A365D] z-[1] transition-opacity duration-500",
                 isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
             )} />
         </>

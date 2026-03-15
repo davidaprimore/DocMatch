@@ -34,7 +34,7 @@ export function LoadingOverlay() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[#1A365D]/25 backdrop-blur-[4px]"
+                    className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white/20 backdrop-blur-[8px]"
                 >
                     <div className="relative flex flex-col items-center gap-14 scale-110">
                         {/* Imagem do Coração 3D com Pulsação */}
@@ -42,14 +42,14 @@ export function LoadingOverlay() {
                             <motion.div
                                 animate={{ 
                                     scale: [1, 1.15, 1],
-                                    filter: ["drop-shadow(0 0 15px rgba(212,175,55,0.3))", "drop-shadow(0 0 40px rgba(212,175,55,0.7))", "drop-shadow(0 0 15px rgba(212,175,55,0.3))"]
+                                    filter: ["drop-shadow(0 0 15px rgba(212,175,55,0.3))", "drop-shadow(0 0 40px rgba(212,175,55,0.5))", "drop-shadow(0 0 15px rgba(212,175,55,0.3))"]
                                 }}
                                 transition={{ repeat: Infinity, duration: 1, ease: "easeInOut" }}
                                 className="relative z-10"
                             >
                                 <img 
                                     src="/medical_loading_pulse.png" 
-                                    className="w-56 h-56 object-contain" 
+                                    className="w-60 h-60 object-contain" 
                                     alt="Carregando..." 
                                     onError={(e) => {
                                         e.currentTarget.style.display = 'none';
@@ -64,40 +64,40 @@ export function LoadingOverlay() {
                                     initial={{ scale: 0.8, opacity: 0.6 }}
                                     animate={{ scale: 2.2, opacity: 0 }}
                                     transition={{ repeat: Infinity, duration: 2.2, delay: i * 0.7, ease: "easeOut" }}
-                                    className="absolute border-4 border-[#D4AF37]/50 rounded-full w-32 h-32"
+                                    className="absolute border-4 border-[#D4AF37]/40 rounded-full w-32 h-32"
                                 />
                             ))}
                         </div>
 
-                        {/* Linha de ECG Animada (SVG) - Muito mais visível */}
+                        {/* Linha de ECG Animada (SVG) - Refinada v5 */}
                         <div className="absolute top-[60%] w-64 h-24 opacity-80">
                             <svg viewBox="0 0 100 20" className="w-full h-full overflow-visible">
                                 <motion.path
                                     d="M 0 10 L 10 10 L 15 2 L 20 18 L 25 10 L 40 10 L 45 2 L 50 18 L 55 10 L 75 10 L 80 2 L 85 18 L 90 10 L 100 10"
                                     fill="none"
                                     stroke="#D4AF37"
-                                    strokeWidth="2"
+                                    strokeWidth="1.2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     initial={{ pathLength: 0, opacity: 0.2 }}
-                                    animate={{ pathLength: 1, opacity: [0.3, 1, 0.3] }}
-                                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                                    animate={{ pathLength: 1, opacity: [0.4, 1, 0.4] }}
+                                    transition={{ repeat: Infinity, duration: 1.8, ease: "linear" }}
                                 />
                             </svg>
                         </div>
                         
-                        {/* Texto Premium */}
+                        {/* Texto Premium - Nosso Azul */}
                         <div className="flex flex-col items-center gap-2">
                             <motion.span 
                                 key={message}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="text-white font-black text-[18px] uppercase tracking-[0.4em] text-center"
+                                className="text-[#1A365D] font-black text-[15px] uppercase tracking-[0.4em] text-center"
                             >
                                 {message}
                             </motion.span>
-                            <div className="h-1 w-12 bg-[#D4AF37] rounded-full animate-pulse" />
-                            <span className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] mt-2">
+                            <div className="h-0.5 w-12 bg-[#D4AF37] rounded-full animate-pulse" />
+                            <span className="text-[#D4AF37] text-[9px] font-bold uppercase tracking-[0.2em] mt-2">
                                 DocMatch Digital Health
                             </span>
                         </div>
