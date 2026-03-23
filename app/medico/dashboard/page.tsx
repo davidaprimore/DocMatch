@@ -203,6 +203,39 @@ export default function MedicoDashboardPage() {
                     </motion.section>
                 )}
 
+                {/* 0.5. Métrica de Sucesso Comercial / Ocupação (Sem Card) */}
+                <motion.section initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }} className="mb-6 mt-2 relative z-10 px-1">
+                    <div className="flex justify-between items-end mb-3">
+                        <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <TrendingUp className="w-4 h-4 text-[#D4AF37]" strokeWidth={2.5} />
+                                <h3 className="text-[#2D5284] text-[11px] font-black uppercase tracking-widest">Sucesso da Agenda</h3>
+                            </div>
+                            <p className="text-[#8BA0B8] font-medium text-[12px] leading-snug max-w-[200px]">Pacientes de hoje pelo <strong className="text-[#2D5284]">DocMatch</strong>.</p>
+                        </div>
+                        <div className="text-right flex items-end">
+                            <span className="text-[#2D5284] font-black text-4xl leading-none tracking-tighter">8</span>
+                            <span className="text-[#8BA0B8] font-bold text-sm mb-1 ml-0.5">/10</span>
+                        </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full h-2.5 bg-[#2D5284]/10 border border-white/20 rounded-full overflow-hidden relative shadow-inner">
+                        <motion.div 
+                            initial={{ width: 0 }} 
+                            animate={{ width: "80%" }} 
+                            transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                            className="h-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full relative"
+                        >
+                            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
+                        </motion.div>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                        <span className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest">Em Alta 🔥</span>
+                        <span className="text-[#2D5284] text-[11px] font-black">80% Ocupada</span>
+                    </div>
+                </motion.section>
+
                 {/* 1. Destaque: PRÓXIMO PACIENTE (OFFICIAL BLUE) */}
                 <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative group cursor-pointer" onClick={() => router.push('/medico/agenda')}>
                     <div className="bg-[#2D5284] p-5 rounded-[24px] shadow-[0_15px_30px_rgba(45,82,132,0.2)] overflow-hidden relative z-10">
@@ -227,97 +260,52 @@ export default function MedicoDashboardPage() {
                     </div>
                 </motion.section>
 
-                {/* 1.5. Métrica de Sucesso Comercial / Ocupação */}
-                <motion.section initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }}>
-                    <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgba(45,82,132,0.06)] border border-slate-50 relative overflow-hidden flex flex-col justify-center">
-                        <div className="absolute right-0 top-0 w-32 h-32 bg-[#D4AF37]/5 rounded-bl-[100px] pointer-events-none" />
-                        
-                        <div className="flex justify-between items-end mb-4 relative z-10">
-                            <div>
-                                <div className="flex items-center gap-1.5 mb-1.5">
-                                    <TrendingUp className="w-4 h-4 text-[#D4AF37]" strokeWidth={2.5} />
-                                    <h3 className="text-[#2D5284] text-[11px] font-black uppercase tracking-widest">Sucesso da Agenda</h3>
-                                </div>
-                                <p className="text-[#8BA0B8] font-medium text-[12px] leading-snug max-w-[200px]">Pacientes agendados hoje pelo <strong className="text-[#2D5284]">DocMatch</strong>.</p>
-                            </div>
-                            <div className="text-right flex items-end">
-                                <span className="text-[#2D5284] font-black text-4xl leading-none">8</span>
-                                <span className="text-[#8BA0B8] font-bold text-sm mb-1 ml-0.5">/10</span>
-                            </div>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="w-full h-2.5 bg-[#F4F7FA] rounded-full overflow-hidden relative z-10">
-                            <motion.div 
-                                initial={{ width: 0 }} 
-                                animate={{ width: "80%" }} 
-                                transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                                className="h-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full relative"
-                            >
-                                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
-                            </motion.div>
-                        </div>
-                        <div className="flex justify-between items-center mt-3 relative z-10">
-                            <span className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest bg-[#D4AF37]/10 px-2 py-0.5 rounded-md">Em Alta 🔥</span>
-                            <span className="text-[#2D5284] text-[11px] font-black">80% Ocupada</span>
-                        </div>
-                    </div>
-                </motion.section>
-
                 {/* 2. TIMELINE DO DIA (Agenda Consolidada) */}
-                <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 p-6 rounded-[32px] shadow-[0_8px_30px_rgba(32,45,64,0.04)] border border-[#D4AF37] relative z-10 w-full">
-                    <div className="flex justify-between items-center mb-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full border border-[#2D5284]/50 flex items-center justify-center">
-                                <CalendarIcon className="w-5 h-5 text-[#2D5284]" strokeWidth={1.5} />
+                <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 p-5 rounded-[32px] shadow-[0_8px_30px_rgba(32,45,64,0.04)] border border-[#D4AF37]/50 relative z-10 w-[calc(100%+8px)] -ml-1">
+                    <div className="flex justify-between items-center mb-5 px-1">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full border border-[#2D5284]/50 flex items-center justify-center bg-white/50">
+                                <CalendarIcon className="w-4 h-4 text-[#2D5284]" strokeWidth={1.5} />
                             </div>
                             <div className="flex flex-col justify-center">
-                                <h2 className="text-[#2D5284] font-bold text-[18px] leading-tight mb-1">Agenda do Dia</h2>
-                                <p className="text-[#8BA0B8] text-[10px] font-bold uppercase tracking-widest leading-none">Visão Unificada</p>
+                                <h2 className="text-[#2D5284] font-bold text-[16px] leading-tight mb-0.5">Agenda do Dia</h2>
+                                <p className="text-[#8BA0B8] text-[9px] font-bold uppercase tracking-widest leading-none">Visão Unificada</p>
                             </div>
                         </div>
-                        <button onClick={() => router.push('/medico/agenda')} className="text-[#2D5284] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 hover:text-[#2D5284] transition-colors">
-                            Ver tudo <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
                     </div>
 
-                    <div className="space-y-4">
-                        {/* Status: Concluído / Passado */}
-                        <div className="flex items-stretch bg-[#F4F7FA] p-3.5 rounded-[20px] border-l border-t border-b border-r border-[#2D5284]/20">
-                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/20 pr-4">
-                                <span className="text-[#8BA0B8] font-bold text-[16px]">09:00</span>
-                            </div>
-                            <div className="flex-1 flex flex-col justify-center pl-4">
-                                <span className="text-[#647C9A] font-bold text-[15px] leading-tight mb-1.5">Maria Souza</span>
-                                <span className="text-[#8BA0B8] text-[12px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
-                            </div>
-                        </div>
-
+                    <div className="space-y-3 px-1">
                         {/* Status: Agora */}
-                        <div className="flex items-stretch bg-white p-3.5 rounded-[20px] shadow-[0_8px_25px_rgba(45,82,132,0.08)] relative overflow-hidden border-l border-t border-b border-r border-[#D4AF37]/70">
+                        <div className="flex items-stretch bg-white p-3 rounded-[20px] shadow-[0_8px_25px_rgba(45,82,132,0.08)] relative overflow-hidden border-l border-t border-b border-r border-[#D4AF37]/70">
                             <div className="absolute left-0 top-0 bottom-0 w-[5px] bg-[#D4AF37] rounded-l-[20px]" />
-                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#D4AF37] pr-4 pl-1">
-                                <span className="text-[#2D5284] font-bold text-[16px]">10:30</span>
+                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#D4AF37]/20 pr-3 pl-1">
+                                <span className="text-[#2D5284] font-bold text-[15px]">10:30</span>
                             </div>
-                            <div className="flex-1 flex flex-col justify-center pl-4">
-                                <div className="flex items-center gap-3 mb-1.5">
-                                    <span className="text-[#2D5284] font-bold text-[15px] leading-tight">Carlos Silva</span>
-                                    <span className="text-[#D4AF37] border border-[#D4AF37]/70 bg-[#D4AF37]/10 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md">Agora</span>
+                            <div className="flex-1 flex flex-col justify-center pl-3">
+                                <div className="flex items-center gap-2 mb-1.5">
+                                    <span className="text-[#2D5284] font-bold text-[14px] leading-tight">Carlos Silva</span>
+                                    <span className="text-[#D4AF37] border border-[#D4AF37]/70 bg-[#D4AF37]/10 text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md">Agora</span>
                                 </div>
-                                <span className="text-[#8BA0B8] text-[12px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
+                                <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
                             </div>
                         </div>
 
                         {/* Status: Futuro e outro local */}
-                        <div className="flex items-stretch bg-[#F4F7FA] p-3.5 rounded-[20px] border-l border-t border-b border-r border-[#2D5284]/50">
-                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/50 pr-4">
-                                <span className="text-[#2D5284] font-bold text-[16px]">14:00</span>
+                        <div className="flex items-stretch bg-white/40 p-3 rounded-[20px] border border-[#2D5284]/10">
+                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/10 pr-3">
+                                <span className="text-[#2D5284] font-bold text-[15px]">14:00</span>
                             </div>
-                            <div className="flex-1 flex flex-col justify-center pl-4">
-                                <span className="text-[#2D5284] font-bold text-[15px] leading-tight mb-1.5">Fernanda Lima</span>
-                                <span className="text-[#8BA0B8] text-[12px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Consultório Flamboyant</span>
+                            <div className="flex-1 flex flex-col justify-center pl-3">
+                                <span className="text-[#2D5284] font-bold text-[14px] leading-tight mb-1">Fernanda Lima</span>
+                                <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Consultório Flamboyant</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="mt-4 flex justify-end px-1">
+                        <button onClick={() => router.push('/medico/agenda')} className="text-[#2D5284] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 hover:text-[#D4AF37] transition-colors py-2 px-3 bg-white/50 border border-white rounded-lg shadow-sm">
+                            Ver tudo <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
                     </div>
                 </motion.section>
 
