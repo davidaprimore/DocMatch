@@ -59,7 +59,7 @@ export default function DashboardMedicoPage() {
                                 <h1 className="text-white font-black text-xl leading-none">Olá, {user?.nome?.split(' ')[0] || 'Doutor'}</h1>
                                 {isPremium && <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />}
                             </div>
-                            <p className="text-white/40 text-[12px] mt-1.5">Boa tarde! Você tem <span className="text-[#D4AF37] font-bold">8 consultas</span> hoje.</p>
+                            <p className="text-white/40 text-[12px] mt-1.5">Boa tarde! Você não tem <span className="text-[#D4AF37] font-bold">consultas</span> hoje.</p>
                         </div>
                     </div>
                     <button className="relative p-2 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all">
@@ -109,29 +109,14 @@ export default function DashboardMedicoPage() {
                     </div>
 
                     <div className="space-y-3">
-                        {[
-                            { time: '14:30', name: 'Ricardo Santos', type: 'Presencial', status: 'confirmada' },
-                            { time: '15:15', name: 'Juliana Lima', type: 'Teleconsulta', status: 'agendada' },
-                            { time: '16:00', name: 'Carlos Mendes', type: 'Presencial', status: 'agendada', isFast: true },
-                        ].map((appt, i) => (
-                            <div key={i} className="bg-white/5 border border-white/10 rounded-[28px] p-4 flex items-center gap-4 group hover:bg-white/10 transition-all active:scale-95">
-                                <div className="flex flex-col items-center justify-center bg-white/5 rounded-2xl w-14 h-14 border border-white/5 font-black">
-                                    <span className="text-white text-[14px]">{appt.time}</span>
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-white font-bold text-[14px]">{appt.name}</p>
-                                        {appt.isFast && (
-                                            <div className="bg-[#D4AF37] text-[#1A365D] text-[8px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                                                <Zap className="w-2 h-2 fill-current" /> SLOT RÁPIDO
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="text-white/30 text-[11px] mt-0.5">{appt.type}</p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-white/10 group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all" />
-                            </div>
-                        ))}
+                        <div className="bg-white/5 border border-white/10 border-dashed rounded-[28px] p-8 flex flex-col items-center justify-center text-center">
+                            <Calendar className="w-10 h-10 text-white/20 mb-3" />
+                            <p className="text-white font-bold text-[14px] mb-1">Nenhuma consulta hoje</p>
+                            <p className="text-white/40 text-[12px]">Você não tem agendamentos pendentes.</p>
+                            <button onClick={() => router.push('/medico/disponibilidade')} className="mt-4 border border-[#D4AF37]/50 text-[#D4AF37] px-4 py-2 rounded-xl text-[11px] font-bold uppercase transition hover:bg-[#D4AF37]/10">
+                                Configurar Disponibilidade
+                            </button>
+                        </div>
                     </div>
                 </section>
             </header>

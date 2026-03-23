@@ -7,6 +7,7 @@ import { BottomNav } from '@/components/BottomNav'
 import { comparacaoPrecosMock, receitaMock } from '@/data/mockData'
 import { formatCurrency, formatDistance } from '@/lib/utils/masks'
 import { useCart } from '@/hooks/useCart'
+import { useReceitas } from '@/hooks/useReceitas'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ type OrderBy = 'preco' | 'distancia' | 'cobertura'
 export default function CompararPrecosPage() {
     const router = useRouter()
     const { adicionar } = useCart()
+    const { receitas, isLoading: isLoadingReceitas } = useReceitas()
     const [loading, setLoading] = useState(true)
     const [orderBy, setOrderBy] = useState<OrderBy>('preco')
 
@@ -87,8 +89,26 @@ export default function CompararPrecosPage() {
             </header>
 
             <main className="px-4 mt-8 space-y-4">
-                {/* Banner Economia */}
-                {!loading && (
+                {isLoadingReceitas ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="w-8 h-8 rounded-full border-4 border-[#D4AF37] border-t-transparent animate-spin mb-4" />
+                        <p className="text-slate-500 font-medium">Carregando comparador...</p>
+                    </div>
+                ) : receitas.length === 0 ? (
+                    <div className="w-full bg-white/40 rounded-[28px] p-10 text-center border border-dashed border-slate-300 mt-10">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                            <ShoppingCart className="w-8 h-8 text-slate-300" />
+                        </div>
+                        <p className="text-[15px] text-slate-600 font-bold mb-2">Nenhuma receita encontrada</p>
+                        <p className="text-[13px] text-slate-500 mb-6 leading-relaxed">Você precisa de uma prescrição médica digital para comparar preços de medicamentos.</p>
+                        <button onClick={() => router.push('/buscar')} className="bg-[#1A365D] text-white px-6 py-3 rounded-xl font-bold text-[13px] shadow-md hover:bg-[#2D5284] transition-colors w-full">
+                            Buscar Especialistas
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        {/* Banner Economia */}
+                        {!loading && (
                     <div className="bg-gradient-to-r from-[#D4AF37]/20 to-[#D4AF37]/10 rounded-[20px] p-4 border border-[#D4AF37]/30 flex items-center gap-3">
                         <div className="w-10 h-10 bg-[#D4AF37] rounded-full flex items-center justify-center flex-shrink-0">
                             <TrendingDown className="w-5 h-5 text-[#1A365D]" />
@@ -186,6 +206,8 @@ export default function CompararPrecosPage() {
                             </div>
                         )
                     })
+                )}
+                    </>
                 )}
             </main>
             <BottomNav activeTab="buscar" />

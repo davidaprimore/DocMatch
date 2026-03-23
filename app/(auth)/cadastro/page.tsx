@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Step1Identidade } from './components/Step1Identidade'
 import { Step2Localizacao } from './components/Step2Localizacao'
 import { Step3FotoAfetiva } from './components/Step3FotoAfetiva'
+import { FormMedico } from './components/FormMedico'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useDialog } from '@/components/ui/CustomDialog'
@@ -18,6 +19,7 @@ export default function CadastroPage() {
     const { showDialog } = useDialog()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [step, setStep] = useState(1)
+    const [tipo, setTipo] = useState<'paciente' | 'medico'>('paciente')
     const [form, setForm] = useState({ 
         nome: '', 
         email: '', 
@@ -123,23 +125,49 @@ export default function CadastroPage() {
                 </div>
                 <h1 className="text-2xl font-black text-white">Comece sua jornada</h1>
                 
-                {/* Progress Bar */}
-                <div className="flex items-center justify-center gap-2 mt-4">
-                    {steps.map((s) => (
-                        <div key={s.id} className="flex items-center">
-                            <div className={`h-1.5 rounded-full transition-all duration-500 ${step >= s.id ? 'w-8 bg-[#D4AF37]' : 'w-2 bg-white/10'}`} />
-                        </div>
-                    ))}
-                </div>
-                <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mt-3">
-                    Ato {step}: {steps.find(s => s.id === step)?.title}
-                </p>
             </div>
 
             <div className="w-full max-w-sm mx-auto">
-                <div className="bg-white/10 backdrop-blur-xl rounded-[40px] p-8 border border-white/20 shadow-2xl relative overflow-hidden">
-                    <AnimatePresence mode="wait">
-                        {step === 1 && (
+                <div className="bg-white/10 backdrop-blur-xl rounded-[40px] p-6 sm:p-8 border border-white/20 shadow-2xl relative overflow-hidden">
+                    
+                    {/* Toggle SUPER VISÍVEL */}
+                    <div className="flex bg-black/40 p-1.5 rounded-2xl mb-8 border border-white/5 relative z-10 w-full">
+                        {(['paciente', 'medico'] as const).map((t) => (
+                            <button
+                                key={t}
+                                onClick={() => setTipo(t)}
+                                className={`flex-1 py-3 rounded-xl text-sm font-black transition-all duration-300 ease-out flex items-center justify-center gap-2 ${
+                                    tipo === t 
+                                        ? 'bg-gradient-to-br from-[#D4AF37] to-[#B8860B] text-[#1A365D] shadow-[0_8px_20px_rgba(212,175,55,0.4)] scale-100' 
+                                        : 'text-white/40 hover:text-white/80 hover:bg-white/5 scale-[0.98]'
+                                }`}
+                            >
+                                {t === 'paciente' ? '👤 Paciente' : '🩺 Médico'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Progress Bar repocisionada */}
+                    {tipo === 'paciente' && (
+                        <div className="mb-8 text-center bg-white/5 py-3 rounded-2xl border border-white/5">
+                            <div className="flex items-center justify-center gap-2">
+                                {steps.map((s) => (
+                                    <div key={s.id} className="flex items-center">
+                                        <div className={`h-1.5 rounded-full transition-all duration-500 ${step >= s.id ? 'w-8 bg-[#D4AF37] shadow-[0_0_10px_#D4AF37]' : 'w-2 bg-white/10'}`} />
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mt-2">
+                                Passo {step}: {steps.find(s => s.id === step)?.title}
+                            </p>
+                        </div>
+                    )}
+
+                    {tipo === 'medico' ? (
+                        <FormMedico />
+                    ) : (
+                        <AnimatePresence mode="wait">
+                            {step === 1 && (
                             <motion.div
                                 key="step1"
                                 initial={{ opacity: 0, x: 20 }}
@@ -188,7 +216,8 @@ export default function CadastroPage() {
                                 />
                             </motion.div>
                         )}
-                    </AnimatePresence>
+                        </AnimatePresence>
+                    )}
 
                     {(isLoading || isSubmitting) && (
                         <div className="absolute inset-0 bg-[#1A365D]/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-[40px] p-8 text-center animate-in fade-in duration-300">
