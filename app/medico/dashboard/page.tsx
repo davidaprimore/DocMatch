@@ -1,150 +1,192 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-    Users, Calendar, Clock, ArrowUpRight, TrendingUp,
-    MessageSquare, Star, Bell, Search, Plus, Zap, ShieldCheck,
-    ChevronRight, LayoutDashboard, UserSquare2, History, Settings
-} from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { motion } from 'framer-motion'
+import { Bell, MapPin, Users, Star, MessageSquare, CalendarClock, ChevronRight, Calendar as CalendarIcon, Clock } from 'lucide-react'
+import { BottomNavMedico } from '@/components/BottomNavMedico'
 
-export default function DashboardMedicoPage() {
+export default function MedicoDashboardPage() {
     const router = useRouter()
-    const { user } = useAuth()
-    const [trialDays, setTrialDays] = useState(24) // Mock de dias restantes
-    const [isPremium, setIsPremium] = useState(false)
+    const userName = "Joanna"
 
-    const stats = [
-        { label: 'Pacientes', value: '124', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-        { label: 'Consultas Hoje', value: '8', icon: Calendar, color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10' },
-        { label: 'Nota Média', value: '4.9', icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-        { label: 'Mensagens', value: '12', icon: MessageSquare, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    const MOCK_JORNADA_HOJE = [
+        { id: '1', nome: 'Clínica Central', horario: '08:00 - 12:00' },
+        { id: '2', nome: 'Consultório Flamboyant', horario: '14:00 - 18:00' }
     ]
 
-    return (
-        <div className="min-h-screen bg-[#0F2240] pb-32">
-            {/* Trial Banner */}
-            {!isPremium && (
-                <div className="bg-gradient-to-r from-[#D4AF37] to-[#B8860B] px-5 py-3 flex items-center justify-between sticky top-0 z-50">
-                    <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-[#1A365D]" />
-                        <p className="text-[#1A365D] text-[11px] font-bold">
-                            Degustação Basic: <span className="font-black">{trialDays} dias restantes</span>
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => router.push('/medico/planos')}
-                        className="bg-[#1A365D] text-white text-[10px] font-black px-3 py-1.5 rounded-lg active:scale-95 transition-all shadow-lg"
-                    >
-                        UPGRADE PREMIUM
-                    </button>
-                </div>
-            )}
+    const StatMicroCard = ({ icon: Icon, value, label }: { icon: any, value: string, label: string }) => (
+        <div className="bg-white p-5 rounded-[24px] flex items-center gap-4 shadow-[0_8px_30px_rgba(45,82,132,0.05)] border border-white hover:shadow-md transition-all cursor-pointer">
+            <div className="w-12 h-12 rounded-full border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 text-[#D4AF37]" strokeWidth={1.5} />
+            </div>
+            <div className="flex flex-col justify-center">
+                <p className="font-bold text-[#2D5284] text-[20px] leading-tight mb-0.5">{value}</p>
+                <p className="text-[#2D5284]/60 text-[11px] font-medium leading-none">{label}</p>
+            </div>
+        </div>
+    )
 
-            <header className="px-5 pt-8 pb-10">
-                <div className="flex justify-between items-center mb-8">
+    return (
+        <div className="min-h-screen bg-[#F8F6F0] pb-32 font-sans relative overflow-x-hidden selection:bg-[#2D5284]/30">
+            {/* Background Decor */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden flex items-center justify-center z-0">
+                <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-[#2D5284]/5 rounded-full blur-[120px]" />
+            </div>
+
+            {/* Trial Banner */}
+            <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="bg-gradient-to-r from-[#D4AF37] to-[#B8860B] py-2 px-4 flex items-center justify-between shadow-[0_4px_15px_rgba(212,175,55,0.2)] relative z-50">
+                <div className="flex items-center gap-2">
+                    <CalendarClock className="w-3.5 h-3.5 text-[#2D5284]" />
+                    <span className="text-[#2D5284] font-black text-[10px] sm:text-[10px] uppercase tracking-widest mt-0.5">Plano Basic - Degustação: 24 dias restantes</span>
+                </div>
+                <button className="bg-[#2D5284] text-[#D4AF37] text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:bg-white hover:text-[#2D5284] transition-colors shadow-sm">Upgrade</button>
+            </motion.div>
+
+            {/* Header Profiling & Location Core */}
+            <header className="px-5 pt-5 pb-6 relative z-40 bg-[#2D5284] shadow-[0_12px_30px_rgba(45,82,132,0.2)] rounded-b-[36px] overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
+                <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl border-2 border-[#D4AF37] overflow-hidden shadow-2xl bg-white/10">
-                            {user?.foto ? (
-                                <img src={user.foto} alt={user.nome} className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[#D4AF37] font-black text-[18px]">
-                                    {user?.nome?.substring(0, 2).toUpperCase() || 'DR'}
-                                </div>
-                            )}
+                        <div className="w-14 h-14 rounded-[18px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg font-black text-white shadow-inner">
+                            {userName.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                            <div className="flex items-center gap-1.5">
-                                <h1 className="text-white font-black text-xl leading-none">Olá, {user?.nome?.split(' ')[0] || 'Doutor'}</h1>
-                                {isPremium && <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />}
-                            </div>
-                            <p className="text-white/40 text-[12px] mt-1.5">Boa tarde! Você não tem <span className="text-[#D4AF37] font-bold">consultas</span> hoje.</p>
+                            <h1 className="text-white font-black text-[22px] tracking-tight leading-tight">Olá, {userName}</h1>
+                            <p className="text-white/50 font-medium text-[12px] mt-0.5 max-w-[200px] leading-snug">Centro Operacional</p>
                         </div>
                     </div>
-                    <button className="relative p-2 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all">
-                        <Bell className="w-5 h-5 text-white/50" />
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-[#0F2240]"></span>
+                    <button className="w-10 h-10 rounded-[14px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white relative hover:bg-white/10 transition-all shadow-sm active:scale-90 shrink-0">
+                        <Bell className="w-4 h-4" />
+                        <span className="absolute top-2 right-2 w-2 h-2 bg-[#D4AF37] rounded-full border-2 border-[#1A365D]" />
                     </button>
                 </div>
 
-                {/* Quick Stats Grid */}
-                <div className="grid grid-cols-2 gap-3 mb-8">
-                    {stats.map((stat, idx) => (
-                        <div key={idx} className="bg-white/5 border border-white/10 rounded-3xl p-5 hover:bg-white/10 transition-all group">
-                            <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                <stat.icon className="w-5 h-5" />
-                            </div>
-                            <p className="text-white font-black text-2xl">{stat.value}</p>
-                            <p className="text-white/30 text-[11px] font-bold uppercase tracking-wider mt-1">{stat.label}</p>
-                        </div>
-                    ))}
-                </div>
+                {/* Resumo Espacial do Dia (Jornada) */}
+                <div className="mt-3 border-t border-white/10 pt-4 px-1">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-[#D4AF37] mb-1.5 flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5" /> Jornada do Dia
+                    </span>
+                    {/* <p className="text-white text-[13px] font-bold leading-snug mb-3">
+                        Hoje você atende em:
+                    </p> */}
 
-                {/* Premium Feature: Slot Rápido CTAs */}
-                <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-3xl p-6 mb-8 relative overflow-hidden group">
-                    <Zap className="absolute -right-4 -bottom-4 w-32 h-32 text-[#D4AF37]/10 group-hover:scale-110 transition-transform duration-700" />
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Zap className="w-5 h-5 text-[#D4AF37] fill-[#D4AF37]" />
-                            <span className="text-[#D4AF37] font-black text-[10px] uppercase tracking-[0.2em]">Recurso Premium</span>
-                        </div>
-                        <h3 className="text-white font-black text-lg mb-2">Slots Rápidos ⚡</h3>
-                        <p className="text-white/50 text-[12px] leading-relaxed mb-4">
-                            Aumente sua visibilidade marcando horários de hoje como "Urgência". Pacientes buscam por rapidez!
-                        </p>
-                        <button
-                            onClick={() => router.push('/medico/agenda')}
-                            className="bg-[#D4AF37] text-[#1A365D] font-black px-6 py-3 rounded-2xl text-[12px] shadow-lg shadow-[#D4AF37]/20 active:scale-95 transition-all"
-                        >
-                            CRIAR SLOT RÁPIDO
-                        </button>
+                    <div className="flex flex-wrap gap-2">
+                        {MOCK_JORNADA_HOJE.map((local: any, index: number) => {
+                            const total = MOCK_JORNADA_HOJE.length;
+                            let cardClass = "w-full";
+                            if (total === 2 || total === 4) cardClass = "w-[calc(50%-0.25rem)]";
+                            else if (total === 3) cardClass = "w-[calc(33.333%-0.35rem)]";
+                            else if (total === 5) {
+                                cardClass = index < 2 ? "w-[calc(50%-0.25rem)]" : "w-[calc(33.333%-0.35rem)]";
+                            } else if (total > 5) {
+                                cardClass = "w-[calc(33.333%-0.35rem)]";
+                            }
+
+                            return (
+                                <button key={local.id} onClick={() => router.push('/medico/agenda')} className={`bg-white/10 border border-white/20 py-2.5 px-2 rounded-xl flex flex-col items-center justify-center hover:bg-white/20 transition-all active:scale-95 text-center relative overflow-hidden group ${cardClass}`}>
+                                    <span className="text-white font-bold text-[13px] leading-tight line-clamp-1 w-full relative z-10">{local.nome}</span>
+                                    <span className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest leading-none mt-1.5 relative z-10">{local.horario}</span>
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
-
-                <section className="space-y-4">
-                    <div className="flex justify-between items-center px-1">
-                        <h2 className="text-white font-black text-lg">Agenda de Hoje</h2>
-                        <button onClick={() => router.push('/medico/agenda')} className="text-[#D4AF37] text-[11px] font-black uppercase tracking-wider">Ver Tudo</button>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div className="bg-white/5 border border-white/10 border-dashed rounded-[28px] p-8 flex flex-col items-center justify-center text-center">
-                            <Calendar className="w-10 h-10 text-white/20 mb-3" />
-                            <p className="text-white font-bold text-[14px] mb-1">Nenhuma consulta hoje</p>
-                            <p className="text-white/40 text-[12px]">Você não tem agendamentos pendentes.</p>
-                            <button onClick={() => router.push('/medico/disponibilidade')} className="mt-4 border border-[#D4AF37]/50 text-[#D4AF37] px-4 py-2 rounded-xl text-[11px] font-bold uppercase transition hover:bg-[#D4AF37]/10">
-                                Configurar Disponibilidade
-                            </button>
-                        </div>
-                    </div>
-                </section>
             </header>
 
-            {/* Bottom Navigation Médico */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-[#1A365D]/90 backdrop-blur-2xl border-t border-white/10 px-8 py-5 flex justify-between items-center z-40 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
-                <button onClick={() => router.push('/medico/dashboard')} className="flex flex-col items-center gap-1.5 text-[#D4AF37]">
-                    <LayoutDashboard className="w-6 h-6 stroke-[2.5px]" />
-                    <span className="text-[10px] font-black tracking-widest uppercase">Home</span>
-                </button>
-                <button onClick={() => router.push('/medico/agenda')} className="flex flex-col items-center gap-1.5 text-white/30 hover:text-white transition-all">
-                    <Calendar className="w-6 h-6" />
-                    <span className="text-[10px] font-black tracking-widest uppercase">Agenda</span>
-                </button>
-                <div className="relative -top-10">
-                    <button onClick={() => router.push('/medico/receitas/nova')} className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-[24px] flex items-center justify-center shadow-[0_12px_24px_rgba(212,175,55,0.4)] border-4 border-[#1A365D] active:scale-90 transition-all">
-                        <Plus className="w-8 h-8 text-[#1A365D] stroke-[3px]" />
-                    </button>
-                </div>
-                <button onClick={() => router.push('/medico/pacientes')} className="flex flex-col items-center gap-1.5 text-white/30 hover:text-white transition-all">
-                    <UserSquare2 className="w-6 h-6" />
-                    <span className="text-[10px] font-black tracking-widest uppercase">Pacientes</span>
-                </button>
-                <button onClick={() => router.push('/medico/perfil')} className="flex flex-col items-center gap-1.5 text-white/30 hover:text-white transition-all">
-                    <Settings className="w-6 h-6" />
-                    <span className="text-[10px] font-black tracking-widest uppercase">Perfil</span>
-                </button>
-            </nav>
+            <main className="px-5 mt-4 space-y-4 relative z-10">
+                {/* 1. Destaque: PRÓXIMO PACIENTE (OFFICIAL BLUE) */}
+                <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative group cursor-pointer" onClick={() => router.push('/medico/agenda')}>
+                    <div className="bg-[#2D5284] p-5 rounded-[24px] shadow-[0_15px_30px_rgba(45,82,132,0.2)] overflow-hidden relative z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                        
+                        <div className="flex items-center gap-2 text-[#D4AF37] mb-3">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-[12px] uppercase font-bold tracking-widest mt-0.5">Próximo Paciente • 10:30</span>
+                        </div>
+                        
+                        <div className="mb-4 relative z-10">
+                            <h2 className="text-white font-black text-2xl tracking-tight mb-2">Carlos Silva</h2>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="bg-white/10 text-white border border-white/20 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">Primeira Consulta</span>
+                                <span className="text-white/80 text-[12px] font-medium flex items-center gap-1"><MapPin className="w-3 h-3 text-white/50" /> Clínica Central</span>
+                            </div>
+                        </div>
+
+                        <button className="w-full bg-[#D4AF37] text-[#2D5284] py-3.5 rounded-xl font-bold text-[13px] uppercase tracking-widest shadow-[0_8px_20px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2 relative z-10">
+                            Preparar Prontuário <ChevronRight className="w-4 h-4 mt-0.5 text-[#2D5284]/80" />
+                        </button>
+                    </div>
+                </motion.section>
+
+                {/* 2. TIMELINE DO DIA (Agenda Consolidada) */}
+                <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 p-6 rounded-[32px] shadow-[0_8px_30px_rgba(32,45,64,0.04)] border border-[#D4AF37] relative z-10 w-full">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full border border-[#2D5284]/50 flex items-center justify-center">
+                                <CalendarIcon className="w-5 h-5 text-[#2D5284]" strokeWidth={1.5} />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                                <h2 className="text-[#2D5284] font-bold text-[18px] leading-tight mb-1">Agenda do Dia</h2>
+                                <p className="text-[#8BA0B8] text-[10px] font-bold uppercase tracking-widest leading-none">Visão Unificada</p>
+                            </div>
+                        </div>
+                        <button onClick={() => router.push('/medico/agenda')} className="text-[#2D5284] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 hover:text-[#2D5284] transition-colors">
+                            Ver tudo <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {/* Status: Concluído / Passado */}
+                        <div className="flex items-stretch bg-[#F4F7FA] p-3.5 rounded-[20px] border-l border-t border-b border-r border-[#2D5284]/20">
+                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/20 pr-4">
+                                <span className="text-[#8BA0B8] font-bold text-[16px]">09:00</span>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center pl-4">
+                                <span className="text-[#647C9A] font-bold text-[15px] leading-tight mb-1.5">Maria Souza</span>
+                                <span className="text-[#8BA0B8] text-[12px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
+                            </div>
+                        </div>
+
+                        {/* Status: Agora */}
+                        <div className="flex items-stretch bg-white p-3.5 rounded-[20px] shadow-[0_8px_25px_rgba(45,82,132,0.08)] relative overflow-hidden border-l border-t border-b border-r border-[#D4AF37]/70">
+                            <div className="absolute left-0 top-0 bottom-0 w-[5px] bg-[#D4AF37] rounded-l-[20px]" />
+                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#D4AF37] pr-4 pl-1">
+                                <span className="text-[#2D5284] font-bold text-[16px]">10:30</span>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center pl-4">
+                                <div className="flex items-center gap-3 mb-1.5">
+                                    <span className="text-[#2D5284] font-bold text-[15px] leading-tight">Carlos Silva</span>
+                                    <span className="text-[#D4AF37] border border-[#D4AF37]/70 bg-[#D4AF37]/10 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md">Agora</span>
+                                </div>
+                                <span className="text-[#8BA0B8] text-[12px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
+                            </div>
+                        </div>
+
+                        {/* Status: Futuro e outro local */}
+                        <div className="flex items-stretch bg-[#F4F7FA] p-3.5 rounded-[20px] border-l border-t border-b border-r border-[#2D5284]/50">
+                            <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/50 pr-4">
+                                <span className="text-[#2D5284] font-bold text-[16px]">14:00</span>
+                            </div>
+                            <div className="flex-1 flex flex-col justify-center pl-4">
+                                <span className="text-[#2D5284] font-bold text-[15px] leading-tight mb-1.5">Fernanda Lima</span>
+                                <span className="text-[#8BA0B8] text-[12px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Consultório Flamboyant</span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* 3. ESTATÍSTICAS REBAIXADAS (Menor Proeminência) */}
+                <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-2 gap-3 pb-8 mt-1">
+                    <StatMicroCard icon={Users} value="124" label="Pacientes Ativos" />
+                    <StatMicroCard icon={Star} value="4.9" label="Avaliação Média" />
+                    <StatMicroCard icon={MessageSquare} value="2" label="Mensagens" />
+                    <StatMicroCard icon={CalendarClock} value="8" label="Pacientes Hoje" />
+                </motion.section>
+
+            </main>
+
+            <BottomNavMedico />
         </div>
     )
 }
