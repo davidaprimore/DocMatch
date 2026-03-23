@@ -214,7 +214,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 options: {
                     data: {
                         nome_completo: data.nome,
-                        tipo_usuario: data.tipo
+                        tipo_usuario: data.tipo,
+                        cpf: data.cpf ? onlyDigits(data.cpf) : null,
+                        telefone: data.telefone ? onlyDigits(data.telefone) : null,
+                        crm: data.crm || null,
+                        especialidade: data.especialidade || null
                     }
                 }
             })

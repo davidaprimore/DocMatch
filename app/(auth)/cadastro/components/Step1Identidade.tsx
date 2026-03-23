@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Eye, EyeOff, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Eye, EyeOff, CheckCircle2, XCircle, Loader2, ChevronDown } from 'lucide-react'
 import { maskCPF, maskPhone, isValidCPF, onlyDigits } from '@/lib/utils/masks'
 import { supabase } from '@/lib/supabase'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Step1Props {
     data: any
@@ -12,6 +13,8 @@ interface Step1Props {
 }
 
 export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
+    const [isGeneroOpen, setIsGeneroOpen] = useState(false)
+    const GENEROS = ['Feminino', 'Masculino', 'Mulher Trans', 'Homem Trans', 'Não-binário', 'Outros / Prefiro não informar']
     const [showPassword, setShowPassword] = useState(false)
     const [availability, setAvailability] = useState<{ [key: string]: 'idle' | 'checking' | 'available' | 'taken' }>({
         email: 'idle',
@@ -101,21 +104,23 @@ export function Step1Identidade({ data, updateData, onNext }: Step1Props) {
                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition [color-scheme:dark]"
                     />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 relative">
                     <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Gênero</label>
-                    <select 
-                        value={data.genero}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateData({ genero: e.target.value })}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition appearance-none"
-                    >
-                        <option value="" className="bg-[#1A365D]">Selecionar</option>
-                        <option value="Feminino" className="bg-[#1A365D]">Feminino</option>
-                        <option value="Masculino" className="bg-[#1A365D]">Masculino</option>
-                        <option value="Mulher Trans" className="bg-[#1A365D]">Mulher Trans</option>
-                        <option value="Homem Trans" className="bg-[#1A365D]">Homem Trans</option>
-                        <option value="Não-binário" className="bg-[#1A365D]">Não-binário</option>
-                        <option value="Prefiro não informar" className="bg-[#1A365D]">Outros / Prefiro não informar</option>
-                    </select>
+                    <button type="button" onClick={() => setIsGeneroOpen(!isGeneroOpen)} className="w-full flex justify-between items-center bg-slate-100/95 border border-slate-300 rounded-2xl px-4 py-3.5 text-[#1A365D] font-bold outline-none hover:bg-white transition">
+                        <span className="truncate">{data.genero || 'Selecionar'}</span>
+                        <ChevronDown className={`w-4 h-4 text-[#1A365D]/50 shrink-0 transition-transform ${isGeneroOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                        {isGeneroOpen && (
+                            <motion.div initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute top-[105%] left-0 w-[120%] bg-slate-100/95 backdrop-blur-3xl border border-slate-300 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
+                                {GENEROS.map(g => (
+                                    <button key={g} type="button" onClick={() => { updateData({ genero: g }); setIsGeneroOpen(false) }} className={`w-full text-left px-4 py-3 text-[13px] transition-colors border-b last:border-0 border-slate-200 ${data.genero === g ? 'bg-[#1A365D] text-[#D4AF37] font-black' : 'text-[#1A365D] font-bold hover:bg-[#1A365D] hover:text-[#D4AF37]'}`}>
+                                        {g}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 

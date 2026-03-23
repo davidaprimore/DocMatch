@@ -1,13 +1,53 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Bell, MapPin, Users, Star, MessageSquare, CalendarClock, ChevronRight, Calendar as CalendarIcon, Clock } from 'lucide-react'
+import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bell, MapPin, Users, Star, MessageSquare, CalendarClock, ChevronRight, Calendar as CalendarIcon, Clock, Download, X, TrendingUp } from 'lucide-react'
 import { BottomNavMedico } from '@/components/BottomNavMedico'
+import { useState, useEffect } from 'react'
 
 export default function MedicoDashboardPage() {
     const router = useRouter()
     const userName = "Joanna"
+    const [isSplashing, setIsSplashing] = useState(true)
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+    const [showInstallBanner, setShowInstallBanner] = useState(false)
+
+    useEffect(() => {
+        // Splash logic
+        const hasSplashed = sessionStorage.getItem('docmatch_splashed')
+        if (hasSplashed) {
+            setIsSplashing(false)
+        } else {
+            const timer = setTimeout(() => {
+                setIsSplashing(false)
+                sessionStorage.setItem('docmatch_splashed', 'true')
+            }, 2500)
+            return () => clearTimeout(timer)
+        }
+    }, [])
+
+    useEffect(() => {
+        // PWA Install Prompt logic
+        const handler = (e: any) => {
+            e.preventDefault()
+            setDeferredPrompt(e)
+            setShowInstallBanner(true)
+        }
+        window.addEventListener('beforeinstallprompt', handler)
+        return () => window.removeEventListener('beforeinstallprompt', handler)
+    }, [])
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return
+        deferredPrompt.prompt()
+        const { outcome } = await deferredPrompt.userChoice
+        if (outcome === 'accepted') {
+            setDeferredPrompt(null)
+            setShowInstallBanner(false)
+        }
+    }
 
     const MOCK_JORNADA_HOJE = [
         { id: '1', nome: 'Clínica Central', horario: '08:00 - 12:00' },
@@ -27,12 +67,47 @@ export default function MedicoDashboardPage() {
     )
 
     return (
-        <div className="min-h-screen bg-[#F8F6F0] pb-32 font-sans relative overflow-x-hidden selection:bg-[#2D5284]/30">
-            {/* Background Decor */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden flex items-center justify-center z-0">
-                <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-[#2D5284]/5 rounded-full blur-[120px]" />
-            </div>
+        <>
+            <AnimatePresence>
+                {isSplashing && (
+                    <motion.div 
+                        key="splash"
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
+                        transition={{ duration: 0.6, ease: "easeInOut" }}
+                        className="fixed inset-0 z-[9999] bg-gradient-to-br from-[#1A365D] to-[#2D5284] flex flex-col items-center justify-center p-6"
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.8, opacity: 0, y: 20 }} 
+                            animate={{ scale: 1, opacity: 1, y: 0 }} 
+                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                            className="flex flex-col items-center"
+                        >
+                            <div className="w-32 h-32 rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 relative border-4 border-white/10">
+                                <Image src="/icon-512.png" alt="DocMatch Loading" fill className="object-cover" />
+                            </div>
+                            <h1 className="text-4xl font-black text-white tracking-tight">Doc<span className="text-[#D4AF37]">Match</span></h1>
+                            <p className="text-[#D4AF37]/80 text-[11px] mt-3 font-black tracking-widest uppercase">Carregando Painel</p>
+
+                            <div className="w-48 h-1 bg-white/10 rounded-full mt-10 overflow-hidden">
+                                <motion.div 
+                                    initial={{ width: "0%" }} 
+                                    animate={{ width: "100%" }} 
+                                    transition={{ duration: 2, ease: "easeInOut" }} 
+                                    className="h-full bg-gradient-to-r from-[#D4AF37] to-[#FFF1B8]" 
+                                />
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <div className={`min-h-screen bg-[#F8F6F0] pb-32 font-sans relative overflow-x-hidden selection:bg-[#2D5284]/30 ${isSplashing ? 'pointer-events-none' : ''}`}>
+                {/* Background Decor */}
+                <div className="fixed inset-0 pointer-events-none overflow-hidden flex items-center justify-center z-0">
+                    <div className="absolute top-[10%] left-[-5%] w-[400px] h-[400px] bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+                    <div className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] bg-[#2D5284]/5 rounded-full blur-[120px]" />
+                </div>
 
             {/* Trial Banner */}
             <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="bg-gradient-to-r from-[#D4AF37] to-[#B8860B] py-2 px-4 flex items-center justify-between shadow-[0_4px_15px_rgba(212,175,55,0.2)] relative z-50">
@@ -95,6 +170,39 @@ export default function MedicoDashboardPage() {
             </header>
 
             <main className="px-5 mt-4 space-y-4 relative z-10">
+                {/* 0. Banner de Instalação PWA */}
+                {showInstallBanner && (
+                    <motion.section 
+                        initial={{ opacity: 0, scale: 0.9 }} 
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white p-4 rounded-[24px] shadow-[0_10px_25px_rgba(45,82,132,0.1)] border border-[#D4AF37]/20 flex items-center justify-between gap-4"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-[#2D5284] flex items-center justify-center shadow-lg shrink-0">
+                                <Download className="w-6 h-6 text-[#D4AF37]" />
+                            </div>
+                            <div>
+                                <h3 className="text-[#2D5284] font-bold text-[14px]">Instalar DocMatch</h3>
+                                <p className="text-[#8BA0B8] text-[11px] leading-tight mt-0.5">Acesse como um app nativo na sua tela inicial.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={handleInstallClick}
+                                className="bg-[#D4AF37] text-[#2D5284] px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-wider shadow-sm active:scale-95 transition-all"
+                            >
+                                Instalar
+                            </button>
+                            <button 
+                                onClick={() => setShowInstallBanner(false)}
+                                className="p-2 text-[#8BA0B8] hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </motion.section>
+                )}
+
                 {/* 1. Destaque: PRÓXIMO PACIENTE (OFFICIAL BLUE) */}
                 <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative group cursor-pointer" onClick={() => router.push('/medico/agenda')}>
                     <div className="bg-[#2D5284] p-5 rounded-[24px] shadow-[0_15px_30px_rgba(45,82,132,0.2)] overflow-hidden relative z-10">
@@ -116,6 +224,43 @@ export default function MedicoDashboardPage() {
                         <button className="w-full bg-[#D4AF37] text-[#2D5284] py-3.5 rounded-xl font-bold text-[13px] uppercase tracking-widest shadow-[0_8px_20px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 transition-all active:scale-95 flex items-center justify-center gap-2 relative z-10">
                             Preparar Prontuário <ChevronRight className="w-4 h-4 mt-0.5 text-[#2D5284]/80" />
                         </button>
+                    </div>
+                </motion.section>
+
+                {/* 1.5. Métrica de Sucesso Comercial / Ocupação */}
+                <motion.section initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }}>
+                    <div className="bg-white p-6 rounded-[24px] shadow-[0_8px_30px_rgba(45,82,132,0.06)] border border-slate-50 relative overflow-hidden flex flex-col justify-center">
+                        <div className="absolute right-0 top-0 w-32 h-32 bg-[#D4AF37]/5 rounded-bl-[100px] pointer-events-none" />
+                        
+                        <div className="flex justify-between items-end mb-4 relative z-10">
+                            <div>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <TrendingUp className="w-4 h-4 text-[#D4AF37]" strokeWidth={2.5} />
+                                    <h3 className="text-[#2D5284] text-[11px] font-black uppercase tracking-widest">Sucesso da Agenda</h3>
+                                </div>
+                                <p className="text-[#8BA0B8] font-medium text-[12px] leading-snug max-w-[200px]">Pacientes agendados hoje pelo <strong className="text-[#2D5284]">DocMatch</strong>.</p>
+                            </div>
+                            <div className="text-right flex items-end">
+                                <span className="text-[#2D5284] font-black text-4xl leading-none">8</span>
+                                <span className="text-[#8BA0B8] font-bold text-sm mb-1 ml-0.5">/10</span>
+                            </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full h-2.5 bg-[#F4F7FA] rounded-full overflow-hidden relative z-10">
+                            <motion.div 
+                                initial={{ width: 0 }} 
+                                animate={{ width: "80%" }} 
+                                transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                                className="h-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] rounded-full relative"
+                            >
+                                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
+                            </motion.div>
+                        </div>
+                        <div className="flex justify-between items-center mt-3 relative z-10">
+                            <span className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest bg-[#D4AF37]/10 px-2 py-0.5 rounded-md">Em Alta 🔥</span>
+                            <span className="text-[#2D5284] text-[11px] font-black">80% Ocupada</span>
+                        </div>
                     </div>
                 </motion.section>
 
@@ -187,6 +332,7 @@ export default function MedicoDashboardPage() {
             </main>
 
             <BottomNavMedico />
-        </div>
+            </div>
+        </>
     )
 }
