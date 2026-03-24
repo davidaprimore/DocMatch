@@ -142,6 +142,7 @@ export default function AgendaDoDiaPage() {
     const [rangeEnd, setRangeEnd] = useState<Date | null>(null)
     const [isBlockingMode, setIsBlockingMode] = useState(false)
     const [calendarAlert, setCalendarAlert] = useState<{ title: string, message: string, type: 'error' | 'confirm', onConfirm?: () => void } | null>(null)
+    const [isExpedienteModalOpen, setIsExpedienteModalOpen] = useState(false)
 
     // Helper para gerar dias do mês no calendário
     const getDaysInMonth = (year: number, month: number) => {
@@ -153,346 +154,40 @@ export default function AgendaDoDiaPage() {
         return date.getDay()
     }
 
-    // Modal de Calendário Muito Mais Premium e Nativo
-    const CustomCalendarModal = () => {
-        const viewYear = calendarViewDate.getFullYear()
-        const viewMonth = calendarViewDate.getMonth()
-        const today = new Date()
-        const currentYear = today.getFullYear()
-        const currentMonth = today.getMonth()
-
-        const isPastMonth = viewYear < currentYear || (viewYear === currentYear && viewMonth < currentMonth)
-        
-        const daysCount = getDaysInMonth(viewYear, viewMonth)
-        const firstDay = getFirstDayOfMonth(viewYear, viewMonth)
-        const days = Array.from({ length: daysCount }, (_, i) => i + 1)
-        const blanks = Array.from({ length: firstDay }, (_, i) => i)
-
-        const handlePrevMonth = () => {
-            if (isPastMonth) return
-            setCalendarViewDate(new Date(viewYear, viewMonth - 1, 1))
-        }
-        const handleNextMonth = () => {
-            setCalendarViewDate(new Date(viewYear, viewMonth + 1, 1))
-        }
-
-        const years = Array.from({ length: 10 }, (_, i) => currentYear + i)
-
-        const closeCalendar = () => {
-            setIsCalendarModalOpen(false)
-            setIsBlockingMode(false)
-            setRangeStart(null)
-            setRangeEnd(null)
-        }
-
-        const handleGoToday = () => {
-            const agora = new Date()
-            setCalendarViewDate(agora)
-            // Só navega na agenda se NÃO estiver em modo de bloqueio para evitar flicker
-            if (!isBlockingMode) {
-                setBaseDate(agora)
-                closeCalendar()
-            }
-        }
-
-        const handleDayClick = (d: number) => {
-            const selectedDate = new Date(viewYear, viewMonth, d)
-            
-            if (!isBlockingMode) {
-                setBaseDate(selectedDate)
-                setRangeStart(null)
-                setRangeEnd(null)
-                closeCalendar()
-                return
-            }
-
-            // No modo bloqueio, apenas selecionamos o range visualmente
-            if (!rangeStart || (rangeStart && rangeEnd)) {
-                setRangeStart(selectedDate)
-                setRangeEnd(null)
-            } else {
-                if (selectedDate < rangeStart) {
-                    setRangeStart(selectedDate)
-                } else {
-                    setRangeEnd(selectedDate)
-                }
-            }
-        }
-
-        const isInRange = (d: number) => {
-            if (!rangeStart || !rangeEnd) return false
-            const check = new Date(viewYear, viewMonth, d)
-            return check > rangeStart && check < rangeEnd
-        }
-
-        const handleBlockAction = (type: 'dia' | 'periodo') => {
-            const targetDays = type === 'dia' ? (rangeStart ? [rangeStart] : []) : []
-            if (type === 'periodo' && rangeStart && rangeEnd) {
-                let curr = new Date(rangeStart)
-                while (curr <= rangeEnd) {
-                    targetDays.push(new Date(curr))
-                    curr.setDate(curr.getDate() + 1)
-                }
-            }
-
-            if (targetDays.length === 0) return
-
-            const hasAppointments = targetDays.some(date => {
-                const daySlots = slotsCorrentes[selectedLocalId] || []
-                return daySlots.some(s => s.status === 'agendado')
-            })
-
-            if (hasAppointments) {
-                setCalendarAlert({
-                    title: "Atenção: Conflito de Agenda",
-                    message: "Não é possível bloquear este período pois já existem consultas agendadas. Por favor, cancele ou reagende as consultas antes de realizar o bloqueio.",
-                    type: 'error'
-                })
-                return
-            }
-
-            setCalendarAlert({
-                title: "Confirmar Bloqueio",
-                message: `Deseja realmente bloquear o ${type === 'dia' ? 'dia' : 'período'} selecionado no seu expediente?`,
-                type: 'confirm',
-                onConfirm: () => {
-                    setCalendarAlert(null)
-                    closeCalendar()
-                }
-            })
-        }
-
-        return (
-            <AnimatePresence>
-                {isCalendarModalOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        exit={{ opacity: 0 }} 
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A365D]/80 backdrop-blur-md px-4"
-                        onClick={() => {
-                            if (calendarAlert) return
-                            closeCalendar()
-                        }}
-                    >
-                        <motion.div 
-                            initial={{ scale: 0.9, y: 30 }} 
-                            animate={{ scale: 1, y: 0 }} 
-                            exit={{ scale: 0.95, y: 20 }} 
-                            className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <AnimatePresence>
-                                {calendarAlert && (
-                                    <motion.div 
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        className={`absolute inset-0 z-[120] flex items-center justify-center p-8 ${calendarAlert.type === 'error' ? 'bg-[#FEFCE8]' : 'bg-[#F8FAFC]'}`}
-                                    >
-                                        <div className={`text-center w-full ${calendarAlert.type === 'error' ? 'border-2 border-[#D4AF37]/50 p-6 rounded-[32px]' : ''}`}>
-                                            <div className={`w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center ${calendarAlert.type === 'error' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}>
-                                                {calendarAlert.type === 'error' ? <AlertCircle className="w-7 h-7" /> : <CalendarDays className="w-7 h-7" />}
-                                            </div>
-                                            <h4 className="text-[#1A365D] font-black text-lg mb-2 tracking-tight">{calendarAlert.title}</h4>
-                                            <p className="text-slate-500 text-[13px] leading-relaxed mb-8 px-4 font-medium">{calendarAlert.message}</p>
-                                            
-                                            <div className="flex flex-col gap-3">
-                                                {calendarAlert.type === 'confirm' ? (
-                                                    <>
-                                                        <button 
-                                                            onClick={calendarAlert.onConfirm}
-                                                            className="w-full py-3.5 bg-[#D4AF37] rounded-xl text-[#1A365D] font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all shadow-md"
-                                                        >
-                                                            Confirmar
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => setCalendarAlert(null)}
-                                                            className="w-full py-3.5 bg-slate-100 text-slate-400 rounded-xl font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all"
-                                                        >
-                                                            Voltar
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <button 
-                                                        onClick={() => setCalendarAlert(null)}
-                                                        className="w-full py-3.5 bg-[#1A365D] rounded-xl text-white font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all"
-                                                    >
-                                                        Entendido
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            <AnimatePresence>
-                                {showMonthYearPicker && (
-                                    <motion.div 
-                                        initial={{ y: '100%' }} 
-                                        animate={{ y: 0 }} 
-                                        exit={{ y: '100%' }}
-                                        className="absolute inset-0 z-[110] bg-[#2D5284] p-6 flex flex-col"
-                                    >
-                                        <div className="flex justify-between items-center mb-6">
-                                            <h4 className="text-[#D4AF37] font-black uppercase text-[12px] tracking-widest">Selecionar Período</h4>
-                                            <button onClick={() => setShowMonthYearPicker(false)} className="text-white/40"><X className="w-5 h-5"/></button>
-                                        </div>
-                                        
-                                        <div className="flex-1 overflow-y-auto space-y-6 no-scrollbar">
-                                            <div>
-                                                <p className="text-white/30 text-[10px] font-black uppercase mb-3">Meses</p>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {monthsName.map((m, i) => {
-                                                        const isPast = viewYear === currentYear && i < currentMonth
-                                                        return (
-                                                            <button 
-                                                                key={m} 
-                                                                disabled={isPast}
-                                                                onClick={() => { setCalendarViewDate(new Date(viewYear, i, 1)); setShowMonthYearPicker(false) }}
-                                                                className={`py-3 rounded-xl text-[12px] font-bold transition-all ${viewMonth === i ? 'bg-[#D4AF37] text-[#2D5284]' : isPast ? 'text-white/10' : 'text-white/60 bg-white/5'}`}
-                                                            >
-                                                                {m.substring(0, 3)}
-                                                            </button>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </div>
-                                            
-                                            <div>
-                                                <p className="text-white/30 text-[10px] font-black uppercase mb-3">Anos</p>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {years.map(y => (
-                                                        <button 
-                                                            key={y} 
-                                                            onClick={() => { setCalendarViewDate(new Date(y, viewMonth, 1)); setShowMonthYearPicker(false) }}
-                                                            className={`py-3 rounded-xl text-[12px] font-bold transition-all ${viewYear === y ? 'bg-[#D4AF37] text-[#2D5284]' : 'text-white/60 bg-white/5'}`}
-                                                        >
-                                                            {y}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            <div className="relative flex items-center justify-between mb-6 px-1">
-                                <div className="flex items-center gap-1.5">
-                                    <button 
-                                        onClick={handleGoToday}
-                                        className="h-7 px-3 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full text-[#D4AF37] font-black text-[9px] uppercase tracking-widest active:scale-90 transition-all focus:outline-none"
-                                    >
-                                        Hoje
-                                    </button>
-                                    <button 
-                                        onClick={handlePrevMonth}
-                                        disabled={isPastMonth}
-                                        className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
-                                    >
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </button>
-                                </div>
-                                
-                                <button 
-                                    onClick={() => setShowMonthYearPicker(true)}
-                                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group active:scale-95 transition-transform"
-                                >
-                                    <h3 className="font-black text-white text-[15px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5 focus:outline-none whitespace-nowrap">
-                                        {monthsName[viewMonth]} <span className="text-white/40">{viewYear}</span>
-                                    </h3>
-                                </button>
-
-                                <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
-                                    <ChevronRight className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
-                                <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
-                            </div>
-
-                            <div className="grid grid-cols-7 gap-1 text-center">
-                                {blanks.map(i => <div key={`empty-${i}`} />)}
-                                {days.map(d => {
-                                    const checkDate = new Date(viewYear, viewMonth, d)
-                                    const isSelected = isSameDate(checkDate, baseDate)
-                                    const isDayPast = viewYear === currentYear && viewMonth === currentMonth && d < today.getDate()
-                                    
-                                    const isStart = rangeStart && isSameDate(checkDate, rangeStart)
-                                    const isEnd = rangeEnd && isSameDate(checkDate, rangeEnd)
-                                    const inRange = isInRange(d)
-
-                                    return (
-                                        <button
-                                            key={d}
-                                            disabled={isDayPast}
-                                            onClick={() => handleDayClick(d)}
-                                            className={`h-9 rounded-full text-[13px] font-bold flex items-center justify-center transition-all relative
-                                                ${isSelected ? 'border border-[#D4AF37]/50 shadow-[0_0_10px_rgba(212,175,55,0.1)]' : ''}
-                                                ${isStart || isEnd ? 'bg-[#D4AF37] text-[#2D5284] z-10 scale-105' : 
-                                                  inRange ? 'bg-[#D4AF37]/20 text-white' : 
-                                                  'text-white/80 hover:bg-white/10 active:scale-90'}
-                                                ${isDayPast ? 'opacity-10 grayscale pointer-events-none' : ''}`}
-                                        >
-                                            {d}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-
-                            <div className="mt-8">
-                                {!isBlockingMode ? (
-                                    <button 
-                                        onClick={() => {
-                                            setIsBlockingMode(true)
-                                            setRangeStart(null)
-                                            setRangeEnd(null)
-                                        }}
-                                        className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white/60 font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
-                                    >
-                                        <TrendingUp className="w-4 h-4 opacity-50" />
-                                        Gerenciar Bloqueios
-                                    </button>
-                                ) : (
-                                    <div className="space-y-3">
-                                        <div className="flex gap-2">
-                                            <button 
-                                                onClick={() => handleBlockAction('dia')}
-                                                disabled={!rangeStart}
-                                                className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all disabled:opacity-20"
-                                            >
-                                                Bloquear Dia
-                                            </button>
-                                            <button 
-                                                onClick={() => handleBlockAction('periodo')}
-                                                disabled={!rangeStart || !rangeEnd}
-                                                className="flex-1 py-4 bg-white/10 border border-white/20 rounded-2xl text-[#D4AF37] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all disabled:opacity-20"
-                                            >
-                                                Bloquear Período
-                                            </button>
-                                        </div>
-                                        <button 
-                                            onClick={closeCalendar}
-                                            className="w-full py-3 bg-red-500/10 text-red-400 rounded-xl font-black uppercase text-[9px] tracking-widest active:scale-95 transition-all"
-                                        >
-                                            Cancelar Bloqueio
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        )
-    }
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] font-sans pb-32 relative">
-            <CustomCalendarModal />
+        <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] font-sans pb-32 relative text-[#1A365D]">
+            {/* Componentes de Modal Extraídos para Performance */}
+            <CustomCalendarModal 
+                isOpen={isCalendarModalOpen}
+                viewDate={calendarViewDate}
+                setViewDate={setCalendarViewDate}
+                baseDate={baseDate}
+                setBaseDate={setBaseDate}
+                onClose={() => {
+                    setIsCalendarModalOpen(false)
+                    setIsBlockingMode(false)
+                    setRangeStart(null)
+                    setRangeEnd(null)
+                }}
+                isBlockingMode={isBlockingMode}
+                setIsBlockingMode={setIsBlockingMode}
+                rangeStart={rangeStart}
+                setRangeStart={setRangeStart}
+                rangeEnd={rangeEnd}
+                setRangeEnd={setRangeEnd}
+                alert={calendarAlert}
+                setAlert={setCalendarAlert}
+                showMonthYearPicker={showMonthYearPicker}
+                setShowMonthYearPicker={setShowMonthYearPicker}
+                selectedLocalId={selectedLocalId}
+                slotsCorrentes={slotsCorrentes}
+            />
+
+            <WorkScheduleModal 
+                isOpen={isExpedienteModalOpen}
+                onClose={() => setIsExpedienteModalOpen(false)}
+            />
+
             <header className="px-5 pt-4 pb-12 relative z-40 bg-[#2D5284] shadow-[0_12px_30px_rgba(45,82,132,0.2)] rounded-b-[36px] overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
 
@@ -523,6 +218,7 @@ export default function AgendaDoDiaPage() {
                     </div>
 
                     <button
+                        onClick={() => setIsExpedienteModalOpen(true)}
                         className="bg-[#D4AF37] px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-[0_8px_25px_rgba(212,175,55,0.3)] active:scale-95 transition-all group border border-[#D4AF37] mb-0.5"
                     >
                         <Clock className="w-3.5 h-3.5 text-[#2D5284]" />
@@ -761,5 +457,340 @@ export default function AgendaDoDiaPage() {
 
             <BottomNavMedico />
         </div>
+    )
+}
+
+// --- Componentes Auxiliares (Fora do AgendaDoDiaPage para Performance) ---
+
+interface CalendarModalProps {
+    isOpen: boolean
+    viewDate: Date
+    setViewDate: (d: Date) => void
+    baseDate: Date
+    setBaseDate: (d: Date) => void
+    onClose: () => void
+    isBlockingMode: boolean
+    setIsBlockingMode: (b: boolean) => void
+    rangeStart: Date | null
+    setRangeStart: (d: Date | null) => void
+    rangeEnd: Date | null
+    setRangeEnd: (d: Date | null) => void
+    alert: any
+    setAlert: (a: any) => void
+    showMonthYearPicker: boolean
+    setShowMonthYearPicker: (b: boolean) => void
+    selectedLocalId: string
+    slotsCorrentes: any
+}
+
+const CustomCalendarModal = ({ 
+    isOpen, viewDate, setViewDate, baseDate, setBaseDate, onClose, 
+    isBlockingMode, setIsBlockingMode, rangeStart, setRangeStart, 
+    rangeEnd, setRangeEnd, alert, setAlert, showMonthYearPicker, 
+    setShowMonthYearPicker, selectedLocalId, slotsCorrentes 
+}: CalendarModalProps) => {
+    
+    const viewYear = viewDate.getFullYear()
+    const viewMonth = viewDate.getMonth()
+    const today = new Date()
+    const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth()
+
+    const monthsName = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+    const isPastMonth = viewYear < currentYear || (viewYear === currentYear && viewMonth < currentMonth)
+    
+    // Helpers internos (pode mover para fora se quiser)
+    const getDaysInMonth = (y: number, m: number) => new Date(y, m + 1, 0).getDate()
+    const getFirstDayOfMonth = (y: number, m: number) => new Date(y, m, 1).getDay()
+    const isSameDate = (d1: Date, d2: Date) => d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear()
+
+    const daysCount = getDaysInMonth(viewYear, viewMonth)
+    const firstDay = getFirstDayOfMonth(viewYear, viewMonth)
+    const days = Array.from({ length: daysCount }, (_, i) => i + 1)
+    const blanks = Array.from({ length: firstDay }, (_, i) => i)
+
+    const handlePrevMonth = () => { if (!isPastMonth) setViewDate(new Date(viewYear, viewMonth - 1, 1)) }
+    const handleNextMonth = () => { setViewDate(new Date(viewYear, viewMonth + 1, 1)) }
+
+    const years = Array.from({ length: 10 }, (_, i) => currentYear + i)
+
+    const handleGoToday = () => {
+        const agora = new Date()
+        setViewDate(agora)
+        if (!isBlockingMode) {
+            setBaseDate(agora)
+            onClose()
+        }
+    }
+
+    const handleDayClick = (d: number) => {
+        const selectedDate = new Date(viewYear, viewMonth, d)
+        if (!isBlockingMode) {
+            setBaseDate(selectedDate)
+            onClose()
+            return
+        }
+        if (!rangeStart || (rangeStart && rangeEnd)) {
+            setRangeStart(selectedDate)
+            setRangeEnd(null)
+        } else {
+            if (selectedDate < rangeStart) setRangeStart(selectedDate)
+            else setRangeEnd(selectedDate)
+        }
+    }
+
+    const isInRange = (d: number) => {
+        if (!rangeStart || !rangeEnd) return false
+        const check = new Date(viewYear, viewMonth, d)
+        return check > rangeStart && check < rangeEnd
+    }
+
+    const handleBlockAction = (type: 'dia' | 'periodo') => {
+        const targetDays = type === 'dia' ? (rangeStart ? [rangeStart] : []) : []
+        if (type === 'periodo' && rangeStart && rangeEnd) {
+            let curr = new Date(rangeStart)
+            while (curr <= rangeEnd) {
+                targetDays.push(new Date(curr))
+                curr.setDate(curr.getDate() + 1)
+            }
+        }
+        if (targetDays.length === 0) return
+
+        const daySlots = slotsCorrentes[selectedLocalId] || []
+        const hasAppointments = targetDays.some(date => {
+            return daySlots.some((s: any) => s.status === 'agendado')
+        })
+
+        if (hasAppointments) {
+            setAlert({
+                title: "Atenção: Conflito de Agenda",
+                message: "Não é possível bloquear este período pois já existem consultas agendadas.",
+                type: 'error'
+            })
+            return
+        }
+
+        setAlert({
+            title: "Confirmar Bloqueio",
+            message: `Deseja realmente bloquear o ${type === 'dia' ? 'dia' : 'período'} selecionado?`,
+            type: 'confirm',
+            onConfirm: () => { setAlert(null); onClose() }
+        })
+    }
+
+    if (!isOpen) return null
+
+    return (
+        <AnimatePresence>
+            <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A365D]/80 backdrop-blur-md px-4"
+                onClick={() => { if (!alert) onClose() }}
+            >
+                <motion.div 
+                    initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} 
+                    className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <AnimatePresence>
+                        {alert && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                                className={`absolute inset-0 z-[120] flex items-center justify-center p-8 ${alert.type === 'error' ? 'bg-[#FEFCE8]' : 'bg-[#F8FAFC]'}`}
+                            >
+                                <div className={`text-center w-full ${alert.type === 'error' ? 'border-2 border-[#D4AF37]/50 p-6 rounded-[32px]' : ''}`}>
+                                    <div className="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center bg-[#D4AF37]/10 text-[#D4AF37]">
+                                        {alert.type === 'error' ? <AlertCircle className="w-7 h-7" /> : <CalendarDays className="w-7 h-7" />}
+                                    </div>
+                                    <h4 className="text-[#1A365D] font-black text-lg mb-2 tracking-tight">{alert.title}</h4>
+                                    <p className="text-slate-500 text-[13px] leading-relaxed mb-8 px-4 font-medium">{alert.message}</p>
+                                    <div className="flex flex-col gap-3">
+                                        {alert.type === 'confirm' ? (
+                                            <>
+                                                <button onClick={alert.onConfirm} className="w-full py-3.5 bg-[#D4AF37] rounded-xl text-[#1A365D] font-black uppercase text-[11px] tracking-widest active:scale-95 shadow-md">Confirmar</button>
+                                                <button onClick={() => setAlert(null)} className="w-full py-3.5 bg-slate-100 text-slate-400 rounded-xl font-bold uppercase text-[10px] tracking-widest active:scale-95">Voltar</button>
+                                            </>
+                                        ) : (
+                                            <button onClick={() => setAlert(null)} className="w-full py-3.5 bg-[#1A365D] rounded-xl text-white font-black uppercase text-[11px] tracking-widest active:scale-95">Entendido</button>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Header do Calendário */}
+                    <div className="relative flex items-center justify-between mb-6 px-1">
+                        <div className="flex items-center gap-1.5">
+                            <button 
+                                onClick={handlePrevMonth} disabled={isPastMonth}
+                                className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button 
+                                onClick={handleGoToday}
+                                className="h-7 px-3 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full text-[#D4AF37] font-black text-[9px] uppercase tracking-widest active:scale-90 transition-all focus:outline-none"
+                            >
+                                Hoje
+                            </button>
+                        </div>
+                        
+                        <button 
+                            onClick={() => setShowMonthYearPicker(true)}
+                            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group active:scale-95 transition-transform"
+                        >
+                            <h3 className="font-black text-white text-[15px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5 focus:outline-none whitespace-nowrap">
+                                {monthsName[viewMonth]} <span className="text-white/40">{viewYear}</span>
+                            </h3>
+                        </button>
+
+                        <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+                        <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                        {blanks.map(i => <div key={`empty-${i}`} />)}
+                        {days.map(d => {
+                            const checkDate = new Date(viewYear, viewMonth, d)
+                            const isSelected = isSameDate(checkDate, baseDate)
+                            const isDayPast = viewYear === currentYear && viewMonth === currentMonth && d < today.getDate()
+                            const isStart = rangeStart && isSameDate(checkDate, rangeStart)
+                            const isEnd = rangeEnd && isSameDate(checkDate, rangeEnd)
+                            const inRange = isInRange(d)
+                            return (
+                                <button
+                                    key={d} disabled={isDayPast} onClick={() => handleDayClick(d)}
+                                    className={`h-9 rounded-full text-[13px] font-bold flex items-center justify-center transition-all relative
+                                        ${isSelected ? 'border border-[#D4AF37]/50 shadow-[0_0_10px_rgba(212,175,55,0.1)]' : ''}
+                                        ${isStart || isEnd ? 'bg-[#D4AF37] text-[#2D5284] z-10 scale-105' : inRange ? 'bg-[#D4AF37]/20 text-white' : 'text-white/80 hover:bg-white/10 active:scale-90'}
+                                        ${isDayPast ? 'opacity-10 grayscale pointer-events-none' : ''}`}
+                                >
+                                    {d}
+                                </button>
+                            )
+                        })}
+                    </div>
+
+                    <div className="mt-8">
+                        {!isBlockingMode ? (
+                            <button 
+                                onClick={() => { setIsBlockingMode(true); setRangeStart(null); setRangeEnd(null) }}
+                                className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white/60 font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
+                            >
+                                <TrendingUp className="w-4 h-4 opacity-50" /> Gerenciar Bloqueios
+                            </button>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="flex gap-2">
+                                    <button onClick={() => handleBlockAction('dia')} disabled={!rangeStart} className="flex-1 py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black uppercase text-[10px] tracking-widest active:scale-95 disabled:opacity-20">Bloquear Dia</button>
+                                    <button onClick={() => handleBlockAction('periodo')} disabled={!rangeStart || !rangeEnd} className="flex-1 py-4 bg-white/10 border border-white/20 rounded-2xl text-[#D4AF37] font-black uppercase text-[10px] tracking-widest active:scale-95 disabled:opacity-20">Bloquear Período</button>
+                                </div>
+                                <button onClick={onClose} className="w-full py-3 bg-red-500/10 text-red-400 rounded-xl font-black uppercase text-[9px] tracking-widest active:scale-95">Cancelar Bloqueio</button>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
+    )
+}
+
+const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+    const [selectedLocation, setSelectedLocation] = useState('1')
+    
+    const diasSemana = [
+        { id: 'seg', nome: 'Segunda-feira' },
+        { id: 'ter', nome: 'Terça-feira' },
+        { id: 'qua', nome: 'Quarta-feira' },
+        { id: 'qui', nome: 'Quinta-feira' },
+        { id: 'sex', nome: 'Sexta-feira' },
+        { id: 'sab', nome: 'Sábado' },
+        { id: 'dom', nome: 'Domingo' },
+    ]
+
+    if (!isOpen) return null
+
+    return (
+        <AnimatePresence>
+            <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A365D]/90 backdrop-blur-xl px-4"
+                onClick={onClose}
+            >
+                <motion.div 
+                    initial={{ scale: 0.9, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 50 }} 
+                    className="bg-[#2D5284] w-full max-w-lg rounded-[40px] shadow-[0_20px_80px_rgba(0,0,0,0.5)] border border-white/15 overflow-hidden flex flex-col max-h-[90vh]"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Header do Expediente */}
+                    <div className="p-8 pb-4 relative">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.2em] mb-1">Configuração</p>
+                                <h3 className="text-white text-2xl font-black tracking-tight">Expediente Médico</h3>
+                            </div>
+                            <button onClick={onClose} className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-white active:scale-90 transition-all">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Seletor de Local no Modal */}
+                        <div className="flex gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/10">
+                            {MOCK_LOCAIS.map(l => (
+                                <button 
+                                    key={l.id} 
+                                    onClick={() => setSelectedLocation(l.id)}
+                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedLocation === l.id ? 'bg-[#D4AF37] text-[#1A365D]' : 'text-white/40 hover:bg-white/5'}`}
+                                >
+                                    {l.nome}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Lista de Dias */}
+                    <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-4 no-scrollbar">
+                        {diasSemana.map(day => (
+                            <div key={day.id} className="p-5 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-between group hover:border-white/20 transition-all">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-[#D4AF37]/10 rounded-2xl flex items-center justify-center text-[#D4AF37] font-black text-xs uppercase">
+                                        {day.nome.substring(0, 3)}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-bold text-sm">{day.nome}</h4>
+                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">08:00 — 18:00</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                    <div className="h-6 w-11 bg-emerald-500/20 rounded-full relative p-1 border border-emerald-500/30">
+                                        <div className="h-4 w-4 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] ml-auto" />
+                                    </div>
+                                    <button className="p-2 text-white/20 hover:text-white transition-colors">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Rodapé do Modal */}
+                    <div className="p-8 pt-4 border-t border-white/10 bg-[#1A365D]/30 backdrop-blur-md">
+                        <button 
+                            onClick={onClose}
+                            className="w-full py-4 bg-[#D4AF37] text-[#1A365D] rounded-[24px] font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-xl"
+                        >
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
     )
 }
