@@ -269,34 +269,12 @@ export default function AgendaDoDiaPage() {
                             const isPending = pendingSlotAction === slot.id
                             const isPast = slot.isPast || isPassadoLinear(slot.time)
                             
-                            // Cores de classificação e estilos dinâmicos
+                            // Cores de classificação
                             let typeColor = 'transparent'
                             let label = ''
-                            let cardBg = 'bg-white/80'
-                            let borderStyle = 'border-white'
-                            let shadowStyle = 'shadow-sm'
-                            
-                            if (slot.classes === 'urgencia') { 
-                                typeColor = '#D4AF37'
-                                label = 'Urgência'
-                                cardBg = 'bg-[#D4AF37]/5'
-                                borderStyle = 'border-[#D4AF37]/10'
-                                shadowStyle = 'shadow-[0_8px_20px_rgba(212,175,55,0.12)]'
-                            }
-                            else if (slot.classes === 'primeira') { 
-                                typeColor = '#4ADE80'
-                                label = '1ª Vez'
-                                cardBg = 'bg-[#4ADE80]/5'
-                                borderStyle = 'border-[#4ADE80]/10'
-                                shadowStyle = 'shadow-[0_8px_20px_rgba(74,222,128,0.1)]'
-                            }
-                            else if (slot.classes === 'retorno') { 
-                                typeColor = '#60A5FA'
-                                label = 'Retorno'
-                                cardBg = 'bg-[#60A5FA]/5'
-                                borderStyle = 'border-[#60A5FA]/10'
-                                shadowStyle = 'shadow-[0_8px_20px_rgba(96,165,251,0.1)]'
-                            }
+                            if (slot.classes === 'urgencia') { typeColor = '#D4AF37'; label = 'Urgência' }
+                            else if (slot.classes === 'primeira') { typeColor = '#4ADE80'; label = '1ª Vez' }
+                            else if (slot.classes === 'retorno') { typeColor = '#60A5FA'; label = 'Retorno' }
 
                             return (
                                 <motion.div 
@@ -306,10 +284,10 @@ export default function AgendaDoDiaPage() {
                                     animate={{ opacity: 1, y: 0 }} 
                                     exit={{ opacity: 0, scale: 0.98 }}
                                     onClick={() => handleSlotClick(slot)}
-                                    className={`relative rounded-[22px] transition-all overflow-hidden backdrop-blur-md ${
-                                        isPast ? 'bg-slate-200/50 grayscale opacity-60' : 
-                                        slot.status === 'bloqueado' ? 'bg-red-50 border border-red-100 shadow-none' :
-                                        `${cardBg} border ${borderStyle} ${shadowStyle}`
+                                    className={`relative rounded-[18px] transition-all overflow-hidden ${
+                                        isPast ? 'bg-slate-200/50 grayscale' : 
+                                        slot.status === 'bloqueado' ? 'bg-red-50 border border-red-100' :
+                                        'bg-white/80 border border-white shadow-sm'
                                     } ${isPending ? 'ring-2 ring-[#D4AF37] scale-[0.98]' : ''}`}
                                 >
                                     <div className="flex items-center px-4 py-3 min-h-[64px]">
