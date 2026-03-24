@@ -147,10 +147,13 @@ export default function AgendaDoDiaPage() {
                         </button>
                         <h1 className="text-white font-black text-xl tracking-tight uppercase">Minha Agenda</h1>
                     </div>
-                    <div className="flex items-center gap-2">
-                            <h1 className="text-white font-black text-[14px] tracking-tight flex items-center gap-1 uppercase">
-                                Doc<span className="text-[#D4AF37]">Match</span>
-                            </h1>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            className="bg-[#D4AF37]/10 backdrop-blur-md border border-[#D4AF37]/30 px-3 py-2 rounded-xl flex items-center gap-2 shadow-[0_4px_15px_rgba(212,175,55,0.1)] active:scale-95 transition-all group"
+                        >
+                            <Clock className="w-4 h-4 text-[#D4AF37] group-hover:rotate-12 transition-transform" />
+                            <span className="text-[#D4AF37] font-black text-[11px] uppercase tracking-widest mt-0.5">Expediente</span>
+                        </button>
                     </div>
                 </div>
 
