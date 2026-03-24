@@ -186,35 +186,38 @@ export default function AgendaDoDiaPage() {
             <header className="px-5 pt-8 pb-12 relative z-40 bg-[#2D5284] shadow-[0_12px_30px_rgba(45,82,132,0.2)] rounded-b-[36px] overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
                 
-                <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className="flex justify-between items-center mb-6 relative z-10">
                     <div className="flex items-center gap-3">
                         <button onClick={() => router.back()} className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all">
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <h1 className="text-white font-black text-xl tracking-tight uppercase">Minha Agenda</h1>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
+                    <div>
                         <h1 className="text-white font-black text-[14px] tracking-tight flex items-center gap-1 uppercase">
                             Doc<span className="text-[#D4AF37]">Match</span>
                         </h1>
-                        <button 
-                            className="bg-[#D4AF37] px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-[0_4px_15px_rgba(212,175,55,0.3)] active:scale-95 transition-all group border border-[#D4AF37]"
-                        >
-                            <Clock className="w-3 h-3 text-[#2D5284]" />
-                            <span className="text-[#2D5284] font-black text-[9px] uppercase tracking-widest mt-0.5">Expediente</span>
-                        </button>
                     </div>
                 </div>
 
-                <div className="relative z-10 mt-2">
-                    <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Visualização do Dia</p>
-                    <div className="flex items-center gap-2">
-                        <span className="text-white text-3xl font-black">{baseDate.getDate()}</span>
-                        <div className="flex flex-col">
-                            <span className="text-[#D4AF37] text-[12px] font-black uppercase leading-none">{monthsName[baseDate.getMonth()]}</span>
-                            <span className="text-white/80 text-[12px] font-bold leading-none mt-0.5">{formatDayName(baseDate)}</span>
+                <div className="relative z-10 mt-2 flex justify-between items-end">
+                    <div>
+                        <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Visualização do Dia</p>
+                        <div className="flex items-center gap-2">
+                            <span className="text-white text-3xl font-black">{baseDate.getDate()}</span>
+                            <div className="flex flex-col">
+                                <span className="text-[#D4AF37] text-[12px] font-black uppercase leading-none">{monthsName[baseDate.getMonth()]}</span>
+                                <span className="text-white/80 text-[12px] font-bold leading-none mt-0.5">{formatDayName(baseDate)}</span>
+                            </div>
                         </div>
                     </div>
+                    
+                    <button 
+                        className="bg-[#D4AF37] px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-[0_8px_25px_rgba(212,175,55,0.3)] active:scale-95 transition-all group border border-[#D4AF37] mb-0.5"
+                    >
+                        <Clock className="w-3.5 h-3.5 text-[#2D5284]" />
+                        <span className="text-[#2D5284] font-black text-[10px] uppercase tracking-widest mt-0.5">Expediente</span>
+                    </button>
                 </div>
             </header>
 
