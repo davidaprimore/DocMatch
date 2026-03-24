@@ -704,9 +704,10 @@ const CustomCalendarModal = ({
 
 const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
     const [selectedLocation, setSelectedLocation] = useState('1')
-
     const [duration, setDuration] = useState('30')
-    const [availability, setAvailability] = useState<Record<string, { id: string, start: string, end: string }[]>>({
+    
+    // Estado inicial para descarte
+    const initialAvailability = {
         'Segunda': [{ id: '1', start: '08:00', end: '12:00' }, { id: '2', start: '13:00', end: '18:00' }],
         'Terça': [{ id: '3', start: '08:00', end: '12:00' }],
         'Quarta': [{ id: '4', start: '08:00', end: '12:00' }, { id: '5', start: '13:00', end: '18:00' }],
@@ -714,13 +715,38 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         'Sexta': [{ id: '7', start: '08:00', end: '18:00' }],
         'Sábado': [],
         'Domingo': []
-    })
+    }
+    const [availability, setAvailability] = useState<Record<string, { id: string, start: string, end: string }[]>>(initialAvailability)
 
     const [blocks, setBlocks] = useState([
         { id: 'b1', title: 'Feriado Municipal', type: 'dia', startDate: '2024-04-12' }
     ])
 
+    // Resetar ao fechar se não salvou
+    useEffect(() => {
+        if (!isOpen) {
+            setAvailability(initialAvailability)
+            setBlocks([
+                { id: 'b1', title: 'Feriado Municipal', type: 'dia', startDate: '2024-04-12' }
+            ])
+            setDuration('30')
+        }
+    }, [isOpen])
+
     const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+
+    // Helper para gerar horários baseados na duração
+    const generateTimeOptions = (step: number) => {
+        const options = []
+        for (let h = 0; h < 24; h++) {
+            for (let m = 0; m < 60; m += step) {
+                const hh = h.toString().padStart(2, '0')
+                const mm = m.toString().padStart(2, '0')
+                options.push(`${hh}:${mm}`)
+            }
+        }
+        return options
+    }
 
     if (!isOpen) return null
 
@@ -732,9 +758,9 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                 exit={{ opacity: 0, x: 100 }}
                 className="fixed inset-0 z-[200] w-full h-full bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] overflow-y-auto"
             >
-                <div className="min-h-full flex flex-col relative z-10 max-w-4xl mx-auto w-full pb-32">
-                    {/* Header Full Screen - Fundo Azul Mantido */}
-                    <div className="bg-[#2D5284] p-8 pb-10 pt-10 rounded-b-[40px] shadow-[0_15px_40px_rgba(45,82,132,0.15)] relative overflow-hidden">
+                <div className="min-h-full flex flex-col relative z-10 max-w-4xl mx-auto w-full pb-48">
+                    {/* Header Full Screen - Mais Compacto */}
+                    <div className="bg-[#2D5284] p-8 pb-6 pt-10 rounded-b-[40px] shadow-[0_15px_40px_rgba(45,82,132,0.15)] relative overflow-hidden">
                         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
 
                         <div className="flex justify-between items-start mb-6 relative z-10">
@@ -743,7 +769,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
                                 <div>
-                                    <h3 className="text-white text-3xl font-black tracking-tight leading-none uppercase">Meu <span className="text-[#D4AF37]">Expediente</span></h3>
+                                    <h3 className="text-white text-xl font-black tracking-tight leading-none uppercase"><span className="text-[#D4AF37]">Expediente</span></h3>
                                 </div>
                             </div>
                             <h1 className="text-white font-black text-[18px] tracking-tight flex items-center gap-1 uppercase">
@@ -765,7 +791,12 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                 ))}
                             </div>
                             <div className="flex justify-center">
-                                <button className="text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-[0.15em] transition-colors flex items-center gap-1.5 active:scale-95">
+                                <button 
+                                    onClick={() => toast.info('Redirecionando para Gestão de Unidades...', {
+                                        style: { background: '#2D5284', color: '#fff', fontSize: '12px' }
+                                    })}
+                                    className="text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-[0.15em] transition-colors flex items-center gap-1.5 active:scale-95"
+                                >
                                     <MapPin className="w-3 h-3" />
                                     Ir para gerenciamento de locais
                                 </button>
@@ -820,7 +851,13 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                             </div>
 
                                             <label className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" className="sr-only peer" checked={availability[day].length > 0} onChange={() => { }} />
+                                                <input type="checkbox" className="sr-only peer" checked={availability[day].length > 0} onChange={() => {
+                                                    if (availability[day].length > 0) {
+                                                        setAvailability(prev => ({ ...prev, [day]: [] }))
+                                                    } else {
+                                                        setAvailability(prev => ({ ...prev, [day]: [{ id: Math.random().toString(), start: '08:00', end: '12:00' }] }))
+                                                    }
+                                                }} />
                                                 <div className="w-14 h-8 bg-[#1A365D]/10 rounded-full peer peer-checked:after:translate-x-[24px] peer-checked:after:bg-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-[#1A365D]/20 after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#22C55E] shadow-inner"></div>
                                             </label>
                                         </div>
@@ -829,17 +866,56 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                             <div className="mt-6 pt-6 border-t border-[#1A365D]/5 space-y-3">
                                                 {availability[day].map((slot, idx) => (
                                                     <div key={slot.id} className="flex items-center gap-3">
-                                                        <div className="flex-1 bg-gradient-to-r from-[#1A365D]/5 to-transparent border border-[#1A365D]/5 rounded-2xl px-5 py-4 flex items-center justify-between">
-                                                            <span className="text-[#1A365D] font-black text-[15px]">{slot.start}</span>
+                                                        <div className="flex-1 bg-gradient-to-r from-[#1A365D]/5 to-transparent border border-[#1A365D]/5 rounded-2xl px-5 py-4 flex items-center justify-between gap-4">
+                                                            <select 
+                                                                value={slot.start}
+                                                                onChange={(e) => {
+                                                                    const newSlots = [...availability[day]]
+                                                                    newSlots[idx].start = e.target.value
+                                                                    setAvailability(prev => ({ ...prev, [day]: newSlots }))
+                                                                }}
+                                                                className="bg-transparent text-[#1A365D] font-black text-[15px] outline-none"
+                                                            >
+                                                                {generateTimeOptions(parseInt(duration)).map(t => (
+                                                                    <option key={t} value={t}>{t}</option>
+                                                                ))}
+                                                            </select>
                                                             <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
-                                                            <span className="text-[#1A365D] font-black text-[15px]">{slot.end}</span>
+                                                            <select 
+                                                                value={slot.end}
+                                                                onChange={(e) => {
+                                                                    const newSlots = [...availability[day]]
+                                                                    newSlots[idx].end = e.target.value
+                                                                    setAvailability(prev => ({ ...prev, [day]: newSlots }))
+                                                                }}
+                                                                className="bg-transparent text-[#1A365D] font-black text-[15px] outline-none"
+                                                            >
+                                                                {generateTimeOptions(parseInt(duration)).map(t => (
+                                                                    <option key={t} value={t}>{t}</option>
+                                                                ))}
+                                                            </select>
                                                         </div>
-                                                        <button className="w-12 h-12 bg-white rounded-2xl border border-[#1A365D]/5 flex items-center justify-center text-[#1A365D]/20 hover:text-red-500 hover:shadow-lg transition-all active:scale-90">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const newSlots = availability[day].filter(s => s.id !== slot.id)
+                                                                setAvailability(prev => ({ ...prev, [day]: newSlots }))
+                                                            }}
+                                                            className="w-12 h-12 bg-white rounded-2xl border border-[#1A365D]/5 flex items-center justify-center text-[#1A365D]/20 hover:text-red-500 hover:shadow-lg transition-all active:scale-90"
+                                                        >
                                                             <Trash2 className="w-5 h-5" />
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <button className="w-full py-5 border-2 border-dashed border-[#1A365D]/10 rounded-[24px] text-[11px] font-black text-[#1A365D]/30 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5 uppercase tracking-[0.25em] transition-all">
+                                                <button 
+                                                    onClick={() => {
+                                                        const newId = Math.random().toString()
+                                                        setAvailability(prev => ({ 
+                                                            ...prev, 
+                                                            [day]: [...prev[day], { id: newId, start: '13:00', end: '18:00' }] 
+                                                        }))
+                                                    }}
+                                                    className="w-full py-5 border-2 border-dashed border-[#1A365D]/10 rounded-[24px] text-[11px] font-black text-[#1A365D]/30 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5 uppercase tracking-[0.25em] transition-all"
+                                                >
                                                     + Adicionar Novo Período
                                                 </button>
                                             </div>
@@ -868,12 +944,27 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                                 <p className="text-red-500/60 text-[11px] font-black uppercase tracking-widest mt-0.5">{block.startDate}</p>
                                             </div>
                                         </div>
-                                        <button className="w-10 h-10 rounded-xl hover:bg-red-50 text-[#1A365D]/10 hover:text-red-500 transition-all">
+                                        <button 
+                                            onClick={() => setBlocks(prev => prev.filter(b => b.id !== block.id))}
+                                            className="w-10 h-10 rounded-xl hover:bg-red-50 text-[#1A365D]/10 hover:text-red-500 transition-all"
+                                        >
                                             <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
                                 ))}
-                                <button className="md:col-span-2 w-full py-6 bg-red-50 border-2 border-dashed border-red-200 rounded-[32px] text-[12px] font-black text-red-500/60 hover:bg-red-100 uppercase tracking-[0.25em] transition-all">
+                                <button 
+                                    onClick={() => {
+                                        const newBlock = { 
+                                            id: Math.random().toString(), 
+                                            title: 'Novo Bloqueio', 
+                                            type: 'dia', 
+                                            startDate: new Date().toISOString().split('T')[0] 
+                                        }
+                                        setBlocks(prev => [...prev, newBlock])
+                                        toast.info('Novo bloqueio adicionado!')
+                                    }}
+                                    className="md:col-span-2 w-full py-6 bg-red-50 border-2 border-dashed border-red-200 rounded-[32px] text-[12px] font-black text-red-500/60 hover:bg-red-100 uppercase tracking-[0.25em] transition-all"
+                                >
                                     + Adicionar Bloqueio ou Recesso
                                 </button>
                             </div>
@@ -882,19 +973,23 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
 
                     {/* Footer Fixo */}
                     <div className="fixed bottom-0 left-0 right-0 p-8 border-t border-white/80 bg-white/70 backdrop-blur-3xl z-50">
-                        <div className="max-w-4xl mx-auto">
+                        <div className="max-w-4xl mx-auto flex gap-4">
                             <button
                                 onClick={() => {
-                                    toast.success('Expediente atualizado com sucesso!', {
+                                    toast.success('Alterações salvas com sucesso!', {
                                         style: { background: '#1A365D', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', fontWeight: '800' }
                                     })
                                     onClose()
                                 }}
-                                className="w-full py-5 bg-[#D4AF37] text-[#1A365D] rounded-[24px] font-black uppercase text-[15px] tracking-[0.2em] active:scale-[0.98] transition-all shadow-[0_15px_40px_rgba(212,175,55,0.3)] hover:brightness-105"
+                                className="flex-1 py-5 bg-[#D4AF37] text-[#1A365D] rounded-[24px] font-black uppercase text-[15px] tracking-[0.2em] active:scale-[0.98] transition-all shadow-[0_15px_40px_rgba(212,175,55,0.3)] hover:brightness-105"
                             >
-                                Confirmar e Salvar Expediente
+                                Salvar Alterações
                             </button>
                         </div>
+                    </div>
+                    {/* BottomNav integrada para navegação direta se desejar */}
+                    <div className="fixed bottom-0 left-0 right-0 z-[60]">
+                        <BottomNavMedico />
                     </div>
                 </div>
             </motion.div>
