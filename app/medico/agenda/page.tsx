@@ -705,7 +705,7 @@ const CustomCalendarModal = ({
 const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
     const [selectedLocation, setSelectedLocation] = useState('1')
     const [duration, setDuration] = useState('30')
-    
+
     // Estado inicial para descarte
     const initialAvailability = {
         'Segunda': [{ id: '1', start: '08:00', end: '12:00' }, { id: '2', start: '13:00', end: '18:00' }],
@@ -777,25 +777,30 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                             </h1>
                         </div>
 
-                        {/* Seletor de Local - Mais compacto */}
-                        <div className="space-y-4 relative z-10">
-                            <div className="flex gap-2 p-1 bg-black/20 rounded-2xl border border-white/5 mx-auto max-w-lg">
+                        {/* Seletor de Local - Vertical para nomes longos */}
+                        <div className="space-y-4 relative z-10 w-full mt-2">
+                            <div className="flex flex-col gap-2 p-1.5 bg-black/10 rounded-2xl border border-white/5 mx-auto max-w-lg">
                                 {MOCK_LOCAIS.map(l => (
                                     <button
                                         key={l.id}
                                         onClick={() => setSelectedLocation(l.id)}
-                                        className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedLocation === l.id ? 'bg-white text-[#1A365D] shadow-xl' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                        className={`w-full py-4 px-6 rounded-xl text-[11px] font-black uppercase tracking-[0.12em] transition-all duration-300 flex items-center justify-between ${selectedLocation === l.id ? 'bg-white text-[#1A365D] shadow-xl scale-[1.01]' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
                                     >
-                                        {l.nome}
+                                        <span className="truncate pr-4">{l.nome}</span>
+                                        {selectedLocation === l.id ? (
+                                            <div className="w-2 h-2 rounded-full bg-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
+                                        ) : (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                                        )}
                                     </button>
                                 ))}
                             </div>
                             <div className="flex justify-center">
-                                <button 
+                                <button
                                     onClick={() => toast.info('Redirecionando para Gestão de Unidades...', {
                                         style: { background: '#2D5284', color: '#fff', fontSize: '12px' }
                                     })}
-                                    className="text-[#D4AF37] hover:text-white text-[9.5px] font-black uppercase tracking-[0.15em] transition-colors flex items-center gap-1.5 active:scale-95"
+                                    className="text-[#D4AF37] hover:text-white text-[9px] font-black uppercase tracking-[0.15em] transition-colors flex items-center gap-1.5 active:scale-95"
                                 >
                                     <MapPin className="w-3 h-3" />
                                     Ir para gerenciamento de locais
@@ -831,7 +836,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         <section className="space-y-5">
                             <div className="flex items-center gap-3 border-b border-[#1A365D]/5 pb-4">
                                 <Calendar className="w-5 h-5 text-[#D4AF37]" />
-                                <h4 className="text-[#1A365D] font-black text-[14px] uppercase tracking-[0.15em] px-1">Grade de Atendimento Semanal</h4>
+                                <h4 className="text-[#1A365D] font-black text-[11px] uppercase tracking-[0.15em] px-1">Grade de Atendimento Semanal</h4>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -867,7 +872,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                                 {availability[day].map((slot, idx) => (
                                                     <div key={slot.id} className="flex items-center gap-3">
                                                         <div className="flex-1 bg-gradient-to-r from-[#1A365D]/5 to-transparent border border-[#1A365D]/5 rounded-2xl px-5 py-4 flex items-center justify-between gap-4">
-                                                            <select 
+                                                            <select
                                                                 value={slot.start}
                                                                 onChange={(e) => {
                                                                     const newSlots = [...availability[day]]
@@ -881,7 +886,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                                                 ))}
                                                             </select>
                                                             <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
-                                                            <select 
+                                                            <select
                                                                 value={slot.end}
                                                                 onChange={(e) => {
                                                                     const newSlots = [...availability[day]]
@@ -895,7 +900,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                                                 ))}
                                                             </select>
                                                         </div>
-                                                        <button 
+                                                        <button
                                                             onClick={() => {
                                                                 const newSlots = availability[day].filter(s => s.id !== slot.id)
                                                                 setAvailability(prev => ({ ...prev, [day]: newSlots }))
@@ -906,12 +911,12 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <button 
+                                                <button
                                                     onClick={() => {
                                                         const newId = Math.random().toString()
-                                                        setAvailability(prev => ({ 
-                                                            ...prev, 
-                                                            [day]: [...prev[day], { id: newId, start: '13:00', end: '18:00' }] 
+                                                        setAvailability(prev => ({
+                                                            ...prev,
+                                                            [day]: [...prev[day], { id: newId, start: '13:00', end: '18:00' }]
                                                         }))
                                                     }}
                                                     className="w-full py-5 border-2 border-dashed border-[#1A365D]/10 rounded-[24px] text-[11px] font-black text-[#1A365D]/30 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/5 uppercase tracking-[0.25em] transition-all"
@@ -944,7 +949,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                                 <p className="text-red-500/60 text-[11px] font-black uppercase tracking-widest mt-0.5">{block.startDate}</p>
                                             </div>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => setBlocks(prev => prev.filter(b => b.id !== block.id))}
                                             className="w-10 h-10 rounded-xl hover:bg-red-50 text-[#1A365D]/10 hover:text-red-500 transition-all"
                                         >
@@ -952,13 +957,13 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                         </button>
                                     </div>
                                 ))}
-                                <button 
+                                <button
                                     onClick={() => {
-                                        const newBlock = { 
-                                            id: Math.random().toString(), 
-                                            title: 'Novo Bloqueio', 
-                                            type: 'dia', 
-                                            startDate: new Date().toISOString().split('T')[0] 
+                                        const newBlock = {
+                                            id: Math.random().toString(),
+                                            title: 'Novo Bloqueio',
+                                            type: 'dia',
+                                            startDate: new Date().toISOString().split('T')[0]
                                         }
                                         setBlocks(prev => [...prev, newBlock])
                                         toast.info('Novo bloqueio adicionado!')
@@ -971,9 +976,9 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         </section>
                     </div>
 
-                    {/* Footer Fixo */}
-                    <div className="fixed bottom-0 left-0 right-0 p-8 border-t border-white/80 bg-white/70 backdrop-blur-3xl z-50">
-                        <div className="max-w-4xl mx-auto flex gap-4">
+                    {/* Footer Fixo - Posicionado ACIMA da BottomNav */}
+                    <div className="fixed bottom-24 left-0 right-0 p-8 pt-0 z-50 pointer-events-none">
+                        <div className="max-w-4xl mx-auto flex gap-4 pointer-events-auto">
                             <button
                                 onClick={() => {
                                     toast.success('Alterações salvas com sucesso!', {
@@ -981,7 +986,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                     })
                                     onClose()
                                 }}
-                                className="flex-1 py-5 bg-[#D4AF37] text-[#1A365D] rounded-[24px] font-black uppercase text-[15px] tracking-[0.2em] active:scale-[0.98] transition-all shadow-[0_15px_40px_rgba(212,175,55,0.3)] hover:brightness-105"
+                                className="flex-1 py-5 bg-[#D4AF37] text-[#1A365D] rounded-[24px] font-black uppercase text-[15px] tracking-[0.2em] active:scale-[0.98] transition-all shadow-[0_20px_50px_rgba(212,175,55,0.4)] hover:brightness-105 border border-white/20"
                             >
                                 Salvar Alterações
                             </button>
