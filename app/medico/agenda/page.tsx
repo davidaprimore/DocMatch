@@ -178,19 +178,35 @@ export default function AgendaDoDiaPage() {
 
         const years = Array.from({ length: 10 }, (_, i) => currentYear + i)
 
+        const closeCalendar = () => {
+            setIsCalendarModalOpen(false)
+            setIsBlockingMode(false)
+            setRangeStart(null)
+            setRangeEnd(null)
+        }
+
+        const handleGoToday = () => {
+            const agora = new Date()
+            setCalendarViewDate(agora)
+            setBaseDate(agora)
+            setRangeStart(null)
+            setRangeEnd(null)
+            if (!isBlockingMode) {
+                closeCalendar()
+            }
+        }
+
         const handleDayClick = (d: number) => {
             const selectedDate = new Date(viewYear, viewMonth, d)
             
             if (!isBlockingMode) {
-                // Modo Navegação: Clica e Abre a Agenda
                 setBaseDate(selectedDate)
-                setRangeStart(selectedDate)
+                setRangeStart(null)
                 setRangeEnd(null)
-                setIsCalendarModalOpen(false)
+                closeCalendar()
                 return
             }
 
-            // Modo Bloqueio: Lógica Airbnb
             if (!rangeStart || (rangeStart && rangeEnd)) {
                 setRangeStart(selectedDate)
                 setRangeEnd(null)
@@ -221,7 +237,6 @@ export default function AgendaDoDiaPage() {
 
             if (targetDays.length === 0) return
 
-            // Validação de Conflitos
             const hasAppointments = targetDays.some(date => {
                 const daySlots = slotsCorrentes[selectedLocalId] || []
                 return daySlots.some(s => s.status === 'agendado')
@@ -242,9 +257,7 @@ export default function AgendaDoDiaPage() {
                 type: 'confirm',
                 onConfirm: () => {
                     setCalendarAlert(null)
-                    setIsBlockingMode(false)
-                    setIsCalendarModalOpen(false)
-                    // Aqui iria a lógica de persistência real
+                    closeCalendar()
                 }
             })
         }
@@ -256,11 +269,10 @@ export default function AgendaDoDiaPage() {
                         initial={{ opacity: 0 }} 
                         animate={{ opacity: 1 }} 
                         exit={{ opacity: 0 }} 
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4"
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A365D]/80 backdrop-blur-md px-4"
                         onClick={() => {
                             if (calendarAlert) return
-                            setIsCalendarModalOpen(false)
-                            setIsBlockingMode(false)
+                            closeCalendar()
                         }}
                     >
                         <motion.div 
@@ -270,43 +282,41 @@ export default function AgendaDoDiaPage() {
                             className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            
-                            {/* Alerta Customizado (Metric Glass Pro) */}
                             <AnimatePresence>
                                 {calendarAlert && (
                                     <motion.div 
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        className="absolute inset-0 z-[120] bg-[#2D5284]/95 backdrop-blur-xl flex items-center justify-center p-8"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        className="absolute inset-0 z-[120] bg-[#F8FAFC] flex items-center justify-center p-8"
                                     >
-                                        <div className="text-center">
-                                            <div className={`w-16 h-16 rounded-3xl mx-auto mb-6 flex items-center justify-center ${calendarAlert.type === 'error' ? 'bg-red-500/20 text-red-500' : 'bg-[#D4AF37]/20 text-[#D4AF37]'}`}>
-                                                {calendarAlert.type === 'error' ? <X className="w-8 h-8" /> : <CalendarDays className="w-8 h-8" />}
+                                        <div className="text-center w-full">
+                                            <div className={`w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center ${calendarAlert.type === 'error' ? 'bg-red-50 text-red-500' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}>
+                                                {calendarAlert.type === 'error' ? <X className="w-7 h-7" /> : <CalendarDays className="w-7 h-7" />}
                                             </div>
-                                            <h4 className="text-white font-black text-xl mb-3 tracking-tight">{calendarAlert.title}</h4>
-                                            <p className="text-white/60 text-sm leading-relaxed mb-8">{calendarAlert.message}</p>
+                                            <h4 className="text-[#1A365D] font-black text-lg mb-2 tracking-tight">{calendarAlert.title}</h4>
+                                            <p className="text-slate-500 text-[13px] leading-relaxed mb-8 px-4 font-medium">{calendarAlert.message}</p>
                                             
                                             <div className="flex flex-col gap-3">
                                                 {calendarAlert.type === 'confirm' ? (
                                                     <>
                                                         <button 
                                                             onClick={calendarAlert.onConfirm}
-                                                            className="w-full py-4 bg-[#D4AF37] rounded-2xl text-[#2D5284] font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-lg"
+                                                            className="w-full py-3.5 bg-[#D4AF37] rounded-xl text-[#1A365D] font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all shadow-md"
                                                         >
-                                                            Confirmar Bloqueio
+                                                            Confirmar
                                                         </button>
                                                         <button 
                                                             onClick={() => setCalendarAlert(null)}
-                                                            className="w-full py-4 bg-white/5 text-white/40 font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all"
+                                                            className="w-full py-3.5 bg-slate-100 text-slate-400 rounded-xl font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all"
                                                         >
-                                                            Cancelar
+                                                            Voltar
                                                         </button>
                                                     </>
                                                 ) : (
                                                     <button 
                                                         onClick={() => setCalendarAlert(null)}
-                                                        className="w-full py-4 bg-white/10 rounded-2xl text-white font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all"
+                                                        className="w-full py-3.5 bg-[#1A365D] rounded-xl text-white font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all"
                                                     >
                                                         Entendido
                                                     </button>
@@ -317,7 +327,6 @@ export default function AgendaDoDiaPage() {
                                 )}
                             </AnimatePresence>
 
-                            {/* Seletor de Mês/Ano (Overlay) */}
                             <AnimatePresence>
                                 {showMonthYearPicker && (
                                     <motion.div 
@@ -370,43 +379,35 @@ export default function AgendaDoDiaPage() {
                                 )}
                             </AnimatePresence>
 
-                            <div className="flex flex-col gap-4 mb-6">
-                                <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center mb-6">
+                                <button 
+                                    onClick={handlePrevMonth}
+                                    disabled={isPastMonth}
+                                    className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                                
+                                <div className="flex items-center gap-2">
                                     <button 
-                                        onClick={handlePrevMonth}
-                                        disabled={isPastMonth}
-                                        className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
+                                        onClick={handleGoToday}
+                                        className="h-7 px-3 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full text-[#D4AF37] font-black text-[9px] uppercase tracking-widest active:scale-90 transition-all focus:outline-none"
                                     >
-                                        <ChevronLeft className="w-5 h-5" />
+                                        Hoje
                                     </button>
-                                    
                                     <button 
                                         onClick={() => setShowMonthYearPicker(true)}
                                         className="flex flex-col items-center group active:scale-95 transition-transform"
                                     >
-                                        <h3 className="font-black text-white text-[16px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5 focus:outline-none">
+                                        <h3 className="font-black text-white text-[15px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5 focus:outline-none">
                                             {monthsName[viewMonth]} <span className="text-white/40">{viewYear}</span>
                                         </h3>
                                     </button>
+                                </div>
 
-                                    <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
-                                        <ChevronRight className="w-5 h-5" />
-                                    </button>
-                                </div>
-                                <div className="flex justify-center">
-                                    <button 
-                                        onClick={() => {
-                                            const agora = new Date()
-                                            setCalendarViewDate(agora)
-                                            setBaseDate(agora)
-                                            setRangeStart(agora)
-                                            setRangeEnd(null)
-                                        }}
-                                        className="px-4 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full text-[#D4AF37] font-black text-[10px] uppercase tracking-widest active:scale-90 transition-all"
-                                    >
-                                        Hoje
-                                    </button>
-                                </div>
+                                <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
                             </div>
 
                             <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
