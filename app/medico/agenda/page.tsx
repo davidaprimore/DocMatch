@@ -727,49 +727,42 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
     return (
         <AnimatePresence>
             <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
-                className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1A365D]/80 backdrop-blur-md px-4 overflow-y-auto pt-10 pb-10"
-                onClick={onClose}
+                initial={{ opacity: 0, y: 100 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                exit={{ opacity: 0, y: 100 }} 
+                className="fixed inset-0 z-[200] w-full h-full bg-[#1A365D] overflow-hidden flex flex-col"
             >
-                {/* Fog Animations - Suavizadas */}
-                <div className="fixed inset-0 pointer-events-none overflow-hidden flex items-center justify-center z-0">
-                    <motion.div animate={{ scale: [1, 1.1, 1], opacity: [0.05, 0.1, 0.05] }} transition={{ duration: 10, repeat: Infinity }} className="absolute -top-32 -left-32 w-[400px] h-[400px] bg-white rounded-full blur-[100px]" />
-                    <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.03, 0.07, 0.03] }} transition={{ duration: 15, repeat: Infinity }} className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-[#D4AF37]/20 rounded-full blur-[100px]" />
+                {/* Fog Animations - Expandidas para Tela Cheia */}
+                <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                    <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.12, 0.05] }} transition={{ duration: 15, repeat: Infinity }} className="absolute -top-64 -left-64 w-[800px] h-[800px] bg-white rounded-full blur-[150px]" />
+                    <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.04, 0.08, 0.04] }} transition={{ duration: 20, repeat: Infinity }} className="absolute -bottom-32 -right-32 w-[600px] h-[600px] bg-[#D4AF37]/20 rounded-full blur-[150px]" />
                 </div>
 
-                <motion.div 
-                    initial={{ scale: 0.95, y: 30, opacity: 0 }} 
-                    animate={{ scale: 1, y: 0, opacity: 1 }} 
-                    exit={{ scale: 0.95, y: 30, opacity: 0 }} 
-                    className="bg-[#2D5284] w-full max-w-xl rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.4)] border border-white/10 overflow-hidden flex flex-col relative z-10 max-h-[90vh]"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    {/* Header Refinado */}
-                    <div className="p-8 pb-5 relative border-b border-white/5 bg-white/5">
+                <div className="flex-1 flex flex-col relative z-10 max-w-2xl mx-auto w-full">
+                    {/* Header Full Screen */}
+                    <div className="p-8 pb-5 pt-10 border-b border-white/5">
                         <div className="flex justify-between items-start mb-6">
                             <div>
                                 <div className="flex items-center gap-2 mb-1.5">
                                     <div className="w-6 h-6 rounded-md bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
                                         <Calendar className="w-3.5 h-3.5" />
                                     </div>
-                                    <p className="text-[#D4AF37] text-[9.5px] font-black uppercase tracking-[0.25em]">Gestão Avançada</p>
+                                    <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.25em]">Configuração Geral</p>
                                 </div>
-                                <h3 className="text-white text-2xl font-black tracking-tight leading-none">Expediente <span className="text-[#D4AF37]">Médico</span></h3>
+                                <h3 className="text-white text-3xl font-black tracking-tight leading-none">Expediente <span className="text-[#D4AF37]">Médico</span></h3>
                             </div>
-                            <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 active:scale-90 transition-all">
-                                <X className="w-5 h-5" />
+                            <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 active:scale-90 transition-all">
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
 
-                        {/* Seletor de Local - Menor */}
+                        {/* Seletor de Local - Full Width */}
                         <div className="flex gap-1.5 p-1 bg-black/20 rounded-2xl border border-white/5">
                             {MOCK_LOCAIS.map(l => (
                                 <button 
                                     key={l.id} 
                                     onClick={() => setSelectedLocation(l.id)}
-                                    className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedLocation === l.id ? 'bg-white text-[#1A365D] shadow-md' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${selectedLocation === l.id ? 'bg-white text-[#1A365D] shadow-md' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
                                 >
                                     {l.nome}
                                 </button>
@@ -777,73 +770,73 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         </div>
                     </div>
 
-                    {/* Conteúdo Scrollável - Paddings reduzidos */}
-                    <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8 no-scrollbar">
+                    {/* Conteúdo Scrollável */}
+                    <div className="flex-1 overflow-y-auto px-8 py-8 space-y-10 no-scrollbar">
                         
                         {/* Seção: Duração */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3">
-                                <Clock className="w-4 h-4 text-[#D4AF37]" />
-                                <h4 className="text-white/80 font-black text-[11px] uppercase tracking-widest px-1">Duração da Consulta</h4>
+                        <section className="space-y-5">
+                            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                                <Clock className="w-5 h-5 text-[#D4AF37]" />
+                                <h4 className="text-white/90 font-black text-xs uppercase tracking-[0.2em] px-1">Duração da Consulta</h4>
                             </div>
-                            <div className="grid grid-cols-4 gap-2.5">
+                            <div className="grid grid-cols-4 gap-3">
                                 {['15', '30', '45', '60'].map(dur => (
                                     <button 
                                         key={dur} 
                                         onClick={() => setDuration(dur)}
-                                        className={`py-3.5 rounded-xl border transition-all flex flex-col items-center justify-center ${duration === dur ? 'bg-[#D4AF37] border-[#D4AF37] shadow-lg' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                        className={`py-5 rounded-2xl border transition-all flex flex-col items-center justify-center ${duration === dur ? 'bg-[#D4AF37] border-[#D4AF37] shadow-[0_8px_30px_rgba(212,175,55,0.3)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                                     >
-                                        <span className={`text-base font-black ${duration === dur ? 'text-[#1A365D]' : 'text-white'}`}>{dur}</span>
-                                        <span className={`text-[8px] uppercase font-bold tracking-widest ${duration === dur ? 'text-[#1A365D]/60' : 'text-white/40'}`}>Min</span>
+                                        <span className={`text-xl font-black ${duration === dur ? 'text-[#1A365D]' : 'text-white'}`}>{dur}</span>
+                                        <span className={`text-[9.5px] uppercase font-bold tracking-widest ${duration === dur ? 'text-[#1A365D]/60' : 'text-white/40'}`}>Min</span>
                                     </button>
                                 ))}
                             </div>
                         </section>
 
                         {/* Seção: Grade Semanal */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3">
-                                <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                                <h4 className="text-white/80 font-black text-[11px] uppercase tracking-widest px-1">Grade Semanal</h4>
+                        <section className="space-y-5">
+                            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                                <Calendar className="w-5 h-5 text-[#D4AF37]" />
+                                <h4 className="text-white/90 font-black text-xs uppercase tracking-[0.2em] px-1">Grade Semanal</h4>
                             </div>
                             
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {diasSemana.map(day => (
-                                    <div key={day} className="p-4 bg-white/5 border border-white/10 rounded-[24px] transition-all hover:border-white/20">
+                                    <div key={day} className="p-6 bg-white/5 border border-white/10 rounded-[32px] transition-all hover:bg-white/[0.07] group">
                                         <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-[10px] uppercase transition-all ${availability[day].length > 0 ? 'bg-[#D4AF37] text-[#1A365D]' : 'bg-white/5 text-white/20'}`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs uppercase transition-all ${availability[day].length > 0 ? 'bg-[#D4AF37] text-[#1A365D]' : 'bg-white/5 text-white/20'}`}>
                                                     {day.substring(0, 3)}
                                                 </div>
                                                 <div>
-                                                    <h5 className="text-white font-bold text-sm tracking-tight">{day}</h5>
-                                                    <p className="text-white/30 text-[9px] font-black uppercase tracking-widest">
-                                                        {availability[day].length > 0 ? `${availability[day].length} Faixas` : 'Folga'}
+                                                    <h5 className="text-white font-bold text-base tracking-tight">{day}</h5>
+                                                    <p className="text-white/30 text-[10px] font-black uppercase tracking-widest mt-0.5">
+                                                        {availability[day].length > 0 ? `${availability[day].length} Faixas de Atendimento` : 'Folga'}
                                                     </p>
                                                 </div>
                                             </div>
                                             
-                                            <label className="relative inline-flex items-center cursor-pointer scale-75">
+                                            <label className="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" className="sr-only peer" checked={availability[day].length > 0} onChange={() => {}} />
-                                                <div className="w-12 h-7 bg-white/10 rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:bg-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white/20 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+                                                <div className="w-14 h-8 bg-white/10 rounded-full peer peer-checked:after:translate-x-[24px] peer-checked:after:bg-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white/20 after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#D4AF37]"></div>
                                             </label>
                                         </div>
 
                                         {availability[day].length > 0 && (
-                                            <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+                                            <div className="mt-6 pt-6 border-t border-white/5 space-y-3">
                                                 {availability[day].map((slot, idx) => (
-                                                    <div key={slot.id} className="flex items-center gap-2">
-                                                        <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 flex items-center justify-between">
-                                                            <span className="text-white/90 font-bold text-xs">{slot.start}</span>
-                                                            <div className="w-1 h-1 rounded-full bg-white/10" />
-                                                            <span className="text-white/90 font-bold text-xs">{slot.end}</span>
+                                                    <div key={slot.id} className="flex items-center gap-3">
+                                                        <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between">
+                                                            <span className="text-white/90 font-black text-sm">{slot.start}</span>
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                                                            <span className="text-white/90 font-black text-sm">{slot.end}</span>
                                                         </div>
-                                                        <button className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 transition-all">
-                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        <button className="w-11 h-11 bg-white/5 rounded-xl border border-white/5 flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all">
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <button className="w-full py-2.5 bg-white/5 border border-white/10 border-dashed rounded-xl text-[9px] font-black text-[#D4AF37] hover:bg-white/10 uppercase tracking-widest transition-all">
+                                                <button className="w-full py-4 bg-white/5 border border-white/10 border-dashed rounded-2xl text-[10px] font-black text-[#D4AF37] hover:bg-[#D4AF37]/5 uppercase tracking-[0.25em] transition-all">
                                                     + Adicionar Período
                                                 </button>
                                             </div>
@@ -854,51 +847,57 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         </section>
 
                         {/* Seção: Bloqueios */}
-                        <section className="space-y-4">
-                            <div className="flex items-center gap-2.5 border-b border-white/5 pb-3">
-                                <CalendarX2 className="w-4 h-4 text-red-400" />
-                                <h4 className="text-red-400/80 font-black text-[11px] uppercase tracking-widest px-1">Bloqueios</h4>
+                        <section className="space-y-5">
+                            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                                <CalendarX2 className="w-5 h-5 text-red-500" />
+                                <h4 className="text-red-500/80 font-black text-xs uppercase tracking-[0.2em] px-1">Exceções e Bloqueios</h4>
                             </div>
                             
-                            <div className="grid grid-cols-1 gap-2.5">
+                            <div className="space-y-4">
                                 {blocks.map(block => (
-                                    <div key={block.id} className="p-4 bg-red-400/5 border border-red-400/10 rounded-[20px] flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 bg-red-400/10 rounded-lg flex items-center justify-center text-red-400">
-                                                <CalendarX2 className="w-4 h-4" />
+                                    <div key={block.id} className="p-6 bg-red-500/5 border border-red-500/10 rounded-[32px] flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-11 h-11 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400">
+                                                <CalendarX2 className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <h5 className="text-white font-bold text-xs">{block.title}</h5>
-                                                <p className="text-red-400/40 text-[9px] font-black uppercase tracking-widest">{block.startDate}</p>
+                                                <h5 className="text-white font-bold text-sm tracking-tight">{block.title}</h5>
+                                                <p className="text-red-400/40 text-[10px] font-black uppercase tracking-widest">{block.startDate}</p>
                                             </div>
                                         </div>
-                                        <button className="p-1.5 text-white/20 hover:text-red-400 transition-colors">
+                                        <button className="p-2 text-white/20 hover:text-red-400 transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 ))}
-                                <button className="w-full py-3 bg-red-400/10 border border-red-400/20 border-dashed rounded-xl text-[9px] font-black text-red-400 hover:bg-red-400/20 uppercase tracking-widest transition-all">
-                                    + Novo Bloqueio
+                                <button className="w-full py-4 bg-red-500/10 border border-red-500/20 border-dashed rounded-2xl text-[10px] font-black text-red-400 hover:bg-red-500/20 uppercase tracking-[0.25em] transition-all">
+                                    + Adicionar Bloqueio Rápido
                                 </button>
                             </div>
                         </section>
                     </div>
 
-                    {/* Footer Refinado */}
-                    <div className="p-8 py-6 border-t border-white/5 bg-black/20 backdrop-blur-md">
+                    {/* Footer Fixo Full Width */}
+                    <div className="p-8 py-6 border-t border-white/5 bg-black/20 backdrop-blur-xl">
                         <button 
                             onClick={() => {
                                 toast.success('Expediente atualizado!', {
-                                    style: { background: '#1A365D', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', fontSize: '12px' }
+                                    style: { 
+                                        background: '#1A365D', 
+                                        color: '#fff', 
+                                        border: '1px solid rgba(255,255,255,0.1)', 
+                                        fontSize: '12px',
+                                        fontWeight: '800'
+                                    }
                                 })
                                 onClose()
                             }}
-                            className="w-full py-3.5 bg-[#D4AF37] text-[#1A365D] rounded-2xl font-black uppercase text-[11px] tracking-widest active:scale-[0.98] transition-all shadow-lg hover:brightness-105"
+                            className="w-full py-5 bg-[#D4AF37] text-[#1A365D] rounded-2xl font-black uppercase text-xs tracking-[0.25em] active:scale-[0.98] transition-all shadow-2xl hover:brightness-105"
                         >
                             Salvar Alterações
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </motion.div>
         </AnimatePresence>
     )
