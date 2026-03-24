@@ -134,8 +134,8 @@ export default function MedicoDashboardPage() {
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-[18px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg font-black text-white shadow-inner overflow-hidden relative">
-                                {(user as any)?.user_metadata?.foto_url || (user as any)?.user_metadata?.foto ? (
-                                    <Image src={(user as any)?.user_metadata?.foto_url || (user as any)?.user_metadata?.foto} alt="Avatar" fill className="object-cover" />
+                                {user?.foto ? (
+                                    <img src={user.foto} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     firstName.substring(0, 2).toUpperCase()
                                 )}
@@ -292,55 +292,55 @@ export default function MedicoDashboardPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-3 px-1">
+                        <div className="space-y-1 px-0">
                             {/* Status: Agora */}
-                            <div className="flex items-stretch bg-white p-3 rounded-[20px] shadow-[0_8px_25px_rgba(45,82,132,0.08)] relative overflow-hidden border-l border-t border-b border-r border-[#D4AF37]/70">
-                                <div className="absolute left-0 top-0 bottom-0 w-[5px] bg-[#D4AF37] rounded-l-[20px]" />
-                                <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#D4AF37]/20 pr-3 pl-1">
-                                    <span className="text-[#2D5284] font-bold text-[15px]">10:30</span>
+                            <div className="flex items-stretch bg-white py-1.5 px-3 rounded-[12px] shadow-[0_4px_15px_rgba(45,82,132,0.06)] relative overflow-hidden border border-[#D4AF37]/40">
+                                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#D4AF37] rounded-l-[12px]" />
+                                <div className="flex flex-col items-center justify-center min-w-[65px] border-r border-[#D4AF37]/20 pr-3 pl-1">
+                                    <span className="text-[#2D5284] font-bold text-[13px]">10:30</span>
                                 </div>
                                 <div className="flex-1 flex flex-col justify-center pl-3">
-                                    <div className="flex items-center gap-2 mb-1.5">
-                                        <span className="text-[#2D5284] font-bold text-[14px] leading-tight">Carlos Silva</span>
-                                        <span className="text-[#D4AF37] border border-[#D4AF37]/70 bg-[#D4AF37]/10 text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md">Agora</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[#2D5284] font-bold text-[12px] leading-tight">Carlos Silva</span>
+                                        <span className="text-[#D4AF37] border border-[#D4AF37]/50 bg-[#D4AF37]/10 text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md">Agora</span>
                                     </div>
-                                    <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
+                                    <span className="text-[#8BA0B8] text-[9px] font-medium flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Clínica Central</span>
                                 </div>
                             </div>
 
                             {/* Status: Futuro e outro local */}
-                            <div className="flex items-stretch bg-white/40 p-3 rounded-[20px] border border-[#2D5284]/10">
-                                <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/10 pr-3">
-                                    <span className="text-[#2D5284] font-bold text-[15px]">14:00</span>
+                            <div className="flex items-stretch bg-white/50 py-1.5 px-3 rounded-[12px] border border-[#2D5284]/10">
+                                <div className="flex flex-col items-center justify-center min-w-[65px] border-r border-[#2D5284]/10 pr-3">
+                                    <span className="text-[#2D5284] font-bold text-[13px]">14:00</span>
                                 </div>
                                 <div className="flex-1 flex flex-col justify-center pl-3">
-                                    <span className="text-[#2D5284] font-bold text-[14px] leading-tight mb-1">Fernanda Lima</span>
-                                    <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Consultório Flamboyant</span>
+                                    <span className="text-[#2D5284] font-bold text-[12px] leading-tight mb-0.5">Fernanda Lima</span>
+                                    <span className="text-[#8BA0B8] text-[9px] font-medium flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Consultório Flamboyant</span>
                                 </div>
                             </div>
 
                             {/* Novo MOCK: 15:30 */}
-                            <div className="flex items-stretch bg-white/40 p-3 rounded-[20px] border border-[#2D5284]/10">
-                                <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/10 pr-3">
-                                    <span className="text-[#2D5284] font-bold text-[15px]">15:30</span>
+                            <div className="flex items-stretch bg-white/50 py-1.5 px-3 rounded-[12px] border border-[#2D5284]/10">
+                                <div className="flex flex-col items-center justify-center min-w-[65px] border-r border-[#2D5284]/10 pr-3">
+                                    <span className="text-[#2D5284] font-bold text-[13px]">15:30</span>
                                 </div>
                                 <div className="flex-1 flex flex-col justify-center pl-3">
-                                    <span className="text-[#2D5284] font-bold text-[14px] leading-tight mb-1">Ricardo Gomes</span>
-                                    <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
+                                    <span className="text-[#2D5284] font-bold text-[12px] leading-tight mb-0.5">Ricardo Gomes</span>
+                                    <span className="text-[#8BA0B8] text-[9px] font-medium flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Clínica Central</span>
                                 </div>
                             </div>
 
                             {/* Novo MOCK: 17:00 */}
-                            <div className="flex items-stretch bg-[#F4F7FA] p-3 rounded-[20px] border border-[#2D5284]/5">
-                                <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/10 pr-3">
-                                    <span className="text-[#2D5284] font-bold text-[15px]">17:00</span>
+                            <div className="flex items-stretch bg-[#F4F7FA]/60 py-1.5 px-3 rounded-[12px] border border-[#2D5284]/5">
+                                <div className="flex flex-col items-center justify-center min-w-[65px] border-r border-[#2D5284]/10 pr-3">
+                                    <span className="text-[#2D5284] font-bold text-[13px]">17:00</span>
                                 </div>
                                 <div className="flex-1 flex flex-col justify-center pl-3">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-[#2D5284] font-bold text-[14px] leading-tight">Marina Costa</span>
-                                        <span className="text-[#2D5284] border border-[#2D5284]/20 bg-[#2D5284]/5 text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md">1ª Consulta</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[#2D5284] font-bold text-[12px] leading-tight">Marina Costa</span>
+                                        <span className="text-[#2D5284] border border-[#2D5284]/20 bg-[#2D5284]/5 text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md">1ª Consulta</span>
                                     </div>
-                                    <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Clínica Central</span>
+                                    <span className="text-[#8BA0B8] text-[9px] font-medium flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Clínica Central</span>
                                 </div>
                             </div>
                         </div>
