@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth'
 export default function MedicoDashboardPage() {
     const router = useRouter()
     const { user } = useAuth()
-    
+
     // Nomenclatura dinâmica com base no banco / mock
     const fullName = (user as any)?.user_metadata?.nome || (user as any)?.user_metadata?.first_name || "Joanna Carolina Guarita Douat"
     const prefixo = (user as any)?.user_metadata?.prefixo || "Dra."
@@ -123,7 +123,7 @@ export default function MedicoDashboardPage() {
                 <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="bg-gradient-to-r from-[#D4AF37] to-[#B8860B] py-2 px-4 flex items-center justify-between shadow-[0_4px_15px_rgba(212,175,55,0.2)] relative z-50">
                     <div className="flex items-center gap-2">
                         <CalendarClock className="w-3.5 h-3.5 text-[#2D5284]" />
-                        <span className="text-[#2D5284] font-black text-[10px] sm:text-[10px] uppercase tracking-widest mt-0.5">Plano Basic - Degustação: 24 dias restantes</span>
+                        <span className="text-[#2D5284] font-black text-[9px] sm:text-[10px] uppercase tracking-widest mt-0.5">Plano Basic - Degustação: 24 dias restantes</span>
                     </div>
                     <button className="bg-[#2D5284] text-[#D4AF37] text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:bg-white hover:text-[#2D5284] transition-colors shadow-sm">Upgrade</button>
                 </motion.div>
@@ -133,14 +133,18 @@ export default function MedicoDashboardPage() {
                     <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-[18px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg font-black text-white shadow-inner">
-                                {firstName.substring(0, 2).toUpperCase()}
+                            <div className="w-14 h-14 rounded-[18px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg font-black text-white shadow-inner overflow-hidden relative">
+                                {(user as any)?.user_metadata?.foto_url || (user as any)?.user_metadata?.foto ? (
+                                    <Image src={(user as any)?.user_metadata?.foto_url || (user as any)?.user_metadata?.foto} alt="Avatar" fill className="object-cover" />
+                                ) : (
+                                    firstName.substring(0, 2).toUpperCase()
+                                )}
                             </div>
                             <div>
-                                <h1 className="text-white font-black text-[20px] tracking-tight leading-tight flex items-center gap-1.5 uppercase">
+                                <h1 className="text-white font-black text-[17px] tracking-tight leading-tight flex items-center gap-1.5 uppercase">
                                     Doc<span className="text-[#D4AF37]">Match</span>
                                 </h1>
-                                <p className="text-white/90 font-bold text-[14px] mt-0.5 leading-snug tracking-wide">
+                                <p className="text-white/90 font-black text-[16px] mt-0.5 leading-snug tracking-wide">
                                     {displayName}
                                 </p>
                             </div>
@@ -183,7 +187,7 @@ export default function MedicoDashboardPage() {
                     </div>
                 </header>
 
-                <main className="px-5 mt-4 space-y-4 relative z-10">
+                <main className="px-5 mt-3 space-y-3 relative z-10">
                     {/* 0. Banner de Instalação PWA */}
                     {showInstallBanner && (
                         <motion.section
@@ -218,7 +222,7 @@ export default function MedicoDashboardPage() {
                     )}
 
                     {/* 0.5. Métrica de Sucesso Comercial / Ocupação (Sem Card) */}
-                    <motion.section initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }} className="mb-6 mt-2 relative z-10 px-1">
+                    <motion.section initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }} className="mb-3 mt-1 relative z-10 px-1">
                         <div className="flex justify-between items-end mb-3">
                             <div>
                                 <div className="flex items-center gap-1.5 mb-1">
@@ -275,7 +279,7 @@ export default function MedicoDashboardPage() {
                     </motion.section>
 
                     {/* 2. TIMELINE DO DIA (Agenda Consolidada) */}
-                    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 p-5 rounded-[32px] shadow-[0_8px_30px_rgba(32,45,64,0.04)] border border-[#D4AF37]/50 relative z-10 w-[calc(100%+8px)] -ml-1">
+                    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/10 p-4 rounded-[32px] shadow-[0_8px_30px_rgba(32,45,64,0.04)] border border-[#D4AF37]/50 relative z-10 w-[calc(100%+8px)] -ml-1">
                         <div className="flex justify-between items-center mb-5 px-1">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full border border-[#2D5284]/50 flex items-center justify-center bg-white/50">
@@ -314,7 +318,7 @@ export default function MedicoDashboardPage() {
                                     <span className="text-[#8BA0B8] text-[11px] font-medium flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Consultório Flamboyant</span>
                                 </div>
                             </div>
-                            
+
                             {/* Novo MOCK: 15:30 */}
                             <div className="flex items-stretch bg-white/40 p-3 rounded-[20px] border border-[#2D5284]/10">
                                 <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-[#2D5284]/10 pr-3">
@@ -349,7 +353,7 @@ export default function MedicoDashboardPage() {
                     </motion.section>
 
                     {/* 2.5 AVISOS & OPORTUNIDADES (Insights Automáticos) */}
-                    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-3 mb-6">
+                    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-3 mb-4">
                         {/* Radar 1 - Retornos */}
                         <div className="bg-gradient-to-r from-white to-[#F8F6F0] p-4 rounded-[24px] shadow-[0_8px_25px_rgba(45,82,132,0.04)] border border-[#D4AF37]/20 relative z-10 w-full">
                             <div className="flex items-start gap-4">

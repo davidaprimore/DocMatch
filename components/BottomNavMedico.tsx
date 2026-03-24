@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Calendar, PlusSquare, Users, Settings } from 'lucide-react'
+import { Home, Calendar, MessageSquare, Users, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const menuItems = [
     { id: 'inicio', label: 'Início', icon: Home, href: '/medico/dashboard' },
     { id: 'agenda', label: 'Agenda', icon: Calendar, href: '/medico/agenda' },
-    { id: 'receita', label: 'Receita', icon: PlusSquare, href: '/medico/receitas/nova' },
+    { id: 'mensagens', label: 'Mensagens', icon: MessageSquare, href: '/medico/mensagens' },
     { id: 'pacientes', label: 'Pacientes', icon: Users, href: '/medico/pacientes' },
     { id: 'perfil', label: 'Perfil', icon: Settings, href: '/medico/perfil' },
 ]
