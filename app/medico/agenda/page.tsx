@@ -135,41 +135,153 @@ export default function AgendaDoDiaPage() {
         }
     }
 
+    // Estados para o Calendário Dinâmico
+    const [calendarViewDate, setCalendarViewDate] = useState(new Date())
+    const [showMonthYearPicker, setShowMonthYearPicker] = useState(false)
+
+    // Helper para gerar dias do mês no calendário
+    const getDaysInMonth = (year: number, month: number) => {
+        const date = new Date(year, month + 1, 0)
+        return date.getDate()
+    }
+    const getFirstDayOfMonth = (year: number, month: number) => {
+        const date = new Date(year, month, 1)
+        return date.getDay()
+    }
+
     // Modal de Calendário Muito Mais Premium e Nativo
     const CustomCalendarModal = () => {
-        const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1)
+        const viewYear = calendarViewDate.getFullYear()
+        const viewMonth = calendarViewDate.getMonth()
+        const today = new Date()
+        const currentYear = today.getFullYear()
+        const currentMonth = today.getMonth()
+
+        const isPastMonth = viewYear < currentYear || (viewYear === currentYear && viewMonth <= currentMonth)
+        
+        const daysCount = getDaysInMonth(viewYear, viewMonth)
+        const firstDay = getFirstDayOfMonth(viewYear, viewMonth)
+        const days = Array.from({ length: daysCount }, (_, i) => i + 1)
+        const blanks = Array.from({ length: firstDay }, (_, i) => i)
+
+        const handlePrevMonth = () => {
+            if (isPastMonth) return
+            setCalendarViewDate(new Date(viewYear, viewMonth - 1, 1))
+        }
+        const handleNextMonth = () => {
+            setCalendarViewDate(new Date(viewYear, viewMonth + 1, 1))
+        }
+
+        const years = Array.from({ length: 10 }, (_, i) => currentYear + i)
+
         return (
             <AnimatePresence>
                 {isCalendarModalOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4">
-                        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20">
+                        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden">
+                            
+                            {/* Seletor de Mês/Ano (Overlay) */}
+                            <AnimatePresence>
+                                {showMonthYearPicker && (
+                                    <motion.div 
+                                        initial={{ y: '100%' }} 
+                                        animate={{ y: 0 }} 
+                                        exit={{ y: '100%' }}
+                                        className="absolute inset-0 z-[110] bg-[#2D5284] p-6 flex flex-col"
+                                    >
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h4 className="text-[#D4AF37] font-black uppercase text-[12px] tracking-widest">Selecionar Período</h4>
+                                            <button onClick={() => setShowMonthYearPicker(false)} className="text-white/40"><X className="w-5 h-5"/></button>
+                                        </div>
+                                        
+                                        <div className="flex-1 overflow-y-auto space-y-6 no-scrollbar">
+                                            <div>
+                                                <p className="text-white/30 text-[10px] font-black uppercase mb-3">Meses</p>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {monthsName.map((m, i) => {
+                                                        const isPast = viewYear === currentYear && i < currentMonth
+                                                        return (
+                                                            <button 
+                                                                key={m} 
+                                                                disabled={isPast}
+                                                                onClick={() => { setCalendarViewDate(new Date(viewYear, i, 1)); setShowMonthYearPicker(false) }}
+                                                                className={`py-3 rounded-xl text-[12px] font-bold transition-all ${viewMonth === i ? 'bg-[#D4AF37] text-[#2D5284]' : isPast ? 'text-white/10' : 'text-white/60 bg-white/5'}`}
+                                                            >
+                                                                {m.substring(0, 3)}
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                            
+                                            <div>
+                                                <p className="text-white/30 text-[10px] font-black uppercase mb-3">Anos</p>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {years.map(y => (
+                                                        <button 
+                                                            key={y} 
+                                                            onClick={() => { setCalendarViewDate(new Date(y, viewMonth, 1)); setShowMonthYearPicker(false) }}
+                                                            className={`py-3 rounded-xl text-[12px] font-bold transition-all ${viewYear === y ? 'bg-[#D4AF37] text-[#2D5284]' : 'text-white/60 bg-white/5'}`}
+                                                        >
+                                                            {y}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <div className="flex justify-between items-center mb-6">
-                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronLeft className="w-5 h-5" /></button>
-                                <h3 className="font-black text-white text-[16px]">Março 2026</h3>
-                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronRight className="w-5 h-5" /></button>
+                                <button 
+                                    onClick={handlePrevMonth}
+                                    disabled={isPastMonth}
+                                    className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setShowMonthYearPicker(true)}
+                                    className="flex flex-col items-center group active:scale-95 transition-transform"
+                                >
+                                    <h3 className="font-black text-white text-[16px] group-hover:text-[#D4AF37] transition-colors">{monthsName[viewMonth]}</h3>
+                                    <span className="text-white/40 text-[11px] font-bold">{viewYear}</span>
+                                </button>
+
+                                <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
                             </div>
+
                             <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
                                 <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
                             </div>
+
                             <div className="grid grid-cols-7 gap-2 text-center">
-                                {Array.from({ length: 2 }).map((_, i) => <div key={`empty-${i}`} />)}
-                                {daysInMonth.map(d => (
-                                    <button
-                                        key={d}
-                                        onClick={() => {
-                                            const novo = new Date(baseDate)
-                                            novo.setDate(d)
-                                            setBaseDate(novo)
-                                            setIsCalendarModalOpen(false)
-                                        }}
-                                        className={`h-10 rounded-full text-[14px] font-bold flex items-center justify-center transition-all 
-                                            ${d === baseDate.getDate() ? 'bg-[#D4AF37] text-[#2D5284] shadow-[0_4px_15px_rgba(212,175,55,0.4)]' : 'text-white/80 hover:bg-white/10 active:scale-90'}
-                                            ${d < new Date().getDate() ? 'opacity-30 pointer-events-none' : ''}`}
-                                    >
-                                        {d}
-                                    </button>
-                                ))}
+                                {blanks.map(i => <div key={`empty-${i}`} />)}
+                                {days.map(d => {
+                                    const isSelected = isSameDate(new Date(viewYear, viewMonth, d), baseDate)
+                                    const isDayPast = viewYear === currentYear && viewMonth === currentMonth && d < today.getDate()
+                                    return (
+                                        <button
+                                            key={d}
+                                            disabled={isDayPast}
+                                            onClick={() => {
+                                                setBaseDate(new Date(viewYear, viewMonth, d))
+                                                setIsCalendarModalOpen(false)
+                                            }}
+                                            className={`h-10 rounded-full text-[14px] font-bold flex items-center justify-center transition-all 
+                                                ${isSelected ? 'bg-[#D4AF37] text-[#2D5284] shadow-[0_4px_15px_rgba(212,175,55,0.4)] scale-110' : 'text-white/80 hover:bg-white/10 active:scale-90'}
+                                                ${isDayPast ? 'opacity-20 grayscale pointer-events-none' : ''}`}
+                                        >
+                                            {d}
+                                        </button>
+                                    )
+                                })}
                             </div>
+
                             <button onClick={() => setIsCalendarModalOpen(false)} className="w-full mt-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white font-black uppercase text-[12px] tracking-widest active:scale-95 transition-transform">
                                 Fechar Calendário
                             </button>
@@ -194,7 +306,7 @@ export default function AgendaDoDiaPage() {
                         <h1 className="text-white font-black text-lg tracking-tight uppercase">Minha Agenda</h1>
                     </div>
                     <div>
-                        <h1 className="text-white font-black text-[14px] tracking-tight flex items-center gap-1 uppercase">
+                        <h1 className="text-white font-black text-[16px] tracking-tight flex items-center gap-1 uppercase">
                             Doc<span className="text-[#D4AF37]">Match</span>
                         </h1>
                     </div>
