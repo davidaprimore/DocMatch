@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
     ArrowLeft, Clock, Search, MapPin, CalendarDays, X,
     CheckCircle2, ChevronRight, ChevronDown, ChevronLeft,
-    TrendingUp, Calendar
+    TrendingUp, Calendar, AlertCircle
 } from 'lucide-react'
 import { BottomNavMedico } from '@/components/BottomNavMedico'
 import { useAuth } from '@/hooks/useAuth'
@@ -188,10 +188,9 @@ export default function AgendaDoDiaPage() {
         const handleGoToday = () => {
             const agora = new Date()
             setCalendarViewDate(agora)
-            setBaseDate(agora)
-            setRangeStart(null)
-            setRangeEnd(null)
+            // Só navega na agenda se NÃO estiver em modo de bloqueio para evitar flicker
             if (!isBlockingMode) {
+                setBaseDate(agora)
                 closeCalendar()
             }
         }
@@ -207,6 +206,7 @@ export default function AgendaDoDiaPage() {
                 return
             }
 
+            // No modo bloqueio, apenas selecionamos o range visualmente
             if (!rangeStart || (rangeStart && rangeEnd)) {
                 setRangeStart(selectedDate)
                 setRangeEnd(null)
@@ -288,11 +288,11 @@ export default function AgendaDoDiaPage() {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: 10 }}
-                                        className="absolute inset-0 z-[120] bg-[#F8FAFC] flex items-center justify-center p-8"
+                                        className={`absolute inset-0 z-[120] flex items-center justify-center p-8 ${calendarAlert.type === 'error' ? 'bg-[#FEFCE8]' : 'bg-[#F8FAFC]'}`}
                                     >
-                                        <div className="text-center w-full">
-                                            <div className={`w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center ${calendarAlert.type === 'error' ? 'bg-red-50 text-red-500' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}>
-                                                {calendarAlert.type === 'error' ? <X className="w-7 h-7" /> : <CalendarDays className="w-7 h-7" />}
+                                        <div className={`text-center w-full ${calendarAlert.type === 'error' ? 'border-2 border-[#D4AF37]/50 p-6 rounded-[32px]' : ''}`}>
+                                            <div className={`w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center ${calendarAlert.type === 'error' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-[#D4AF37]/10 text-[#D4AF37]'}`}>
+                                                {calendarAlert.type === 'error' ? <AlertCircle className="w-7 h-7" /> : <CalendarDays className="w-7 h-7" />}
                                             </div>
                                             <h4 className="text-[#1A365D] font-black text-lg mb-2 tracking-tight">{calendarAlert.title}</h4>
                                             <p className="text-slate-500 text-[13px] leading-relaxed mb-8 px-4 font-medium">{calendarAlert.message}</p>
@@ -379,16 +379,8 @@ export default function AgendaDoDiaPage() {
                                 )}
                             </AnimatePresence>
 
-                            <div className="flex justify-between items-center mb-6">
-                                <button 
-                                    onClick={handlePrevMonth}
-                                    disabled={isPastMonth}
-                                    className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                
-                                <div className="flex items-center gap-2">
+                            <div className="relative flex items-center justify-between mb-6 px-1">
+                                <div className="flex items-center gap-1.5">
                                     <button 
                                         onClick={handleGoToday}
                                         className="h-7 px-3 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-full text-[#D4AF37] font-black text-[9px] uppercase tracking-widest active:scale-90 transition-all focus:outline-none"
@@ -396,17 +388,25 @@ export default function AgendaDoDiaPage() {
                                         Hoje
                                     </button>
                                     <button 
-                                        onClick={() => setShowMonthYearPicker(true)}
-                                        className="flex flex-col items-center group active:scale-95 transition-transform"
+                                        onClick={handlePrevMonth}
+                                        disabled={isPastMonth}
+                                        className={`p-2 rounded-xl text-white transition-all ${isPastMonth ? 'opacity-10' : 'bg-white/5 hover:bg-white/10'}`}
                                     >
-                                        <h3 className="font-black text-white text-[15px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5 focus:outline-none">
-                                            {monthsName[viewMonth]} <span className="text-white/40">{viewYear}</span>
-                                        </h3>
+                                        <ChevronLeft className="w-4 h-4" />
                                     </button>
                                 </div>
+                                
+                                <button 
+                                    onClick={() => setShowMonthYearPicker(true)}
+                                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center group active:scale-95 transition-transform"
+                                >
+                                    <h3 className="font-black text-white text-[15px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5 focus:outline-none whitespace-nowrap">
+                                        {monthsName[viewMonth]} <span className="text-white/40">{viewYear}</span>
+                                    </h3>
+                                </button>
 
                                 <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
-                                    <ChevronRight className="w-5 h-5" />
+                                    <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
 
@@ -475,7 +475,7 @@ export default function AgendaDoDiaPage() {
                                             </button>
                                         </div>
                                         <button 
-                                            onClick={() => setIsBlockingMode(false)}
+                                            onClick={closeCalendar}
                                             className="w-full py-3 bg-red-500/10 text-red-400 rounded-xl font-black uppercase text-[9px] tracking-widest active:scale-95 transition-all"
                                         >
                                             Cancelar Bloqueio
