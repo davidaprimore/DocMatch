@@ -3,8 +3,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-    ArrowLeft, Clock, Search, MapPin, CalendarDays, X, 
+import {
+    ArrowLeft, Clock, Search, MapPin, CalendarDays, X,
     CheckCircle2, ChevronRight, ChevronDown, ChevronLeft,
     TrendingUp, Calendar
 } from 'lucide-react'
@@ -59,10 +59,10 @@ export default function AgendaDoDiaPage() {
     const [selectedLocalId, setSelectedLocalId] = useState<string>(MOCK_LOCAIS[0].id)
     const [isLocalDropdownOpen, setIsLocalDropdownOpen] = useState(false)
     const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false)
-    
+
     // Date Logic
     const [baseDate, setBaseDate] = useState(new Date())
-    
+
     const generateCarouselDays = useCallback((base: Date) => {
         const days = []
         for (let i = -1; i <= 4; i++) {
@@ -72,23 +72,23 @@ export default function AgendaDoDiaPage() {
         }
         return days
     }, [])
-    
+
     const carouselDays = generateCarouselDays(baseDate)
     const formatDayName = (d: Date) => ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()]
     const monthsName = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-    
+
     const handlePrevDay = () => setBaseDate(prev => new Date(prev.getTime() - 86400000))
     const handleNextDay = () => setBaseDate(prev => new Date(prev.getTime() + 86400000))
-    
+
     const isBeforeToday = (d: Date) => {
         const today = new Date()
-        today.setHours(0,0,0,0)
+        today.setHours(0, 0, 0, 0)
         const check = new Date(d)
-        check.setHours(0,0,0,0)
+        check.setHours(0, 0, 0, 0)
         return check.getTime() < today.getTime()
     }
     const isSameDate = (d1: Date, d2: Date) => d1.getDate() === d2.getDate() && d1.getMonth() === d2.getMonth() && d1.getFullYear() === d2.getFullYear()
-    
+
     const isPassadoLinear = (timeStr: string) => {
         const today = new Date()
         if (isBeforeToday(baseDate)) return true
@@ -103,7 +103,7 @@ export default function AgendaDoDiaPage() {
     const [modalPatient, setModalPatient] = useState<TimeSlot | null>(null)
 
     const slots = slotsCorrentes[selectedLocalId] || []
-    
+
     // Metrics calculation
     const totalSlots = slots.length
     const bookedSlots = slots.filter(s => s.status === 'agendado').length
@@ -137,30 +137,30 @@ export default function AgendaDoDiaPage() {
 
     // Modal de Calendário Muito Mais Premium e Nativo
     const CustomCalendarModal = () => {
-        const daysInMonth = Array.from({length: 31}, (_, i) => i + 1)
+        const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1)
         return (
             <AnimatePresence>
                 {isCalendarModalOpen && (
-                    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4">
-                        <motion.div initial={{scale:0.9, y:30}} animate={{scale:1, y:0}} exit={{scale:0.95, y:20}} className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4">
+                        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20">
                             <div className="flex justify-between items-center mb-6">
-                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronLeft className="w-5 h-5"/></button>
+                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronLeft className="w-5 h-5" /></button>
                                 <h3 className="font-black text-white text-[16px]">Março 2026</h3>
-                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronRight className="w-5 h-5"/></button>
+                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronRight className="w-5 h-5" /></button>
                             </div>
                             <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
                                 <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
                             </div>
                             <div className="grid grid-cols-7 gap-2 text-center">
-                                {Array.from({length: 2}).map((_,i) => <div key={`empty-${i}`} />)}
+                                {Array.from({ length: 2 }).map((_, i) => <div key={`empty-${i}`} />)}
                                 {daysInMonth.map(d => (
-                                    <button 
+                                    <button
                                         key={d}
-                                        onClick={() => { 
+                                        onClick={() => {
                                             const novo = new Date(baseDate)
                                             novo.setDate(d)
                                             setBaseDate(novo)
-                                            setIsCalendarModalOpen(false) 
+                                            setIsCalendarModalOpen(false)
                                         }}
                                         className={`h-10 rounded-full text-[14px] font-bold flex items-center justify-center transition-all 
                                             ${d === baseDate.getDate() ? 'bg-[#D4AF37] text-[#2D5284] shadow-[0_4px_15px_rgba(212,175,55,0.4)]' : 'text-white/80 hover:bg-white/10 active:scale-90'}
@@ -183,15 +183,15 @@ export default function AgendaDoDiaPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] font-sans pb-32 relative">
             <CustomCalendarModal />
-            <header className="px-5 pt-8 pb-12 relative z-40 bg-[#2D5284] shadow-[0_12px_30px_rgba(45,82,132,0.2)] rounded-b-[36px] overflow-hidden">
+            <header className="px-5 pt-4 pb-12 relative z-40 bg-[#2D5284] shadow-[0_12px_30px_rgba(45,82,132,0.2)] rounded-b-[36px] overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
-                
+
                 <div className="flex justify-between items-center mb-6 relative z-10">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => router.back()} className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all">
-                            <ArrowLeft className="w-5 h-5" />
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => router.back()} className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all">
+                            <ArrowLeft className="w-3.5 h-3.5" />
                         </button>
-                        <h1 className="text-white font-black text-xl tracking-tight uppercase">Minha Agenda</h1>
+                        <h1 className="text-white font-black text-lg tracking-tight uppercase">Minha Agenda</h1>
                     </div>
                     <div>
                         <h1 className="text-white font-black text-[14px] tracking-tight flex items-center gap-1 uppercase">
@@ -211,8 +211,8 @@ export default function AgendaDoDiaPage() {
                             </div>
                         </div>
                     </div>
-                    
-                    <button 
+
+                    <button
                         className="bg-[#D4AF37] px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-[0_8px_25px_rgba(212,175,55,0.3)] active:scale-95 transition-all group border border-[#D4AF37] mb-0.5"
                     >
                         <Clock className="w-3.5 h-3.5 text-[#2D5284]" />
@@ -224,29 +224,29 @@ export default function AgendaDoDiaPage() {
             <main className="px-4 -mt-8 relative z-50 space-y-4">
                 {/* Seletor de Unidade Overlapping */}
                 <div className="relative">
-                    <button 
+                    <button
                         onClick={() => setIsLocalDropdownOpen(!isLocalDropdownOpen)}
                         className="w-full flex justify-between items-center bg-white/70 backdrop-blur-md border border-white/80 shadow-[0_8px_32px_rgba(31,62,109,0.12)] text-[#2D5284] font-black text-[15px] px-5 py-4 rounded-[24px] outline-none transition-all active:scale-[0.98]"
                     >
                         <div className="flex items-center gap-3">
-                           <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                           <span className="tracking-tight">{MOCK_LOCAIS.find(l => l.id === selectedLocalId)?.nome}</span>
+                            <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                            <span className="tracking-tight">{MOCK_LOCAIS.find(l => l.id === selectedLocalId)?.nome}</span>
                         </div>
                         <ChevronDown className={`w-5 h-5 text-[#2D5284]/40 transition-transform ${isLocalDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     <AnimatePresence>
                         {isLocalDropdownOpen && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: -10 }} 
-                                animate={{ opacity: 1, y: 0 }} 
-                                exit={{ opacity: 0, y: -10 }} 
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
                                 className="absolute top-[105%] left-0 w-full bg-white/95 backdrop-blur-xl border border-white/20 rounded-[28px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] z-[60]"
                             >
                                 {MOCK_LOCAIS.map(l => (
-                                    <button 
-                                        key={l.id} 
-                                        onClick={() => { setSelectedLocalId(l.id); setIsLocalDropdownOpen(false) }} 
+                                    <button
+                                        key={l.id}
+                                        onClick={() => { setSelectedLocalId(l.id); setIsLocalDropdownOpen(false) }}
                                         className={`w-full text-left px-5 py-5 transition-colors border-b last:border-0 border-slate-100 flex items-center justify-between
                                             ${selectedLocalId === l.id ? 'bg-[#2D5284]/5' : 'hover:bg-slate-50'}`
                                         }
@@ -291,15 +291,14 @@ export default function AgendaDoDiaPage() {
                         const selected = isSameDate(d, baseDate)
                         const before = isBeforeToday(d) && !isSameDate(d, new Date())
                         return (
-                            <motion.div 
-                                key={d.getTime()} 
+                            <motion.div
+                                key={d.getTime()}
                                 onClick={() => setBaseDate(d)}
                                 whileTap={{ scale: 0.95 }}
-                                className={`min-w-[58px] h-14 rounded-2xl flex flex-col items-center justify-center border transition-all cursor-pointer snap-center shrink-0 ${
-                                    selected
-                                        ? 'bg-[#2D5284] border-[#2D5284] shadow-[0_8px_20px_rgba(45,82,132,0.3)]' 
-                                        : 'bg-white/70 backdrop-blur-md border-white/80 shadow-sm'
-                                } ${before ? 'opacity-40 grayscale' : ''}`}
+                                className={`min-w-[58px] h-14 rounded-2xl flex flex-col items-center justify-center border transition-all cursor-pointer snap-center shrink-0 ${selected
+                                    ? 'bg-[#2D5284] border-[#2D5284] shadow-[0_8px_20px_rgba(45,82,132,0.3)]'
+                                    : 'bg-white/70 backdrop-blur-md border-white/80 shadow-sm'
+                                    } ${before ? 'opacity-40 grayscale' : ''}`}
                             >
                                 <span className={`text-[9px] font-black uppercase ${selected ? 'text-white/60' : 'text-slate-400'}`}>
                                     {formatDayName(d)}
@@ -323,7 +322,7 @@ export default function AgendaDoDiaPage() {
                         {slots.map((slot) => {
                             const isPending = pendingSlotAction === slot.id
                             const isPast = slot.isPast || isPassadoLinear(slot.time)
-                            
+
                             // Cores de classificação
                             let typeColor = 'transparent'
                             let label = ''
@@ -332,18 +331,17 @@ export default function AgendaDoDiaPage() {
                             else if (slot.classes === 'retorno') { typeColor = '#60A5FA'; label = 'Retorno' }
 
                             return (
-                                <motion.div 
-                                    key={slot.id} 
+                                <motion.div
+                                    key={slot.id}
                                     layout
-                                    initial={{ opacity: 0, y: 10 }} 
-                                    animate={{ opacity: 1, y: 0 }} 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.98 }}
                                     onClick={() => handleSlotClick(slot)}
-                                    className={`relative rounded-[18px] transition-all overflow-hidden ${
-                                        isPast ? 'bg-slate-200/50 grayscale' : 
+                                    className={`relative rounded-[18px] transition-all overflow-hidden ${isPast ? 'bg-slate-200/50 grayscale' :
                                         slot.status === 'bloqueado' ? 'bg-red-50 border border-red-100' :
-                                        'bg-white/80 border border-white shadow-sm'
-                                    } ${isPending ? 'ring-2 ring-[#D4AF37] scale-[0.98]' : ''}`}
+                                            'bg-white/80 border border-white shadow-sm'
+                                        } ${isPending ? 'ring-2 ring-[#D4AF37] scale-[0.98]' : ''}`}
                                 >
                                     <div className="flex items-center px-4 py-3 min-h-[64px]">
                                         <div className="w-12 border-r border-slate-100 mr-4 shrink-0">
@@ -404,8 +402,8 @@ export default function AgendaDoDiaPage() {
             {/* Modal de Detalhes do Paciente */}
             <AnimatePresence>
                 {modalPatient && (
-                    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] flex items-end justify-center bg-[#2D5284]/60 backdrop-blur-sm">
-                        <motion.div initial={{y:'100%'}} animate={{y:0}} exit={{y:'100%'}} className="bg-white w-full rounded-t-[40px] p-6 shadow-2xl h-[70vh] flex flex-col">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-end justify-center bg-[#2D5284]/60 backdrop-blur-sm">
+                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="bg-white w-full rounded-t-[40px] p-6 shadow-2xl h-[70vh] flex flex-col">
                             <div className="w-12 h-1.5 bg-slate-100 rounded-full mx-auto mb-6" />
                             <div className="flex justify-between items-start mb-6">
                                 <div>
@@ -419,7 +417,7 @@ export default function AgendaDoDiaPage() {
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            
+
                             <div className="space-y-3 flex-1 overflow-y-auto pr-1">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest block mb-1">Status da Consulta</span>
@@ -430,7 +428,7 @@ export default function AgendaDoDiaPage() {
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest block mb-1">Local de Atendimento</span>
-                                    <p className="text-[#2D5284] font-bold text-[15px]">{MOCK_LOCAIS.find(l=>l.id===selectedLocalId)?.nome}</p>
+                                    <p className="text-[#2D5284] font-bold text-[15px]">{MOCK_LOCAIS.find(l => l.id === selectedLocalId)?.nome}</p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest block mb-1">Histórico Recente</span>
@@ -442,7 +440,7 @@ export default function AgendaDoDiaPage() {
                                 <button className="flex-1 bg-[#2D5284] py-4 rounded-xl text-white font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">
                                     Exame/Histórico
                                 </button>
-                                <button onClick={()=>setModalPatient(null)} className="flex-1 bg-[#D4AF37] py-4 rounded-xl text-white font-black uppercase text-[12px] tracking-widest shadow-[0_4px_15px_rgba(212,175,55,0.3)] active:scale-95 transition-all">
+                                <button onClick={() => setModalPatient(null)} className="flex-1 bg-[#D4AF37] py-4 rounded-xl text-white font-black uppercase text-[12px] tracking-widest shadow-[0_4px_15px_rgba(212,175,55,0.3)] active:scale-95 transition-all">
                                     Atender Agora
                                 </button>
                             </div>
