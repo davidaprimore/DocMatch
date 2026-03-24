@@ -6,10 +6,20 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, MapPin, Users, Star, MessageSquare, CalendarClock, ChevronRight, Calendar as CalendarIcon, Clock, Download, X, TrendingUp, ChevronDownIcon } from 'lucide-react'
 import { BottomNavMedico } from '@/components/BottomNavMedico'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function MedicoDashboardPage() {
     const router = useRouter()
-    const userName = "Joanna"
+    const { user } = useAuth()
+    
+    // Nomenclatura dinâmica com base no banco / mock
+    const fullName = (user as any)?.user_metadata?.nome || (user as any)?.user_metadata?.first_name || "Joanna Carolina Guarita Douat"
+    const prefixo = (user as any)?.user_metadata?.prefixo || "Dra."
+    const nameParts = fullName.trim().split(' ')
+    const firstName = nameParts[0]
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : ''
+    const displayName = `${prefixo} ${firstName} ${lastName}`
+
     const [isSplashing, setIsSplashing] = useState(true)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [showInstallBanner, setShowInstallBanner] = useState(false)
@@ -124,11 +134,15 @@ export default function MedicoDashboardPage() {
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-[18px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg font-black text-white shadow-inner">
-                                {userName.substring(0, 2).toUpperCase()}
+                                {firstName.substring(0, 2).toUpperCase()}
                             </div>
                             <div>
-                                <h1 className="text-white font-black text-[22px] tracking-tight leading-tight">Olá, {userName}</h1>
-                                <p className="text-white/50 font-medium text-[12px] mt-0.5 max-w-[200px] leading-snug">Centro Operacional</p>
+                                <h1 className="text-white font-black text-[20px] tracking-tight leading-tight flex items-center gap-1.5 uppercase">
+                                    Doc<span className="text-[#D4AF37]">Match</span>
+                                </h1>
+                                <p className="text-white/90 font-bold text-[14px] mt-0.5 leading-snug tracking-wide">
+                                    {displayName}
+                                </p>
                             </div>
                         </div>
                         <button className="w-10 h-10 rounded-[14px] bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center text-white relative hover:bg-white/10 transition-all shadow-sm active:scale-90 shrink-0">
@@ -335,18 +349,36 @@ export default function MedicoDashboardPage() {
                     </motion.section>
 
                     {/* 2.5 AVISOS & OPORTUNIDADES (Insights Automáticos) */}
-                    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                        <div className="bg-gradient-to-r from-white to-[#F8F6F0] p-4 mb-2 rounded-[24px] shadow-[0_8px_25px_rgba(45,82,132,0.04)] border border-[#D4AF37]/20 relative z-10 w-full">
+                    <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-3 mb-6">
+                        {/* Radar 1 - Retornos */}
+                        <div className="bg-gradient-to-r from-white to-[#F8F6F0] p-4 rounded-[24px] shadow-[0_8px_25px_rgba(45,82,132,0.04)] border border-[#D4AF37]/20 relative z-10 w-full">
                             <div className="flex items-start gap-4">
                                 <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center shrink-0 border border-[#D4AF37]/20 shadow-inner mt-0.5">
                                     <Bell className="w-4 h-4 text-[#D4AF37]" />
                                     <div className="absolute top-4 right-auto ml-7 w-2 h-2 bg-red-400 rounded-full animate-pulse blur-[1px]"></div>
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-[#2D5284] font-bold text-[14px] leading-tight mb-1">Radar DocMatch</h3>
+                                    <h3 className="text-[#2D5284] font-bold text-[14px] leading-tight mb-1">Radar: Retornos</h3>
                                     <p className="text-[#8BA0B8] font-medium text-[12px] leading-snug pr-2">Existem <strong className="text-[#D4AF37]">3 pacientes</strong> que completaram 6 meses da última consulta. Que tal convidar para um retorno?</p>
                                     <button className="mt-2.5 text-[#2D5284] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 hover:text-[#D4AF37] transition-colors bg-white py-1.5 px-3 rounded-lg shadow-sm border border-slate-100">
                                         Disparar Lembretes <ChevronRight className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Radar 2 - Renovação Contínua */}
+                        <div className="bg-gradient-to-r from-[#2D5284] to-[#1A365D] p-4 rounded-[24px] shadow-[0_8px_25px_rgba(45,82,132,0.08)] border border-white/10 relative w-full overflow-hidden">
+                            <div className="absolute right-0 top-0 w-40 h-40 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                            <div className="flex items-start gap-4 relative z-10">
+                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 border border-white/20 shadow-inner mt-0.5 backdrop-blur-md">
+                                    <TrendingUp className="w-4 h-4 text-[#D4AF37]" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-white font-bold text-[14px] leading-tight mb-1">Oportunidade Preditiva</h3>
+                                    <p className="text-white/80 font-medium text-[12px] leading-snug pr-2">Identificamos <strong className="text-[#D4AF37]">2 pacientes</strong> com receitas de uso contínuo vencendo nos próximos 5 dias.</p>
+                                    <button className="mt-2.5 text-[#1A365D] text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 bg-gradient-to-r from-[#D4AF37] to-[#FFF1B8] py-1.5 px-3 rounded-lg shadow-[0_4px_15px_rgba(212,175,55,0.2)] hover:brightness-110 transition-all border-0">
+                                        Oferecer Renovação <ChevronRight className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>

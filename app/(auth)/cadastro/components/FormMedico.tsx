@@ -16,7 +16,7 @@ export function FormMedico() {
     const [showPassword, setShowPassword] = useState(false)
     
     const [form, setForm] = useState({ 
-        nome: '', email: '', telefone: '', cpf: '',
+        prefixo: 'Dra.', nome: '', email: '', telefone: '', cpf: '',
         crm: '', uf_crm: '', especialidade: '', password: '', confirmPassword: ''
     })
     const [isUfOpen, setIsUfOpen] = useState(false)
@@ -117,9 +117,20 @@ export function FormMedico() {
     return (
         <form onSubmit={handleFinalSubmit} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-3">
-                <div className="space-y-1.5">
-                    <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Nome Completo</label>
-                    <input name="nome" value={form.nome} onChange={handleChange} required placeholder="Dr(a). Seu Nome" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition" />
+                <div className="flex gap-4">
+                    <div className="w-[30%] space-y-1.5 relative">
+                        <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Prefixo</label>
+                        <select name="prefixo" value={form.prefixo} onChange={handleChange} className="w-full bg-slate-100/95 border border-slate-300 rounded-2xl px-4 py-3.5 text-[#1A365D] font-bold outline-none hover:bg-white transition appearance-none cursor-pointer">
+                            {['Dr.', 'Dra.', 'Prof.', 'Profa.', 'Psic.', 'Fisiot.', 'Nutri.', 'Enferm.', 'Fono.', 'Odonto.', 'Outro'].map(p => (
+                                <option key={p} value={p}>{p}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-[65%] -translate-y-1/2 w-4 h-4 text-[#1A365D]/50 pointer-events-none" />
+                    </div>
+                    <div className="w-[70%] space-y-1.5">
+                        <label className="text-white/60 text-[11px] font-black uppercase tracking-widest ml-1">Nome Completo</label>
+                        <input name="nome" value={form.nome} onChange={handleChange} required placeholder="Seu Nome" className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white/90 placeholder:text-white/20 text-sm outline-none focus:border-[#D4AF37] focus:bg-white/10 transition" />
+                    </div>
                 </div>
 
                 <div className="flex gap-4">
