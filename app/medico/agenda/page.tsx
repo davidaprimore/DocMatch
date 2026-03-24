@@ -135,24 +135,73 @@ export default function AgendaDoDiaPage() {
         }
     }
 
+    // Modal de Calendário Muito Mais Premium e Nativo
+    const CustomCalendarModal = () => {
+        const daysInMonth = Array.from({length: 31}, (_, i) => i + 1)
+        return (
+            <AnimatePresence>
+                {isCalendarModalOpen && (
+                    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4">
+                        <motion.div initial={{scale:0.9, y:30}} animate={{scale:1, y:0}} exit={{scale:0.95, y:20}} className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20">
+                            <div className="flex justify-between items-center mb-6">
+                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronLeft className="w-5 h-5"/></button>
+                                <h3 className="font-black text-white text-[16px]">Março 2026</h3>
+                                <button className="p-2 bg-white/5 rounded-xl text-white/50 hover:bg-white/10"><ChevronRight className="w-5 h-5"/></button>
+                            </div>
+                            <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+                                <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                            </div>
+                            <div className="grid grid-cols-7 gap-2 text-center">
+                                {Array.from({length: 2}).map((_,i) => <div key={`empty-${i}`} />)}
+                                {daysInMonth.map(d => (
+                                    <button 
+                                        key={d}
+                                        onClick={() => { 
+                                            const novo = new Date(baseDate)
+                                            novo.setDate(d)
+                                            setBaseDate(novo)
+                                            setIsCalendarModalOpen(false) 
+                                        }}
+                                        className={`h-10 rounded-full text-[14px] font-bold flex items-center justify-center transition-all 
+                                            ${d === baseDate.getDate() ? 'bg-[#D4AF37] text-[#2D5284] shadow-[0_4px_15px_rgba(212,175,55,0.4)]' : 'text-white/80 hover:bg-white/10 active:scale-90'}
+                                            ${d < new Date().getDate() ? 'opacity-30 pointer-events-none' : ''}`}
+                                    >
+                                        {d}
+                                    </button>
+                                ))}
+                            </div>
+                            <button onClick={() => setIsCalendarModalOpen(false)} className="w-full mt-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white font-black uppercase text-[12px] tracking-widest active:scale-95 transition-transform">
+                                Fechar Calendário
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#E2E8F0] to-[#F1F5F9] font-sans pb-32 relative">
+            <CustomCalendarModal />
             <header className="px-5 pt-8 pb-12 relative z-40 bg-[#2D5284] shadow-[0_12px_30px_rgba(45,82,132,0.2)] rounded-b-[36px] overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none"></div>
                 
-                <div className="flex justify-between items-center mb-6 relative z-10">
+                <div className="flex justify-between items-start mb-6 relative z-10">
                     <div className="flex items-center gap-3">
                         <button onClick={() => router.back()} className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all">
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <h1 className="text-white font-black text-xl tracking-tight uppercase">Minha Agenda</h1>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end gap-2">
+                        <h1 className="text-white font-black text-[14px] tracking-tight flex items-center gap-1 uppercase">
+                            Doc<span className="text-[#D4AF37]">Match</span>
+                        </h1>
                         <button 
-                            className="bg-[#D4AF37]/10 backdrop-blur-md border border-[#D4AF37]/30 px-3 py-2 rounded-xl flex items-center gap-2 shadow-[0_4px_15px_rgba(212,175,55,0.1)] active:scale-95 transition-all group"
+                            className="bg-[#D4AF37] px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-[0_4px_15px_rgba(212,175,55,0.3)] active:scale-95 transition-all group border border-[#D4AF37]"
                         >
-                            <Clock className="w-4 h-4 text-[#D4AF37] group-hover:rotate-12 transition-transform" />
-                            <span className="text-[#D4AF37] font-black text-[11px] uppercase tracking-widest mt-0.5">Expediente</span>
+                            <Clock className="w-3 h-3 text-[#2D5284]" />
+                            <span className="text-[#2D5284] font-black text-[9px] uppercase tracking-widest mt-0.5">Expediente</span>
                         </button>
                     </div>
                 </div>
