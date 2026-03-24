@@ -800,7 +800,7 @@ const WorkScheduleModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         {/* Seção: Grade Semanal */}
                         <section className="space-y-5">
                             <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-                                <CalendarIcon className="w-5 h-5 text-[#D4AF37]" />
+                                <Calendar className="w-5 h-5 text-[#D4AF37]" />
                                 <h4 className="text-white font-black text-sm uppercase tracking-widest">Grade de Atendimento</h4>
                             </div>
                             
