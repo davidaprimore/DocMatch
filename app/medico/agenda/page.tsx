@@ -135,9 +135,11 @@ export default function AgendaDoDiaPage() {
         }
     }
 
-    // Estados para o Calendário Dinâmico
+    // Estados para o Calendário Dinâmico e Bloqueio
     const [calendarViewDate, setCalendarViewDate] = useState(new Date())
     const [showMonthYearPicker, setShowMonthYearPicker] = useState(false)
+    const [rangeStart, setRangeStart] = useState<Date | null>(null)
+    const [rangeEnd, setRangeEnd] = useState<Date | null>(null)
 
     // Helper para gerar dias do mês no calendário
     const getDaysInMonth = (year: number, month: number) => {
@@ -157,7 +159,7 @@ export default function AgendaDoDiaPage() {
         const currentYear = today.getFullYear()
         const currentMonth = today.getMonth()
 
-        const isPastMonth = viewYear < currentYear || (viewYear === currentYear && viewMonth <= currentMonth)
+        const isPastMonth = viewYear < currentYear || (viewYear === currentYear && viewMonth < currentMonth)
         
         const daysCount = getDaysInMonth(viewYear, viewMonth)
         const firstDay = getFirstDayOfMonth(viewYear, viewMonth)
@@ -174,11 +176,89 @@ export default function AgendaDoDiaPage() {
 
         const years = Array.from({ length: 10 }, (_, i) => currentYear + i)
 
+        const handleDayClick = (d: number) => {
+            const selectedDate = new Date(viewYear, viewMonth, d)
+            
+            // Lógica Airbnb: Se não tem start, define start. Se tem start e não tem end, define end.
+            if (!rangeStart || (rangeStart && rangeEnd)) {
+                setRangeStart(selectedDate)
+                setRangeEnd(null)
+            } else {
+                if (selectedDate < rangeStart) {
+                    setRangeStart(selectedDate)
+                } else {
+                    setRangeEnd(selectedDate)
+                }
+            }
+            
+            // Se for apenas para navegar (um clique rápido):
+            // setBaseDate(selectedDate)
+            // setIsCalendarModalOpen(false)
+        }
+
+        const isInRange = (d: number) => {
+            if (!rangeStart || !rangeEnd) return false
+            const check = new Date(viewYear, viewMonth, d)
+            return check > rangeStart && check < rangeEnd
+        }
+
+        const isEdge = (d: number) => {
+            if (!rangeStart) return false
+            const check = new Date(viewYear, viewMonth, d)
+            const isStart = isSameDate(check, rangeStart)
+            const isEnd = rangeEnd ? isSameDate(check, rangeEnd) : false
+            return isStart || isEnd
+        }
+
+        const handleBlockAction = (type: 'dia' | 'periodo') => {
+            const targetDays = type === 'dia' ? (rangeStart ? [rangeStart] : []) : []
+            if (type === 'periodo' && rangeStart && rangeEnd) {
+                let curr = new Date(rangeStart)
+                while (curr <= rangeEnd) {
+                    targetDays.push(new Date(curr))
+                    curr.setDate(curr.getDate() + 1)
+                }
+            }
+
+            if (targetDays.length === 0) return
+
+            // Validação de Conflitos
+            const hasAppointments = targetDays.some(date => {
+                const daySlots = slotsCorrentes[selectedLocalId] || []
+                // Como nosso mock é diário e fixo, vamos simular que se o dia selecionado
+                // for um "dia ocupado" (ex: dias pares), ele bloqueia.
+                // Na vida real, aqui checaríamos o banco de dados para cada data.
+                return daySlots.some(s => s.status === 'agendado')
+            })
+
+            if (hasAppointments) {
+                alert("Impedimento: Existem consultas agendadas neste período. Por favor, cancele ou reagende os compromissos primeiro.")
+                return
+            }
+
+            if (confirm(`Deseja realmente bloquear este ${type === 'dia' ? 'dia' : 'período'}?`)) {
+                alert(`${type === 'dia' ? 'Dia' : 'Período'} bloqueado com sucesso!`)
+                setIsCalendarModalOpen(false)
+            }
+        }
+
         return (
             <AnimatePresence>
                 {isCalendarModalOpen && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4">
-                        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden">
+                    <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }} 
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2D5284]/80 backdrop-blur-md px-4"
+                        onClick={() => setIsCalendarModalOpen(false)}
+                    >
+                        <motion.div 
+                            initial={{ scale: 0.9, y: 30 }} 
+                            animate={{ scale: 1, y: 0 }} 
+                            exit={{ scale: 0.95, y: 20 }} 
+                            className="bg-[#2D5284] w-full max-w-sm rounded-[32px] p-6 shadow-[0_12px_60px_rgba(0,0,0,0.6)] border border-white/20 relative overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             
                             {/* Seletor de Mês/Ano (Overlay) */}
                             <AnimatePresence>
@@ -246,8 +326,9 @@ export default function AgendaDoDiaPage() {
                                     onClick={() => setShowMonthYearPicker(true)}
                                     className="flex flex-col items-center group active:scale-95 transition-transform"
                                 >
-                                    <h3 className="font-black text-white text-[16px] group-hover:text-[#D4AF37] transition-colors">{monthsName[viewMonth]}</h3>
-                                    <span className="text-white/40 text-[11px] font-bold">{viewYear}</span>
+                                    <h3 className="font-black text-white text-[16px] group-hover:text-[#D4AF37] transition-colors flex items-center gap-1.5">
+                                        {monthsName[viewMonth]} <span className="text-white/40">{viewYear}</span>
+                                    </h3>
                                 </button>
 
                                 <button onClick={handleNextMonth} className="p-2 bg-white/5 rounded-xl text-white hover:bg-white/10 active:scale-90 transition-all">
@@ -259,21 +340,27 @@ export default function AgendaDoDiaPage() {
                                 <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
                             </div>
 
-                            <div className="grid grid-cols-7 gap-2 text-center">
+                            <div className="grid grid-cols-7 gap-1 text-center">
                                 {blanks.map(i => <div key={`empty-${i}`} />)}
                                 {days.map(d => {
-                                    const isSelected = isSameDate(new Date(viewYear, viewMonth, d), baseDate)
+                                    const checkDate = new Date(viewYear, viewMonth, d)
+                                    const isSelected = isSameDate(checkDate, baseDate)
                                     const isDayPast = viewYear === currentYear && viewMonth === currentMonth && d < today.getDate()
+                                    
+                                    const isStart = rangeStart && isSameDate(checkDate, rangeStart)
+                                    const isEnd = rangeEnd && isSameDate(checkDate, rangeEnd)
+                                    const inRange = isInRange(d)
+
                                     return (
                                         <button
                                             key={d}
                                             disabled={isDayPast}
-                                            onClick={() => {
-                                                setBaseDate(new Date(viewYear, viewMonth, d))
-                                                setIsCalendarModalOpen(false)
-                                            }}
-                                            className={`h-10 rounded-full text-[14px] font-bold flex items-center justify-center transition-all 
-                                                ${isSelected ? 'bg-[#D4AF37] text-[#2D5284] shadow-[0_4px_15px_rgba(212,175,55,0.4)] scale-110' : 'text-white/80 hover:bg-white/10 active:scale-90'}
+                                            onClick={() => handleDayClick(d)}
+                                            className={`h-9 rounded-full text-[13px] font-bold flex items-center justify-center transition-all relative
+                                                ${isSelected ? 'border border-[#D4AF37]/50 shadow-[0_0_10px_rgba(212,175,55,0.2)]' : ''}
+                                                ${isStart || isEnd ? 'bg-[#D4AF37] text-[#2D5284] z-10 scale-105' : 
+                                                  inRange ? 'bg-[#D4AF37]/20 text-white' : 
+                                                  'text-white/80 hover:bg-white/10 active:scale-90'}
                                                 ${isDayPast ? 'opacity-20 grayscale pointer-events-none' : ''}`}
                                         >
                                             {d}
@@ -282,9 +369,36 @@ export default function AgendaDoDiaPage() {
                                 })}
                             </div>
 
-                            <button onClick={() => setIsCalendarModalOpen(false)} className="w-full mt-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white font-black uppercase text-[12px] tracking-widest active:scale-95 transition-transform">
-                                Fechar Calendário
-                            </button>
+                            <div className="mt-8 space-y-3">
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => handleBlockAction('dia')}
+                                        disabled={!rangeStart}
+                                        className="flex-1 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white/80 font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all disabled:opacity-20"
+                                    >
+                                        Bloquear Dia
+                                    </button>
+                                    <button 
+                                        onClick={() => handleBlockAction('periodo')}
+                                        disabled={!rangeStart || !rangeEnd}
+                                        className="flex-1 py-3.5 bg-white/10 border border-white/20 rounded-xl text-[#D4AF37] font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all disabled:opacity-20"
+                                    >
+                                        Bloquear Período
+                                    </button>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        setBaseDate(new Date())
+                                        setCalendarViewDate(new Date())
+                                        setRangeStart(new Date())
+                                        setRangeEnd(null)
+                                        setIsCalendarModalOpen(false)
+                                    }}
+                                    className="w-full py-3 bg-[#D4AF37] rounded-xl text-[#2D5284] font-black uppercase text-[11px] tracking-widest active:scale-95 transition-all shadow-[0_4px_15px_rgba(212,175,55,0.3)]"
+                                >
+                                    Ir para Hoje
+                                </button>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
